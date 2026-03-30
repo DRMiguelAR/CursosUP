@@ -1,0 +1,376 @@
+% =============================================================================
+%  progavanzada.sty — Estilo para notas de Programación Avanzada
+%  Universidad Panamericana
+%
+%  Uso:
+%    \usepackage{progavanzada}           % notas del alumno (default)
+%    \usepackage[profesor]{progavanzada} % notas del profesor
+%
+%  Requiere compilar con pdflatex o xelatex.
+% =============================================================================
+
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{progavanzada}[2026/03/30 Estilo Programacion Avanzada UP]
+
+% ─── Opciones ────────────────────────────────────────────────────────────────
+\newif\if@profesor
+\@profesorfalse
+\DeclareOption{profesor}{\@profesortrue}
+\ProcessOptions\relax
+
+% =============================================================================
+% PAQUETES BASE
+% =============================================================================
+\RequirePackage[T1]{fontenc}
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[spanish,es-noshorthands]{babel}
+\RequirePackage{geometry}
+\RequirePackage{xcolor}
+\RequirePackage{graphicx}
+\RequirePackage{amsmath,amssymb}
+\RequirePackage{tcolorbox}
+\RequirePackage{fontawesome5}          % íconos (consejo, advertencia, etc.)
+\RequirePackage{titlesec}
+\RequirePackage{titletoc}
+\RequirePackage{fancyhdr}
+\RequirePackage{enumitem}
+\RequirePackage{microtype}
+\RequirePackage{listings}
+\RequirePackage{mdframed}
+\RequirePackage{booktabs}
+\RequirePackage{hyperref}
+\RequirePackage{lmodern}
+\RequirePackage{helvet}                % fuente sans-serif tipo Helvetica
+
+\tcbuselibrary{skins, breakable, listings}
+
+% =============================================================================
+% TIPOGRAFÍA — sans-serif como fuente principal (estilo "for dummies")
+% =============================================================================
+\renewcommand{\familydefault}{\sfdefault}   % todo el documento en sans-serif
+\renewcommand{\ttdefault}{lmtt}             % monoespaciada para código
+
+% =============================================================================
+% COLORES
+% =============================================================================
+
+% Paleta principal — inspirada en "For Dummies" (amarillo-negro) con acento UP
+\definecolor{dummies@yellow}{HTML}{FFD100}   % amarillo firma
+\definecolor{dummies@black}{HTML}{1A1A1A}    % negro suave
+\definecolor{dummies@gray}{HTML}{4A4A4A}     % gris texto secundario
+\definecolor{dummies@lightgray}{HTML}{F5F5F5}% fondo bloques código
+\definecolor{dummies@darkgray}{HTML}{2E2E2E} % encabezados oscuros
+
+% Colores de cajas especiales
+\definecolor{box@tip}{HTML}{00A896}       % verde azulado  → Consejo
+\definecolor{box@remember}{HTML}{FFD100}  % amarillo        → Recuerda
+\definecolor{box@warning}{HTML}{E63946}   % rojo            → Advertencia
+\definecolor{box@technical}{HTML}{6B6B8A} % violeta gris    → Dato técnico
+\definecolor{box@example}{HTML}{457B9D}   % azul            → Ejemplo
+
+% Color diferenciador: alumno = amarillo, profesor = azul UP
+\if@profesor
+  \definecolor{cover@accent}{HTML}{003087}  % azul UP
+  \definecolor{cover@band}{HTML}{003087}
+\else
+  \definecolor{cover@accent}{HTML}{FFD100}  % amarillo "for dummies"
+  \definecolor{cover@band}{HTML}{1A1A1A}
+\fi
+
+% =============================================================================
+% GEOMETRÍA DE PÁGINA
+% =============================================================================
+\geometry{
+  a4paper,
+  top=2.5cm,
+  bottom=2.8cm,
+  inner=3cm,
+  outer=2.2cm,
+  headsep=0.8cm,
+  footskip=1.2cm,
+}
+
+% =============================================================================
+% HYPERREF
+% =============================================================================
+\hypersetup{
+  colorlinks  = true,
+  linkcolor   = dummies@black,
+  urlcolor    = box@tip,
+  citecolor   = box@technical,
+  pdfborder   = {0 0 0},
+}
+
+% =============================================================================
+% ENCABEZADOS Y PIE DE PÁGINA
+% =============================================================================
+\pagestyle{fancy}
+\fancyhf{}
+
+\if@profesor
+  \fancyhead[L]{\small\color{dummies@gray}\textbf{NOTAS DEL PROFESOR} \textbar\ Programación Avanzada}
+\else
+  \fancyhead[L]{\small\color{dummies@gray}\textbf{NOTAS DE CLASE} \textbar\ Programación Avanzada}
+\fi
+
+\fancyhead[R]{\small\color{dummies@gray}\leftmark}
+\fancyfoot[C]{%
+  \color{dummies@gray}\small
+  \rule{0.3\textwidth}{0.4pt}\quad\thepage\quad\rule{0.3\textwidth}{0.4pt}%
+}
+\renewcommand{\headrulewidth}{1.5pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{dummies@yellow}\leaders\hrule height \headrulewidth\hfill}}
+\renewcommand{\footrulewidth}{0pt}
+
+% =============================================================================
+% SECCIONES Y SUBSECCIONES
+% =============================================================================
+\titleformat{\section}
+  {\Large\bfseries\color{dummies@black}}          % formato
+  {}                                               % label (vacío)
+  {0pt}                                            % sep
+  {%
+    \colorbox{dummies@yellow}{\parbox[c][1.1em][c]{3.5pt}{\strut}}\enspace  % barra izquierda
+  }
+  []
+
+\titleformat{\subsection}
+  {\large\bfseries\color{dummies@darkgray}}
+  {}
+  {0pt}
+  {\color{dummies@yellow}\textbullet\enspace}
+
+\titleformat{\subsubsection}
+  {\normalsize\bfseries\itshape\color{dummies@gray}}
+  {}
+  {0pt}
+  {}
+
+\titlespacing{\section}{0pt}{2ex}{0.8ex}
+\titlespacing{\subsection}{0pt}{1.5ex}{0.4ex}
+\titlespacing{\subsubsection}{0pt}{1ex}{0.2ex}
+
+% =============================================================================
+% CAJAS ESPECIALES — estilo "For Dummies"
+% =============================================================================
+\tcbset{
+  dummies@base/.style={
+    breakable,
+    enhanced,
+    arc=4pt,
+    boxrule=0pt,
+    left=10pt, right=10pt,
+    top=6pt, bottom=6pt,
+    fonttitle=\bfseries\small,
+    parbox=false,
+  }
+}
+
+% ── Consejo (Tip) ─────────────────────────────────────────────────────────────
+\newenvironment{consejo}[1][Consejo]{%
+  \begin{tcolorbox}[
+    dummies@base,
+    colback=box@tip!10,
+    colframe=box@tip,
+    leftrule=4pt,
+    title={\faLightbulb\enspace #1},
+    coltitle=box@tip,
+  ]
+}{%
+  \end{tcolorbox}%
+}
+
+% ── Recuerda (Remember) ───────────────────────────────────────────────────────
+\newenvironment{recuerda}[1][Recuerda]{%
+  \begin{tcolorbox}[
+    dummies@base,
+    colback=box@remember!15,
+    colframe=box@remember,
+    leftrule=4pt,
+    title={\faThumbsUp\enspace #1},
+    coltitle=dummies@black,
+  ]
+}{%
+  \end{tcolorbox}%
+}
+
+% ── Advertencia (Warning) ─────────────────────────────────────────────────────
+\newenvironment{advertencia}[1][Advertencia]{%
+  \begin{tcolorbox}[
+    dummies@base,
+    colback=box@warning!8,
+    colframe=box@warning,
+    leftrule=4pt,
+    title={\faExclamationTriangle\enspace #1},
+    coltitle=box@warning,
+  ]
+}{%
+  \end{tcolorbox}%
+}
+
+% ── Dato técnico ──────────────────────────────────────────────────────────────
+\newenvironment{tecnico}[1][Dato técnico]{%
+  \begin{tcolorbox}[
+    dummies@base,
+    colback=box@technical!8,
+    colframe=box@technical,
+    leftrule=4pt,
+    title={\faCog\enspace #1},
+    coltitle=box@technical,
+  ]
+}{%
+  \end{tcolorbox}%
+}
+
+% ── Ejemplo ───────────────────────────────────────────────────────────────────
+\newenvironment{ejemplo}[1][Ejemplo]{%
+  \begin{tcolorbox}[
+    dummies@base,
+    colback=box@example!8,
+    colframe=box@example,
+    leftrule=4pt,
+    title={\faCode\enspace #1},
+    coltitle=box@example,
+  ]
+}{%
+  \end{tcolorbox}%
+}
+
+% ── Nota del profesor (solo visible en modo profesor) ─────────────────────────
+\if@profesor
+  \newenvironment{notaprofesor}[1][Nota del profesor]{%
+    \begin{tcolorbox}[
+      dummies@base,
+      colback=cover@accent!8,
+      colframe=cover@accent,
+      leftrule=4pt,
+      title={\faChalkboardTeacher\enspace #1},
+      coltitle=cover@accent,
+    ]
+  }{%
+    \end{tcolorbox}%
+  }
+\else
+  % En la versión del alumno, el entorno existe pero no imprime nada
+  \newenvironment{notaprofesor}[1][]{\comment}{\endcomment}
+\fi
+
+% =============================================================================
+% BLOQUES DE CÓDIGO
+% =============================================================================
+\lstset{
+  language        = C++,
+  basicstyle      = \ttfamily\small,
+  keywordstyle    = \bfseries\color{box@example},
+  commentstyle    = \itshape\color{box@tip},
+  stringstyle     = \color{box@warning},
+  numberstyle     = \tiny\color{dummies@gray},
+  numbers         = left,
+  stepnumber      = 1,
+  numbersep       = 8pt,
+  backgroundcolor = \color{dummies@lightgray},
+  frame           = single,
+  framesep        = 4pt,
+  rulecolor       = \color{dummies@yellow},
+  breaklines      = true,
+  breakatwhitespace = true,
+  showstringspaces= false,
+  tabsize         = 4,
+  captionpos      = b,
+  aboveskip       = 0.8em,
+  belowskip       = 0.8em,
+  xleftmargin     = 12pt,
+  xrightmargin    = 4pt,
+  framexleftmargin= 8pt,
+  literate        = {á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1
+                    {ú}{{\'u}}1 {ñ}{{\~n}}1 {Á}{{\'A}}1 {É}{{\'E}}1
+                    {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1 {Ñ}{{\~N}}1,
+}
+
+% Entorno cómodo: \begin{codigo}...\end{codigo}
+\lstnewenvironment{codigo}[1][]{\lstset{#1}}{}
+
+% Código inline: \cpp{cout << x;}
+\newcommand{\cpp}[1]{\colorbox{dummies@lightgray}{\texttt{\small #1}}}
+
+% =============================================================================
+% LISTAS CON ESTILO
+% =============================================================================
+\setlist[itemize,1]{label=\textcolor{dummies@yellow}{\textbullet}, leftmargin=1.5em}
+\setlist[itemize,2]{label=\textcolor{box@tip}{\textendash},        leftmargin=1.5em}
+\setlist[enumerate,1]{label=\textcolor{dummies@black}{\textbf{\arabic*.}}, leftmargin=1.8em}
+
+% =============================================================================
+% PORTADA
+% =============================================================================
+%
+% Uso en el documento:
+%   \portada{Sesión 02}{Introducción a C++}{2026}
+%
+\newcommand{\portada}[3]{%  #1=sesión, #2=título, #3=año
+  \begin{titlepage}
+    \pagecolor{cover@band}
+    \color{white}
+    \vspace*{1cm}
+
+    % Banda superior amarilla
+    \if@profesor\else
+      \noindent\colorbox{dummies@yellow}{%
+        \parbox{\textwidth}{%
+          \vspace{4pt}
+          \centering\huge\bfseries\color{dummies@black}
+          PROGRAMACIÓN AVANZADA
+          \vspace{4pt}
+        }%
+      }
+    \fi
+    \if@profesor
+      \noindent\colorbox{white}{%
+        \parbox{\textwidth}{%
+          \vspace{4pt}
+          \centering\huge\bfseries\color{cover@accent}
+          PROGRAMACIÓN AVANZADA
+          \vspace{4pt}
+        }%
+      }
+    \fi
+
+    \vspace{1.5cm}
+
+    % Número de sesión
+    {\fontsize{60}{60}\selectfont\bfseries\color{dummies@yellow} #1}
+
+    \vspace{0.3cm}
+    \noindent\rule{\textwidth}{1pt}
+    \vspace{0.4cm}
+
+    % Título del tema
+    {\fontsize{28}{34}\selectfont\bfseries #2\par}
+
+    \vspace{1cm}
+
+    % Badge alumno/profesor
+    \if@profesor
+      \noindent\colorbox{dummies@yellow}{%
+        \parbox{5cm}{\centering\bfseries\color{dummies@black}
+          \faChalkboardTeacher\enspace NOTAS DEL PROFESOR}%
+      }
+    \else
+      \noindent\colorbox{dummies@yellow}{%
+        \parbox{4.5cm}{\centering\bfseries\color{dummies@black}
+          \faBook\enspace NOTAS DE CLASE}%
+      }
+    \fi
+
+    \vfill
+
+    \noindent\rule{\textwidth}{0.5pt}\\[4pt]
+    {\small Universidad Panamericana \hfill #3}
+
+  \end{titlepage}
+  \nopagecolor   % restaurar fondo blanco
+  \color{dummies@black}
+}
+
+% =============================================================================
+\endinput

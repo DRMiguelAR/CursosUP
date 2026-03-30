@@ -1,0 +1,32 @@
+Notas del Profesor — Programación Avanzada
+==========================================
+
+Material de apoyo para la impartición de clases: guías de sesión,
+preguntas frecuentes, notas pedagógicas, rúbricas y respuestas a ejercicios.
+
+Este directorio no está pensado para distribución directa al alumno.
+
+Organización
+------------
+
+  latex/
+      Archivos fuente .tex para compilar con pdflatex o xelatex.
+      Incluye el archivo de estilo compartido: progavanzada.sty
+
+  pdf/
+      PDFs compilados. Nomenclatura: sesionNN_tema_profesor.pdf
+
+Cómo compilar
+-------------
+
+  pdflatex -interaction=nonstopmode sesionNN_tema_profesor.tex
+
+  O con latexmk:
+  latexmk -pdf sesionNN_tema_profesor.tex
+
+Estilo
+------
+  Los documentos usan progavanzada.sty, ubicado en latex/.
+  El mismo archivo de estilo que las notas del alumno; la portada
+  se diferencia mediante la opción [profesor] al cargar el paquete:
+  \usepackage[profesor]{progavanzada}

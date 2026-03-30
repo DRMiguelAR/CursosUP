@@ -9,6 +9,17 @@ sesiones/
     Un archivo por sesión, nombrados: sesionNN_tema.ipynb
     Ejemplo: sesion16_apuntadores_referencias_arreglos.ipynb
 
+notas_alumno/
+    Material de estudio para el alumno: resúmenes, definiciones y ejercicios.
+    latex/ — fuentes .tex (usan progavanzada.sty)
+    pdf/   — PDFs compilados listos para distribuir
+
+notas_profesor/
+    Guías de sesión, secuencias didácticas, FAQs y rúbricas.
+    No está pensado para distribución directa al alumno.
+    latex/ — fuentes .tex (usan progavanzada.sty con opción [profesor])
+    pdf/   — PDFs compilados
+
 materialInicial/
     Archivos .cpp de ejemplo usados para introducir temas en clase,
     organizados por subtema. No son cuadernos interactivos; sirven

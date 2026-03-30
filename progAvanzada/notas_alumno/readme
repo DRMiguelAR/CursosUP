@@ -1,0 +1,30 @@
+Notas del Alumno — Programación Avanzada
+========================================
+
+Material de estudio dirigido al alumno: resúmenes de clase, definiciones
+clave, ejemplos resueltos y ejercicios propuestos.
+
+Organización
+------------
+
+  latex/
+      Archivos fuente .tex para compilar con pdflatex o xelatex.
+      Incluye el archivo de estilo compartido: progavanzada.sty
+
+  pdf/
+      PDFs compilados listos para consultar o imprimir.
+      Nomenclatura: sesionNN_tema.pdf
+
+Cómo compilar
+-------------
+
+  pdflatex -interaction=nonstopmode sesionNN_tema.tex
+
+  O con latexmk (recomendado, resuelve referencias automáticamente):
+  latexmk -pdf sesionNN_tema.tex
+
+Estilo
+------
+  Los documentos usan progavanzada.sty, ubicado en latex/.
+  Asegúrate de que el .sty esté en el mismo directorio que el .tex,
+  o agrégalo a tu ruta de LaTeX.

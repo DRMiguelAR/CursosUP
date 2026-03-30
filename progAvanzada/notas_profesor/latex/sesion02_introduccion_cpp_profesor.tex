@@ -1,0 +1,147 @@
+% =============================================================================
+%  Notas del Profesor — Sesión 02: Introducción a C++
+%  Programación Avanzada — Universidad Panamericana
+%  Compilar: pdflatex sesion02_introduccion_cpp_profesor.tex
+% =============================================================================
+\documentclass[12pt, oneside]{article}
+\usepackage[profesor]{progavanzada}   % versión profesor (portada azul UP)
+
+\begin{document}
+
+\portada{Sesión 02}{Introducción a C++}{2026}
+
+\tableofcontents
+\newpage
+
+% =============================================================================
+\section{Objetivos de la sesión}
+% =============================================================================
+
+Al finalizar la sesión el alumno será capaz de:
+
+\begin{enumerate}
+  \item Explicar qué es C++ y en qué contextos se usa.
+  \item Identificar y acceder a las fuentes de documentación principales.
+  \item Distinguir entre compiladores e intérpretes, y nombrar los más usados.
+  \item Compilar y ejecutar un programa simple desde la consola con \cpp{g++}.
+  \item Comprender la estructura mínima de un programa C++ y el rol de cada línea.
+\end{enumerate}
+
+\begin{notaprofesor}[Duración estimada]
+  50 minutos. Sugerido: 15 min expositivo + 20 min demostración en vivo
+  (compilar en consola y abrir el cuaderno) + 15 min práctica guiada.
+\end{notaprofesor}
+
+% =============================================================================
+\section{Secuencia de clase}
+% =============================================================================
+
+\subsection{Apertura — ¿Por qué C++? (10 min)}
+
+Abrir con la pregunta: \textit{``¿Qué lenguajes ya conocen?''}.
+Conectar C++ con aplicaciones que los alumnos usan (Chrome, videojuegos,
+sistemas embebidos). Mostrar la tabla de características sin entrar en detalle.
+
+\begin{notaprofesor}
+  Si el grupo es de primer semestre de ingeniería, enfatizar el acceso a memoria
+  como diferenciador clave frente a Python o Java. Si ya vienen con experiencia,
+  enfocarse en el modelo de compilación y tipado estático.
+\end{notaprofesor}
+
+\subsection{Documentación (5 min)}
+
+Abrir \href{https://en.cppreference.com}{cppreference.com} en el navegador y
+buscar en vivo \cpp{std::cout}. Mostrar la estructura de la página: descripción,
+parámetros, ejemplo, notas. El objetivo es que pierdan el miedo a la documentación
+técnica desde el primer día.
+
+\subsection{Compiladores y entornos (10 min)}
+
+Explicar la diferencia \textbf{compilar vs interpretar} con el diagrama:
+
+\begin{center}
+  \texttt{main.cpp} $\xrightarrow{\text{g++}}$ \texttt{hola} (binario) $\xrightarrow{}$ ejecuta
+\end{center}
+
+Contrasta con cling/xeus-cling: evalúa línea a línea, sin generar binario.
+
+\begin{notaprofesor}[Pregunta de sondeo]
+  ``Si cling es más cómodo, ¿por qué no se usa en producción?''\\
+  Respuesta esperada: rendimiento, dependencias, no genera binario distribuible.
+\end{notaprofesor}
+
+\subsection{Demostración en consola (15 min)}
+
+Abrir terminal. Ejecutar en vivo:
+
+\begin{codigo}[language=bash, numbers=none]
+g++ --version
+g++ -std=c++17 main.cpp -o hola
+./hola
+\end{codigo}
+
+Luego introducir un error a propósito (quitar el punto y coma) y mostrar cómo
+leer el mensaje de error: \texttt{archivo:línea:columna: error: descripción}.
+
+\subsection{Cuaderno Jupyter (10 min)}
+
+Abrir \texttt{sesion02\_introduccion\_cpp.ipynb}. Ejecutar las celdas
+secuencialmente. Señalar:
+\begin{itemize}
+  \item No se necesita \cpp{main()}.
+  \item Los \cpp{\#include} persisten entre celdas.
+  \item \cpp{cin} no funciona interactivamente — mostrar la celda adaptada.
+\end{itemize}
+
+% =============================================================================
+\section{Preguntas frecuentes}
+% =============================================================================
+
+\begin{notaprofesor}[FAQ]
+\textbf{``¿Por qué \cpp{using namespace std;}? ¿Es mala práctica?''}\\
+En proyectos grandes sí: puede causar colisiones de nombres. En código de clase
+y archivos pequeños es aceptable para reducir ruido visual. Mencionarlo desde
+el principio forma buenos hábitos.
+
+\vspace{0.5em}
+\textbf{``¿Qué pasa si omito \cpp{return 0;} en \cpp{main}?''}\\
+Desde C++11 es opcional en \cpp{main}. El estándar garantiza retorno 0 implícito.
+En otras funciones con tipo de retorno distinto de \cpp{void}, sí es obligatorio.
+
+\vspace{0.5em}
+\textbf{``¿\cpp{endl} o \cpp{\\n}?''}\\
+\cpp{\\n} es más rápido (no hace flush). \cpp{endl} asegura que el buffer
+se vuelca inmediatamente. Para aprendizaje, ambos son equivalentes.
+\end{notaprofesor}
+
+% =============================================================================
+\section{Material de la sesión}
+% =============================================================================
+
+\begin{itemize}
+  \item \textbf{Cuaderno}: \texttt{sesiones/sesion02\_introduccion\_cpp.ipynb}
+  \item \textbf{Ejemplos}: \texttt{materialInicial/sesion02/main.cpp},
+        \texttt{main3.cpp}
+  \item \textbf{Notas alumno}: \texttt{notas\_alumno/pdf/sesion02\_introduccion\_cpp.pdf}
+\end{itemize}
+
+% =============================================================================
+\section{Rúbrica de práctica}
+% =============================================================================
+
+La práctica del cuaderno pide modificar un \cpp{cout} con nombre, carrera y año.
+
+\begin{center}
+\begin{tabular}{lcc}
+  \toprule
+  \textbf{Criterio} & \textbf{Puntos} & \textbf{Evidencia} \\
+  \midrule
+  Tres \cpp{cout} separados y correctos  & 4 & código ejecutable \\
+  Uso correcto de \cpp{endl} o \cpp{\\n} & 3 & salto de línea visible \\
+  Sin errores de compilación             & 3 & celda ejecuta sin error \\
+  \bottomrule
+  \textbf{Total}                         & 10 & \\
+\end{tabular}
+\end{center}
+
+\end{document}
