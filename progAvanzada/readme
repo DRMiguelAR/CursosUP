@@ -1,1 +1,23 @@
 Curso de Programación Avanzada
+==============================
+
+Organización del repositorio
+-----------------------------
+
+sesiones/
+    Cuadernos de Jupyter (xeus-cpp, C++17) usados en clase.
+    Un archivo por sesión, nombrados: sesionNN_tema.ipynb
+    Ejemplo: sesion16_apuntadores_referencias_arreglos.ipynb
+
+materialInicial/
+    Archivos .cpp de ejemplo usados para introducir temas en clase,
+    organizados por subtema. No son cuadernos interactivos; sirven
+    como referencia o para compilar y ejecutar por separado.
+
+Sesiones registradas
+---------------------
+
+| Sesión | Tema                                    | Archivo                                          |
+|--------|-----------------------------------------|--------------------------------------------------|
+| 16     | Apuntadores, referencias y arreglos     | sesiones/sesion16_apuntadores_referencias_arreglos.ipynb |
+| 17     | Paso por referencia                     | sesiones/sesion17_paso_por_referencia.ipynb              |

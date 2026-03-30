@@ -1,0 +1,27 @@
+Cuadernos de clase — Programación Avanzada
+==========================================
+
+Cada archivo corresponde a una sesión de clase.
+Requieren el kernel xeus-cpp (xcpp17) para ejecutarse.
+
+Convención de nombres
+----------------------
+  sesionNN_tema.ipynb
+  donde NN es el número de sesión con ceros a la izquierda si es necesario.
+
+Cuadernos disponibles
+----------------------
+
+  sesion16_apuntadores_referencias_arreglos.ipynb
+      Introducción a apuntadores, referencias y arreglos en C++.
+      Cubre: direcciones de memoria, declaración y desreferencia de apuntadores,
+      apuntador nulo, referencias como alias, diferencias apuntador/referencia,
+      aritmética de apuntadores, equivalencia arr[i] == *(arr+i),
+      comportamiento indefinido por acceso fuera de límites.
+
+  sesion17_paso_por_referencia.ipynb
+      Paso de parámetros en funciones: por valor, por referencia y por apuntador.
+      Cubre: diferencia entre copia y alias al llamar funciones, const&,
+      devolución de múltiples valores con parámetros de salida, paso de arreglos.
+      Cierra con introducción teórica a Bubble Sort y práctica: implementar
+      swap, comparar y bubblesort usando los conceptos de las sesiones 16 y 17.
