@@ -1,0 +1,275 @@
+% =============================================================================
+%  Notas de clase — Sesión 01: Presentación del Curso
+%  Programación Avanzada — Universidad Panamericana
+%  Compilar: pdflatex sesion01_presentacion.tex
+% =============================================================================
+\documentclass[12pt, oneside]{article}
+\usepackage{progavanzada}
+\usepackage{multicol}
+
+\begin{document}
+
+\portada{Sesión 01}{Presentación del Curso}{2026}
+
+\tableofcontents
+\newpage
+
+% =============================================================================
+\section{Bienvenida}
+% =============================================================================
+
+Bienvenido a \textbf{Programación Avanzada}. Este curso es una inmersión
+profunda en C++, uno de los lenguajes más relevantes y demandantes de la
+industria tecnológica. Aquí no solo aprenderás sintaxis: entenderás
+\textit{por qué} el computador hace lo que hace, y tendrás control directo
+sobre ello.
+
+\begin{recuerda}
+  Lo que distingue a este curso de otros de programación es el énfasis en
+  \textbf{entender la máquina}. Aprenderás a gestionar memoria, a diseñar
+  funciones eficientes y a pensar como lo haría el compilador.
+\end{recuerda}
+
+% =============================================================================
+\section{Syllabus}
+% =============================================================================
+
+\subsection{Unidad 1 — Fundamentos del lenguaje C++}
+\begin{itemize}
+  \item Introducción a C++: historia, compiladores y entornos de trabajo
+  \item Tipos de datos, variables y operadores
+  \item Estructuras de control: \texttt{if}, \texttt{switch}, \texttt{while},
+        \texttt{for}
+  \item Funciones: declaración, definición, ámbito y recursión
+\end{itemize}
+
+\subsection{Unidad 2 — Memoria y apuntadores}
+\begin{itemize}
+  \item Modelo de memoria: stack y heap
+  \item Apuntadores y referencias
+  \item Paso por valor, por referencia y por apuntador
+  \item Arreglos y aritmética de apuntadores
+  \item Memoria dinámica: \texttt{new} y \texttt{delete}
+\end{itemize}
+
+\subsection{Unidad 3 — Programación orientada a objetos}
+\begin{itemize}
+  \item Clases y objetos
+  \item Encapsulamiento, herencia y polimorfismo
+  \item Constructores, destructores y sobrecarga de operadores
+  \item Clases abstractas e interfaces
+\end{itemize}
+
+\subsection{Unidad 4 — Estructuras de datos y algoritmos}
+\begin{itemize}
+  \item Algoritmos de ordenamiento: Bubble Sort, Quick Sort, Merge Sort
+  \item Búsqueda lineal y binaria
+  \item Introducción a la STL: \texttt{vector}, \texttt{map}, \texttt{set}
+\end{itemize}
+
+% =============================================================================
+\section{Cómo se califica}
+% =============================================================================
+
+La calificación final se compone de tres partes iguales:
+
+\begin{center}
+\begin{tabular}{clc}
+  \toprule
+  \textbf{Porcentaje} & \textbf{Rubro} & \textbf{Descripción} \\
+  \midrule
+  33\% & Tareas y trabajos en clase
+        & Ejercicios, cuadernos y proyectos entregados \\
+  33\% & Asistencia y participación
+        & Presencia, contribución en discusiones y actividades \\
+  33\% & Examen
+        & Evaluación escrita y/o práctica por unidad \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\begin{consejo}
+  \textbf{La participación vale tanto como el examen.} Las preguntas en clase,
+  los comentarios en las discusiones y tu presencia activa construyen el 33\%
+  de tu calificación desde el primer día. No hay forma de recuperar esos puntos
+  al final del semestre.
+\end{consejo}
+
+\begin{advertencia}
+  Las tareas se entregan en la fecha acordada. Cada día de retraso puede
+  reducir la calificación de ese entregable. Consulta la política específica
+  de tu profesor al inicio del semestre.
+\end{advertencia}
+
+% =============================================================================
+\section{Bibliografía recomendada}
+% =============================================================================
+
+\subsection{Libros principales}
+
+\textbf{1. The C++ Programming Language} — Bjarne Stroustrup\\
+4.ª edición, Addison-Wesley, 2013.\\
+El libro definitivo del creador del lenguaje. Denso y técnico, pero
+la referencia más completa que existe. Ideal para consultar cuando quieras
+entender \textit{por qué} algo funciona así en C++.\\
+\url{https://www.stroustrup.com/4th.html}
+
+\vspace{0.8em}
+\textbf{2. A Tour of C++} — Bjarne Stroustrup\\
+3.ª edición, Addison-Wesley, 2022.\\
+Versión condensada del anterior. Recorre el lenguaje completo en $\sim$300
+páginas. Excelente para tener una visión panorámica rápida.\\
+\url{https://www.stroustrup.com/tour3.html}
+
+\vspace{0.8em}
+\textbf{3. C++ Primer} — Lippman, Lajoie, Moo\\
+5.ª edición, Addison-Wesley, 2012.\\
+El libro introductorio más utilizado en cursos universitarios de C++.
+Paso a paso, con muchos ejemplos y ejercicios. Muy recomendado si es tu
+primer contacto formal con el lenguaje.
+
+\vspace{0.8em}
+\textbf{4. The C Programming Language} — Kernighan \& Ritchie\\
+2.ª edición, Prentice Hall, 1988.\\
+El legendario ``K\&R''. C++ nació de C, y entender C ilumina muchas
+decisiones de diseño de C++. Clásico imprescindible para cualquier
+programador serio.
+
+\subsection{Recursos en línea (gratuitos)}
+
+\begin{itemize}
+  \item \textbf{cppreference.com} — \url{https://en.cppreference.com}\\
+        La referencia técnica más completa y actualizada del lenguaje y la STL.
+
+  \item \textbf{learncpp.com} — \url{https://www.learncpp.com}\\
+        Tutorial gratuito muy completo, con ejercicios. Excelente complemento
+        a las clases.
+
+  \item \textbf{C++ Core Guidelines} — \url{https://isocpp.github.io/CppCoreGuidelines}\\
+        Guía de buenas prácticas escrita por Stroustrup y Herb Sutter.
+        Aprende no solo a que el código funcione, sino a que sea correcto.
+
+  \item \textbf{Compiler Explorer (Godbolt)} — \url{https://godbolt.org}\\
+        Herramienta online que muestra el ensamblador generado por tu código.
+        Fascinante para entender qué hace realmente el compilador.
+\end{itemize}
+
+\begin{tecnico}
+  \textbf{¿Por qué C++ sigue siendo relevante en 2026?}\\
+  Según el índice TIOBE, C++ se mantiene consistentemente entre los 3
+  lenguajes más usados del mundo. Es el lenguaje dominante en
+  videojuegos (Unreal Engine), sistemas embebidos, motores de bases de
+  datos, navegadores web y software de alto rendimiento. El mercado
+  laboral para programadores C++ ofrece algunos de los salarios más
+  altos en la industria.\\
+  \textit{Referencia:} \url{https://www.tiobe.com/tiobe-index/cplusplus/}
+\end{tecnico}
+
+% =============================================================================
+\section{Actividades de la sesión}
+% =============================================================================
+
+\subsection{Padlet — ¿Qué emoción te produce programar?}
+
+En el Padlet del curso encontrarás un tablero compartido.
+Tu tarea es \textbf{agregar un post-it} con un meme, GIF o imagen que
+represente cómo te sientes cuando programas.
+
+No hay respuesta correcta o incorrecta. La intención es romper el hielo
+y conocernos como grupo.
+
+\begin{center}
+  \large\textbf{Padlet del curso:}\\[6pt]
+  \url{https://padlet.com}\\[4pt]
+  {\small (El enlace exacto lo comparte el profesor al inicio de clase)}
+\end{center}
+
+\begin{consejo}
+  Los mejores programadores no son los que no sienten frustración —
+  son los que aprendieron a convertir la frustración en curiosidad.
+  Si tu meme es de frustración total, bienvenido: estás en el lugar correcto.
+\end{consejo}
+
+\subsection{Lluvia de ideas — ¿Qué se necesita para ser un buen programador hoy?}
+
+Reflexiona sobre estas preguntas antes de compartir tus ideas con el grupo:
+
+\begin{itemize}
+  \item ¿Qué habilidades técnicas consideras esenciales?
+  \item ¿Qué habilidades \textit{no técnicas} crees que importan más de lo que
+        la gente piensa?
+  \item ¿Cómo cambia la respuesta si consideramos herramientas de IA como
+        GitHub Copilot, ChatGPT o Claude?
+  \item ¿Qué diferencia a alguien que \textit{usa} un lenguaje de alguien que
+        realmente lo \textit{domina}?
+\end{itemize}
+
+\vspace{0.5cm}
+\noindent\textbf{Mis notas de la discusión:}
+
+\vspace{3cm}
+\noindent\rule{\textwidth}{0.4pt}
+\vspace{2.5cm}
+\noindent\rule{\textwidth}{0.4pt}
+\vspace{2.5cm}
+\noindent\rule{\textwidth}{0.4pt}
+
+\subsection{Ejercicio de mecanografía — 10FastFingers}
+
+Uno de los factores que más impacta tu flujo de trabajo como programador es la
+\textbf{velocidad y precisión al escribir}. No se trata de escribir rápido a
+expensas de pensar — se trata de que tu velocidad de escritura no sea el
+cuello de botella cuando ya tienes la solución clara en la cabeza.
+
+\begin{center}
+  \large\textbf{Plataforma:}\\[6pt]
+  \url{https://10fastfingers.com}\\[4pt]
+  {\small Modo: Español — Test de 1 minuto}
+\end{center}
+
+\noindent\textbf{Registra tu resultado aquí:}
+
+\begin{center}
+\begin{tabular}{lc}
+  \toprule
+  \textbf{Métrica} & \textbf{Mi resultado} \\
+  \midrule
+  Palabras por minuto (PPM) & \hspace{3cm} \\[8pt]
+  Precisión (\%)            & \hspace{3cm} \\[8pt]
+  Fecha                     & \hspace{3cm} \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\begin{tecnico}
+  \textbf{¿Cuánto es normal?}\\
+  El promedio de un adulto es $\sim$40 PPM. Un programador experimentado
+  suele estar entre 60--80 PPM. Mecanógrafos profesionales superan los
+  100 PPM. La mayoría de las personas mejoran 10--15 PPM en pocas semanas
+  de práctica deliberada. Lo importante no es el número de hoy, sino la
+  tendencia al final del semestre.\\
+  \textit{Referencia:} Dhakal et al. (2018). ``Observations on Typing from
+  136 Million Keystrokes''. \textit{CHI 2018}. \url{https://doi.org/10.1145/3173574.3174220}
+\end{tecnico}
+
+% =============================================================================
+\section{Lo que viene}
+% =============================================================================
+
+En la \textbf{Sesión 02} comenzamos con C++ directamente:
+
+\begin{itemize}
+  \item Instalación y verificación de \texttt{g++} en tu equipo
+  \item Primer programa: \texttt{Hello World}
+  \item Compilar y ejecutar desde la consola
+  \item Apertura del cuaderno interactivo en Jupyter con xeus-cling
+\end{itemize}
+
+\begin{recuerda}
+  Para la próxima sesión necesitas tener acceso a una terminal con
+  \texttt{g++} instalado \textbf{o} acceso a
+  \href{https://shell.cloud.google.com}{Google Cloud Shell}
+  (no requiere instalación, funciona en cualquier navegador).
+\end{recuerda}
+
+\end{document}

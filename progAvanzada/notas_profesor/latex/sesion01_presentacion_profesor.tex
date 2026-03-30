@@ -1,0 +1,297 @@
+% =============================================================================
+%  Notas del Profesor — Sesión 01: Presentación del Curso
+%  Programación Avanzada — Universidad Panamericana
+%  Compilar: pdflatex sesion01_presentacion_profesor.tex
+% =============================================================================
+\documentclass[12pt, oneside]{article}
+\usepackage[profesor]{progavanzada}
+
+\begin{document}
+
+\portada{Sesión 01}{Presentación del Curso}{2026}
+
+\tableofcontents
+\newpage
+
+% =============================================================================
+\section{Objetivos de la sesión}
+% =============================================================================
+
+\begin{enumerate}
+  \item Presentar al profesor, el curso y sus expectativas.
+  \item Transmitir el syllabus, la bibliografía y la forma de calificación.
+  \item Conocer al grupo: niveles de experiencia, expectativas y emociones
+        iniciales frente a la programación.
+  \item Establecer desde el primer día una cultura de participación activa.
+  \item Medir la velocidad de escritura como diagnóstico inicial (10FastFingers).
+\end{enumerate}
+
+\begin{notaprofesor}[Tono de la sesión]
+  Esta clase es más de clima y contrato pedagógico que de contenido técnico.
+  El objetivo principal es que los alumnos salgan con ganas de volver.
+  Sé accesible, muestra entusiasmo genuino por el tema y valida que la
+  programación puede ser difícil — y que eso está bien. Evita el discurso
+  de ``este curso es muy difícil, muchos van a reprobar'': genera ansiedad
+  sin ningún beneficio pedagógico.
+\end{notaprofesor}
+
+% =============================================================================
+\section{Duración y materiales}
+% =============================================================================
+
+\begin{center}
+\begin{tabular}{lc}
+  \toprule
+  \textbf{Actividad} & \textbf{Tiempo estimado} \\
+  \midrule
+  Presentación del profesor y el curso & 10 min \\
+  Syllabus y calificación              & 15 min \\
+  Bibliografía y recursos              & 10 min \\
+  Padlet — meme de programar           & 15 min \\
+  Lluvia de ideas: ¿buen programador?  & 20 min \\
+  10FastFingers                        & 10 min \\
+  Cierre y vista al siguiente clase    &  5 min \\
+  \midrule
+  \textbf{Total}                       & \textbf{85 min} \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\noindent\textbf{Materiales necesarios:}
+\begin{itemize}
+  \item Proyector con acceso a internet
+  \item Padlet creado antes de la clase (ver instrucciones en \S3)
+  \item Los alumnos con laptop, tablet o smartphone para acceder al Padlet
+        y a 10FastFingers
+\end{itemize}
+
+% =============================================================================
+\section{Secuencia detallada}
+% =============================================================================
+
+\subsection{Presentación del profesor y del curso (10 min)}
+
+Comienza con una breve presentación personal: quién eres, en qué trabajas o
+has trabajado, qué te apasiona de C++ y la programación. No más de 3 minutos.
+
+Luego una pregunta de sondeo rápida al grupo (manos levantadas):
+\begin{itemize}
+  \item ¿Cuántos han programado antes en algún lenguaje?
+  \item ¿Cuántos han visto C o C++ anteriormente?
+  \item ¿Cuántos usan regularmente herramientas de IA para programar?
+\end{itemize}
+
+\begin{notaprofesor}
+  El sondeo de IA es especialmente revelador en grupos actuales. Si la
+  mayoría usa Copilot o ChatGPT, ajusta el discurso del curso: enfatiza
+  que entender la memoria y los apuntadores es exactamente lo que distingue
+  a quien puede \textit{evaluar} el código que genera la IA del que solo
+  puede copiarlo.
+\end{notaprofesor}
+
+\subsection{Syllabus y calificación (15 min)}
+
+Presenta el syllabus proyectado. Detente especialmente en la estructura de
+calificación: 1/3 tareas, 1/3 asistencia y participación, 1/3 examen.
+
+\begin{notaprofesor}[Por qué este esquema de calificación]
+  El 33\% de asistencia y participación no es arbitrario. La programación
+  se aprende haciendo y discutiendo, no leyendo. Un alumno presente y activo
+  que no llega al 70 en el examen tiene más probabilidad de resolver problemas
+  reales que uno que memorizó para el examen pero nunca participó. Explica
+  esto explícitamente: muchos alumnos no están acostumbrados a que la
+  participación valga tanto.
+
+  \vspace{0.5em}
+  Define claramente qué es ``participación'': hacer preguntas, responder,
+  proponer ideas, ayudar a un compañero frente al grupo. No es asistencia
+  silenciosa.
+\end{notaprofesor}
+
+Abre espacio para preguntas sobre el reglamento. Es mejor aclarar dudas
+sobre entregas, fechas y política de retrasos en la primera clase.
+
+\subsection{Bibliografía y recursos (10 min)}
+
+Proyecta cppreference.com y learncpp.com. Muestra rápidamente cómo están
+organizados. No es necesario entrar en detalle — la intención es que sepan
+que existen y que los usarán durante el semestre.
+
+\begin{notaprofesor}
+  Muchos alumnos jamás han consultado documentación técnica formal. Decirles
+  ``lean el libro'' sin enseñarles a navegarlo es ineficaz. En la sesión 2
+  harás una demostración en vivo de cppreference — aquí solo siémbra la idea.
+\end{notaprofesor}
+
+\subsection{Padlet — ¿Qué emoción te produce programar? (15 min)}
+
+\textbf{Configuración previa (hacer antes de la clase):}
+\begin{enumerate}
+  \item Crear cuenta en \url{https://padlet.com} si no tienes una.
+  \item Nuevo padlet $\to$ formato \textbf{Muro} (Wall).
+  \item Título: ``¿Qué emoción te produce programar?''
+  \item Activar opción de comentarios si deseas discusión.
+  \item Copiar el enlace o generar el QR code (botón Share).
+  \item Proyectar el QR al inicio de la actividad.
+\end{enumerate}
+
+\textbf{Instrucción al grupo:}
+
+\begin{quote}
+  ``Busca un meme, GIF o imagen que represente cómo te sientes cuando
+  programas — o cómo imaginas que te vas a sentir. Agrégalo al Padlet
+  con tu nombre. Tienes 8 minutos.''
+\end{quote}
+
+Dedica los últimos 7 minutos a revisar los posts con todo el grupo. Comenta
+algunos, genera risa, normaliza la frustración y el caos que aparezcan.
+
+\begin{notaprofesor}[Para qué sirve esta actividad]
+  Tiene tres funciones simultáneas: rompe el hielo, da información diagnóstica
+  sobre la actitud del grupo frente a la programación, y establece que este
+  curso va a tener un tono humano. Los alumnos que suben memes de frustración
+  total son frecuentemente los más comprometidos al final del semestre — solo
+  necesitaban permiso para expresarlo.
+
+  \vspace{0.5em}
+  Guarda el Padlet. Es un documento vivo: puedes mostrarlos al final del
+  semestre y pedir a los alumnos que comenten si su meme inicial todavía
+  los representa.
+\end{notaprofesor}
+
+\subsection{Lluvia de ideas: ¿Qué se necesita para ser un buen programador hoy? (20 min)}
+
+Escribe la pregunta en el pizarrón tal cual. Sin definirla, sin restringirla.
+
+\textbf{Dinámica:}
+\begin{enumerate}
+  \item 3 minutos de reflexión individual en silencio.
+  \item 10 minutos de lluvia de ideas abierta: cualquiera habla, tú escribes
+        en el pizarrón sin filtrar ni jerarquizar.
+  \item 7 minutos de discusión: agrupa las ideas que aparezcan en categorías
+        naturales (técnicas, actitudinales, sociales, etc.).
+\end{enumerate}
+
+\begin{notaprofesor}[Ideas que suelen emerger — y cómo guiarlas]
+
+  \textbf{``Saber muchos lenguajes''} — Guía hacia: la profundidad en uno
+  aporta más que la superficialidad en muchos. C++ enseña conceptos que
+  aplican a todos los lenguajes.
+
+  \vspace{0.4em}
+  \textbf{``Usar IA / Copilot''} — Valida: es una herramienta real. Agrega:
+  para evaluar lo que genera la IA necesitas entender qué está haciendo. Un
+  programador que no entiende apuntadores no puede juzgar si el código
+  generado gestiona bien la memoria.
+
+  \vspace{0.4em}
+  \textbf{``Paciencia / no rendirse''} — Valida completamente. Es real y
+  está respaldado por la literatura: la perseverancia predice el éxito en
+  programación más que la aptitud inicial.
+
+  \vspace{0.4em}
+  \textbf{``Matemáticas''} — Matiza: para programación general, no es un
+  requisito estricto. Para ciertos campos (gráficos, ML, criptografía, física)
+  sí importa más. En este curso las matemáticas que necesitarás son mínimas.
+
+  \vspace{0.4em}
+  \textbf{``Buscar en Google / Stack Overflow''} — Valida: es una habilidad
+  real. Saber formular una búsqueda efectiva es parte del oficio.
+\end{notaprofesor}
+
+\begin{notaprofesor}[Dato para compartir con el grupo]
+  Un estudio de la Universidad de Washington (2019) siguió a estudiantes de
+  CS durante 4 años y encontró que la variable más predictiva de completar la
+  carrera no fue la nota de entrada ni el conocimiento previo, sino la
+  \textbf{mentalidad de crecimiento} (growth mindset): creer que la
+  inteligencia y la habilidad se desarrollan con esfuerzo.\\
+  \textit{Referencia:} Cutts et al. (2019). ``Predict or Pre-empt: How to
+  respond to poor performance in early CS courses''. \textit{ICER 2019}.
+\end{notaprofesor}
+
+\subsection{10FastFingers — Diagnóstico de mecanografía (10 min)}
+
+URL: \url{https://10fastfingers.com/typing-test/spanish}
+
+\textbf{Instrucción al grupo:}
+\begin{quote}
+  ``Abre el sitio, elige el modo en español y haz el test de 1 minuto.
+  Anota tus palabras por minuto y tu precisión en tu hoja de notas.
+  Nadie tiene que mostrar su resultado si no quiere.''
+\end{quote}
+
+\begin{notaprofesor}[Por qué medir mecanografía]
+  No es un criterio de calificación. Su valor es diagnóstico y motivacional:
+
+  \begin{itemize}
+    \item Diagnostica cuánto tiempo perderá el alumno en actividades simples
+          de escritura durante el semestre.
+    \item Abre la conversación sobre herramientas y hábitos: atajos de teclado,
+          teclado mecánico, práctica deliberada.
+    \item Permite una comparación al final del semestre: los alumnos suelen
+          mejorar 15--25 PPM solo por la práctica acumulada de escribir código.
+  \end{itemize}
+
+  Si quieres hacer seguimiento, pide voluntarios que compartan su PPM inicial
+  en el Padlet. Puedes repetir el ejercicio al final del semestre.
+\end{notaprofesor}
+
+Comparte con el grupo algunos datos de contexto (ver notas del alumno,
+\S4.3). La idea no es presionar sino motivar: la mecanografía mejora
+dramáticamente con práctica deliberada de 10--15 minutos al día.
+
+\subsection{Cierre y vista a la siguiente clase (5 min)}
+
+\begin{itemize}
+  \item Resume en una frase qué viene en la sesión 2: ``La próxima clase
+        escribimos y ejecutamos nuestro primer programa C++.''
+  \item Recuerda el requisito técnico: \texttt{g++} instalado o acceso a
+        Google Cloud Shell.
+  \item Deja abierta la pregunta de la lluvia de ideas: ``Vayan pensando en
+        si añadirían algo a la lista que armamos hoy.''
+\end{itemize}
+
+% =============================================================================
+\section{Adaptaciones según el perfil del grupo}
+% =============================================================================
+
+\begin{notaprofesor}[Grupo sin experiencia previa]
+  Dedica más tiempo al Padlet y a la lluvia de ideas. La ansiedad ante lo
+  desconocido es real; nombrarla y normalizarla es más efectivo que minimizarla.
+  Puedes agregar una ronda de presentaciones personales al inicio.
+\end{notaprofesor}
+
+\begin{notaprofesor}[Grupo con experiencia en otros lenguajes]
+  El sondeo inicial revelará esto. Ajusta el discurso: C++ no es ``otro
+  lenguaje más'' — es un cambio de modelo mental. La gestión explícita de
+  memoria y la falta de garbage collector son el salto conceptual más
+  importante. Puedes hacer la pregunta de lluvia de ideas más específica:
+  ``¿Qué se necesita para \textit{dominar} C++ viniendo de Python/JavaScript?''
+\end{notaprofesor}
+
+% =============================================================================
+\section{Recursos adicionales para el profesor}
+% =============================================================================
+
+\begin{itemize}
+  \item \textbf{Padlet (guía rápida):} \url{https://padlet.com/support}
+  \item \textbf{10FastFingers:} \url{https://10fastfingers.com}
+  \item \textbf{Índice TIOBE C++:} \url{https://www.tiobe.com/tiobe-index/cplusplus/}
+  \item \textbf{Growth mindset en CS:} Dweck, C. (2006). \textit{Mindset: The New
+        Psychology of Success}. Random House.
+  \item \textbf{C++ Core Guidelines (referencia de calidad de código):}\\
+        \url{https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines}
+\end{itemize}
+
+% =============================================================================
+\section{Material de la sesión}
+% =============================================================================
+
+\begin{itemize}
+  \item \textbf{Notas del alumno:}
+        \texttt{notas\_alumno/pdf/sesion01\_presentacion.pdf}
+  \item \textbf{Siguiente sesión:}
+        \texttt{sesiones/sesion02\_introduccion\_cpp.ipynb}
+\end{itemize}
+
+\end{document}

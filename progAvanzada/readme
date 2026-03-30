@@ -30,6 +30,7 @@ Sesiones registradas
 
 | Sesión | Tema                                    | Archivo                                          |
 |--------|-----------------------------------------|--------------------------------------------------|
+| 01     | Presentación del curso                  | (sin cuaderno — sesión teórica)                          |
 | 02     | Introducción a C++                      | sesiones/sesion02_introduccion_cpp.ipynb                 |
 | 16     | Apuntadores, referencias y arreglos     | sesiones/sesion16_apuntadores_referencias_arreglos.ipynb |
 | 17     | Paso por referencia                     | sesiones/sesion17_paso_por_referencia.ipynb              |
