@@ -107,7 +107,7 @@ Es el motor detrás de \textbf{xeus-cling}, el kernel C++ de Jupyter.
 
 \begin{ejemplo}[Flujo de compilación básico]
 \begin{codigo}[language=bash, numbers=none]
-# 1. Verificar instalación
+# 1. Verificar instalacion
 g++ --version
 
 # 2. Compilar
@@ -116,7 +116,7 @@ g++ -std=c++17 main.cpp -o hola
 # 3. Ejecutar
 ./hola
 
-# 4. Con avisos activados (buena práctica)
+# 4. Con avisos activados (buena practica)
 g++ -std=c++17 -Wall -Wextra main.cpp -o hola
 \end{codigo}
 \end{ejemplo}
@@ -131,7 +131,7 @@ g++ -std=c++17 -Wall -Wextra main.cpp -o hola
 \section{Estructura básica de un programa C++}
 % =============================================================================
 
-\begin{codigo}[caption={main.cpp — Hola Mundo}]
+\begin{codigo}[caption={main.cpp -- Hola Mundo}]
 #include <iostream>
 using namespace std;
 
@@ -161,7 +161,7 @@ int main(){
 \section{Entrada y salida: cin y cout}
 % =============================================================================
 
-\begin{codigo}[caption={main3.cpp — Saludo personalizado}]
+\begin{codigo}[caption={main3.cpp -- Saludo personalizado}]
 #include <iostream>
 #include <string>
 using namespace std;
@@ -184,6 +184,115 @@ int main(){
   interactiva}. Asigna el valor directamente a la variable para demostrar
   el mismo concepto dentro del cuaderno.
 \end{advertencia}
+
+% =============================================================================
+\section{Jueces en línea}
+% =============================================================================
+
+Un \textbf{juez en línea} (\textit{online judge}) es una plataforma web que
+recibe tu código, lo compila en sus servidores, lo ejecuta contra casos de
+prueba ocultos y te dice si tu solución es correcta — sin que nadie tenga que
+revisarla a mano. Es la forma estándar de practicar y competir en programación
+a nivel mundial.
+
+\subsection{¿Cómo funciona?}
+
+\begin{enumerate}
+  \item Lees el enunciado del problema (entrada esperada, salida esperada).
+  \item Escribes tu solución en C++ (o el lenguaje permitido).
+  \item Subes el código al juez.
+  \item El juez lo compila y lo corre contra decenas de casos de prueba.
+  \item Recibes un veredicto:
+\end{enumerate}
+
+\begin{center}
+\begin{tabular}{ll}
+  \toprule
+  \textbf{Veredicto} & \textbf{Significado} \\
+  \midrule
+  \texttt{AC} — Accepted           & Tu solución es correcta en todos los casos \\
+  \texttt{WA} — Wrong Answer       & Falla en al menos un caso de prueba \\
+  \texttt{TLE} — Time Limit Exceeded & Correcta pero demasiado lenta \\
+  \texttt{MLE} — Memory Limit Exceeded & Usa demasiada memoria \\
+  \texttt{CE} — Compilation Error  & Tu código no compila \\
+  \texttt{RE} — Runtime Error      & El programa crashea durante la ejecución \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\begin{recuerda}
+  El veredicto \texttt{AC} no significa que tu código sea perfecto — significa
+  que pasó los casos de prueba del juez. Un buen programador se pregunta además:
+  ¿es legible? ¿es eficiente? ¿qué casos extremos no consideré?
+\end{recuerda}
+
+\subsection{omegaUp — El juez mexicano}
+
+\begin{center}
+  \url{https://omegaup.com}
+\end{center}
+
+omegaUp es una plataforma de programación competitiva creada en \textbf{México},
+con sede en la Ciudad de México y respaldada por egresados de instituciones
+mexicanas. Es el juez oficial de la \textbf{Olimpiada Mexicana de Informática
+(OMI)} y cuenta con miles de problemas en español, incluyendo material
+pedagógico pensado para estudiantes latinoamericanos.
+
+\begin{tecnico}
+  omegaUp fue fundado en 2011 por Luis Héctor Chávez y un equipo de
+  programadores mexicanos con el objetivo de democratizar el acceso a la
+  programación competitiva en América Latina. Hoy es una organización sin
+  fines de lucro con más de 100\,000 usuarios registrados y es utilizado por
+  preparatorias y universidades en toda la región.\\
+  \textit{Referencia:} \url{https://omegaup.com/about}
+\end{tecnico}
+
+\subsection{VJudge — Agregador de jueces internacionales}
+
+\begin{center}
+  \url{https://vjudge.net}
+\end{center}
+
+VJudge no es un juez propio: es un \textbf{agregador} que reúne problemas de
+los jueces más importantes del mundo (Codeforces, UVa, POJ, SPOJ, LeetCode,
+entre otros) en una sola interfaz. Permite crear \textit{contests} privados
+con problemas de múltiples fuentes, ideal para práctica en clase.
+
+\begin{center}
+\begin{tabular}{ll}
+  \toprule
+  \textbf{Plataforma} & \textbf{Enfoque} \\
+  \midrule
+  omegaUp   & Español, material pedagógico, OMI, contexto mexicano \\
+  VJudge    & Acceso a miles de problemas internacionales desde una cuenta \\
+  Codeforces & Competencias semanales, ranking mundial \\
+  LeetCode  & Entrevistas técnicas, empresas tecnológicas \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Tarea: crea tus cuentas}
+
+Antes de la siguiente sesión, registra una cuenta en ambas plataformas.
+Usa un nombre de usuario que puedas compartir en clase (el profesor lo
+usará para enviar problemas).
+
+\begin{center}
+\begin{tabular}{lll}
+  \toprule
+  \textbf{Plataforma} & \textbf{URL de registro} & \textbf{Mi usuario} \\
+  \midrule
+  omegaUp & \url{https://omegaup.com} & \hspace{3cm} \\[8pt]
+  VJudge  & \url{https://vjudge.net}  & \hspace{3cm} \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\begin{consejo}
+  Usa el \textbf{mismo nombre de usuario} en ambas plataformas si está
+  disponible. Facilita que el profesor te identifique y que construyas
+  un perfil reconocible en la comunidad de programación competitiva.
+\end{consejo}
 
 % =============================================================================
 \section{Resumen}
