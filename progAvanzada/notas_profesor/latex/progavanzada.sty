@@ -29,7 +29,7 @@
 \RequirePackage{graphicx}
 \RequirePackage{amsmath,amssymb}
 \RequirePackage{tcolorbox}
-\RequirePackage{fontawesome5}          % íconos (consejo, advertencia, etc.)
+\RequirePackage{pifont}                % símbolos Zapf Dingbats (sin conflicto T1)
 \RequirePackage{titlesec}
 \RequirePackage{titletoc}
 \RequirePackage{fancyhdr}
@@ -173,7 +173,7 @@
     colback=box@tip!10,
     colframe=box@tip,
     leftrule=4pt,
-    title={\faLightbulb\enspace #1},
+    title={\textbf{>>}\enspace #1},
     coltitle=box@tip,
   ]
 }{%
@@ -187,7 +187,7 @@
     colback=box@remember!15,
     colframe=box@remember,
     leftrule=4pt,
-    title={\faThumbsUp\enspace #1},
+    title={\ding{52}\enspace #1},
     coltitle=dummies@black,
   ]
 }{%
@@ -201,7 +201,7 @@
     colback=box@warning!8,
     colframe=box@warning,
     leftrule=4pt,
-    title={\faExclamationTriangle\enspace #1},
+    title={\ding{72}\enspace #1},
     coltitle=box@warning,
   ]
 }{%
@@ -215,7 +215,7 @@
     colback=box@technical!8,
     colframe=box@technical,
     leftrule=4pt,
-    title={\faCog\enspace #1},
+    title={\ding{108}\enspace #1},
     coltitle=box@technical,
   ]
 }{%
@@ -229,7 +229,7 @@
     colback=box@example!8,
     colframe=box@example,
     leftrule=4pt,
-    title={\faCode\enspace #1},
+    title={\ding{228}\enspace #1},
     coltitle=box@example,
   ]
 }{%
@@ -244,7 +244,7 @@
       colback=cover@accent!8,
       colframe=cover@accent,
       leftrule=4pt,
-      title={\faChalkboardTeacher\enspace #1},
+      title={\ding{46}\enspace #1},
       coltitle=cover@accent,
     ]
   }{%
@@ -282,9 +282,6 @@
   xleftmargin     = 12pt,
   xrightmargin    = 4pt,
   framexleftmargin= 8pt,
-  literate        = {á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1
-                    {ú}{{\'u}}1 {ñ}{{\~n}}1 {Á}{{\'A}}1 {É}{{\'E}}1
-                    {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1 {Ñ}{{\~N}}1,
 }
 
 % Entorno cómodo: \begin{codigo}...\end{codigo}
@@ -313,22 +310,21 @@
     \color{white}
     \vspace*{1cm}
 
-    % Banda superior amarilla
-    \if@profesor\else
-      \noindent\colorbox{dummies@yellow}{%
-        \parbox{\textwidth}{%
-          \vspace{4pt}
-          \centering\huge\bfseries\color{dummies@black}
-          PROGRAMACIÓN AVANZADA
-          \vspace{4pt}
-        }%
-      }
-    \fi
+    % Banda superior
     \if@profesor
       \noindent\colorbox{white}{%
         \parbox{\textwidth}{%
           \vspace{4pt}
           \centering\huge\bfseries\color{cover@accent}
+          PROGRAMACIÓN AVANZADA
+          \vspace{4pt}
+        }%
+      }
+    \else
+      \noindent\colorbox{dummies@yellow}{%
+        \parbox{\textwidth}{%
+          \vspace{4pt}
+          \centering\huge\bfseries\color{dummies@black}
           PROGRAMACIÓN AVANZADA
           \vspace{4pt}
         }%
@@ -353,12 +349,12 @@
     \if@profesor
       \noindent\colorbox{dummies@yellow}{%
         \parbox{5cm}{\centering\bfseries\color{dummies@black}
-          \faChalkboardTeacher\enspace NOTAS DEL PROFESOR}%
+          \ding{46}\enspace NOTAS DEL PROFESOR}%
       }
     \else
       \noindent\colorbox{dummies@yellow}{%
         \parbox{4.5cm}{\centering\bfseries\color{dummies@black}
-          \faBook\enspace NOTAS DE CLASE}%
+          \ding{222}\enspace NOTAS DE CLASE}%
       }
     \fi
 
@@ -368,7 +364,7 @@
     {\small Universidad Panamericana \hfill #3}
 
   \end{titlepage}
-  \nopagecolor   % restaurar fondo blanco
+  \nopagecolor
   \color{dummies@black}
 }
 

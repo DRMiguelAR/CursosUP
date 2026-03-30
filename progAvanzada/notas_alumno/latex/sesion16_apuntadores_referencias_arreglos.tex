@@ -1,0 +1,449 @@
+% =============================================================================
+%  Notas de clase — Sesión 16: Apuntadores, Referencias y Arreglos
+%  Programación Avanzada — Universidad Panamericana
+%  Compilar: pdflatex sesion16_apuntadores_referencias_arreglos.tex
+% =============================================================================
+\documentclass[12pt, oneside]{article}
+\usepackage{progavanzada}
+
+\begin{document}
+
+\portada{Sesión 16}{Apuntadores, Referencias y Arreglos}{2026}
+
+\tableofcontents
+\newpage
+
+% =============================================================================
+\section{La memoria del computador}
+% =============================================================================
+
+Todo programa necesita guardar datos mientras se ejecuta. Esos datos viven en
+la \textbf{memoria RAM}, que puede imaginarse como un enorme arreglo de celdas
+numeradas. Cada celda tiene una dirección única (su número de casilla) y
+almacena exactamente un byte.
+
+\begin{center}
+\begin{tabular}{ccc}
+  \toprule
+  \textbf{Dirección} & \textbf{Contenido} & \textbf{Variable} \\
+  \midrule
+  \texttt{0x61ff08} & \texttt{16} & \texttt{int x = 16;} \\
+  \texttt{0x61ff0c} & \texttt{?}  & (próxima variable) \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+Cuando declaras \cpp{int x = 16;}, el compilador reserva 4 bytes contiguos en
+RAM, les asigna el valor 16 y les da el nombre \cpp{x}. El operador \cpp{\&}
+(dirección-de) nos permite ver en cuál celda vive esa variable.
+
+\begin{codigo}[caption={Direccion de una variable}]
+int x = 16;
+cout << "Valor:     " << x  << endl;  // 16
+cout << "Direccion: " << &x << endl;  // 0x61ff08  (varia cada ejecucion)
+cout << "Tamano:    " << sizeof(x) << " bytes" << endl;  // 4
+\end{codigo}
+
+\begin{consejo}
+  Las direcciones se muestran en \textbf{hexadecimal} (base 16, prefijo
+  \texttt{0x}). El valor exacto cambia en cada ejecución porque el sistema
+  operativo decide dónde colocar las variables (\textit{ASLR — Address Space
+  Layout Randomization}).
+\end{consejo}
+
+\subsection{Tamaño de los tipos fundamentales}
+
+\begin{center}
+\begin{tabular}{lcc}
+  \toprule
+  \textbf{Tipo} & \textbf{Bytes (64-bit)} & \textbf{Rango típico} \\
+  \midrule
+  \texttt{char}   & 1 & $-128$ a $127$ \\
+  \texttt{int}    & 4 & $\approx \pm 2\,000\,000\,000$ \\
+  \texttt{long}   & 8 & $\approx \pm 9 \times 10^{18}$ \\
+  \texttt{float}  & 4 & $\approx \pm 3.4 \times 10^{38}$ \\
+  \texttt{double} & 8 & $\approx \pm 1.7 \times 10^{308}$ \\
+  \texttt{bool}   & 1 & \texttt{true} / \texttt{false} \\
+  \texttt{pointer}& 8 & toda la memoria virtual del proceso \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\begin{tecnico}
+  \textbf{Arquitectura Von Neumann (1945):} el principio de que los datos y el
+  programa residen en la misma memoria es la base de todos los computadores
+  modernos. Los apuntadores explotan directamente este modelo: son datos que
+  apuntan a otros datos, o incluso al código mismo. \par\smallskip
+  \textit{Referencia:} J. von Neumann, ``First Draft of a Report on the EDVAC'',
+  1945. Disponible en: \url{https://archive.org/details/firstdraftofrepo00vonn}
+\end{tecnico}
+
+% =============================================================================
+\section{Apuntadores}
+% =============================================================================
+
+Un \textbf{apuntador} es una variable cuyo valor es una \textit{dirección de
+memoria}. En lugar de guardar un entero o un carácter, guarda \textit{dónde}
+vive otro dato.
+
+\begin{center}
+\begin{tabular}{p{5cm} p{7cm}}
+\toprule
+\textbf{Variable normal} & \textbf{Apuntador} \\
+\midrule
+\begin{minipage}{5cm}
+\begin{verbatim}
++---------+
+|   16    | <- int x
++---------+
+0x61ff08
+\end{verbatim}
+\end{minipage}
+&
+\begin{minipage}{7cm}
+\begin{verbatim}
++--------------+
+|  0x61ff08    | <- int* p
++------+-------+
+       |
+       v
++---------+
+|   16    | <- int x
++---------+
+\end{verbatim}
+\end{minipage}
+\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Declaración}
+
+\begin{codigo}
+int* p;      // p es un apuntador a int
+double* q;   // q es un apuntador a double
+char* r;     // r es un apuntador a char
+\end{codigo}
+
+El tipo importa: el compilador necesita saber cuántos bytes leer al
+desreferenciar. Un \cpp{int*} lee 4 bytes; un \cpp{double*} lee 8.
+
+\subsection{Los dos operadores clave}
+
+\begin{center}
+\begin{tabular}{clp{7cm}}
+  \toprule
+  \textbf{Operador} & \textbf{Nombre} & \textbf{Qué hace} \\
+  \midrule
+  \cpp{\&x} & Dirección-de & Devuelve la dirección de memoria de \cpp{x} \\
+  \cpp{*p}  & Desreferencia & Va a la dirección en \cpp{p} y lee/escribe el valor \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\begin{advertencia}
+  El símbolo \cpp{*} tiene \textbf{dos significados} según el contexto:\\
+  \textbf{En una declaración} (\cpp{int* p;}): marca que \cpp{p} es un
+  apuntador.\\
+  \textbf{En una expresión} (\cpp{*p}): desreferencia — lee el valor apuntado.
+  No los confundas.
+\end{advertencia}
+
+\begin{codigo}[caption={Apuntador: asignacion y desreferencia}]
+int  x = 16;
+int* p;          // declaro el apuntador (aun no apunta a nada valido)
+
+p = &x;          // p guarda la direccion de x
+
+cout << p   << endl;  // direccion: 0x61ff08
+cout << *p  << endl;  // valor:     16
+cout << &p  << endl;  // p tambien vive en algun lugar de memoria
+\end{codigo}
+
+\subsection{Modificar el original a través del apuntador}
+
+\begin{codigo}[caption={Escritura a traves de apuntador}]
+int  x = 16;
+int* p = &x;
+
+*p = 18;    // equivale exactamente a: x = 18;
+
+cout << x;  // imprime 18
+\end{codigo}
+
+\begin{recuerda}
+  \cpp{*p = 18} y \cpp{x = 18} son instrucciones \textbf{idénticas} cuando
+  \cpp{p = \&x}. Ambas escriben el valor 18 en la misma celda de memoria.
+\end{recuerda}
+
+\subsection{Apuntador nulo}
+
+Un apuntador que no apunta a nada válido debe inicializarse a \cpp{nullptr}.
+Desreferenciar un apuntador nulo produce un \textit{segmentation fault} en
+tiempo de ejecución.
+
+\begin{codigo}
+int* p = nullptr;   // apuntador nulo seguro
+
+if (p != nullptr) {
+    cout << *p;     // solo desreferenciamos si es seguro
+}
+\end{codigo}
+
+\begin{tecnico}
+  \textbf{Historia:} En C el valor nulo era la macro \texttt{NULL} (definida
+  como \texttt{0} o \texttt{(void*)0}). C++11 introdujo \texttt{nullptr}, un
+  literal con tipo propio (\texttt{std::nullptr\_t}), eliminando ambigüedades
+  al sobrecargar funciones. Siempre usa \texttt{nullptr} en C++ moderno.\\
+  \textit{Referencia:} Stroustrup, B. (2013). \textit{The C++ Programming
+  Language}, 4.ª ed., §7.2.2.
+\end{tecnico}
+
+% =============================================================================
+\section{Referencias}
+% =============================================================================
+
+Una \textbf{referencia} es un \textit{alias}: otro nombre para la misma
+variable. No ocupa espacio adicional en memoria — comparte exactamente la
+misma celda con la variable original.
+
+\begin{codigo}[caption={Referencia: mismo espacio, otro nombre}]
+int  x = 16;
+int& y = x;    // y es alias de x
+
+cout << &x << endl;  // 0x61ff08
+cout << &y << endl;  // 0x61ff08  <- exactamente igual
+\end{codigo}
+
+\begin{consejo}
+  La diferencia entre \cpp{\&} en una \textbf{declaración} y en una
+  \textbf{expresión}:\\
+  \cpp{int\& y = x;} → declaración de referencia (alias).\\
+  \cpp{\&x} en una expresión → operador dirección-de (devuelve la dirección).
+\end{consejo}
+
+\subsection{Diferencias: Apuntador vs Referencia}
+
+\begin{center}
+\begin{tabular}{lll}
+  \toprule
+  \textbf{Característica} & \textbf{Apuntador (\cpp{int*})} & \textbf{Referencia (\cpp{int\&})} \\
+  \midrule
+  ¿Puede ser nulo?          & Sí (\cpp{nullptr})   & No — debe inicializarse \\
+  ¿Puede reasignarse?       & Sí                   & No — fija tras la declaración \\
+  ¿Ocupa memoria propia?    & Sí (8 bytes en 64b)  & No (alias) \\
+  Sintaxis para leer valor  & \cpp{*p}             & \cpp{r} (directo) \\
+  Uso típico                & Memoria dinámica     & Paso por referencia \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\begin{tecnico}
+  \textbf{¿Por qué existen las referencias?} Bjarne Stroustrup las introdujo
+  en C++ (ausentes en C) precisamente para soportar el paso por referencia en
+  funciones con una sintaxis más segura y clara que los apuntadores crudos.\\
+  \textit{Referencia:} Stroustrup, B. (1994). \textit{The Design and Evolution
+  of C++}, §3.7.
+\end{tecnico}
+
+% =============================================================================
+\section{Arreglos}
+% =============================================================================
+
+Un arreglo es un bloque de celdas \textbf{contiguas} en memoria, todas del
+mismo tipo. Para \cpp{int arr[5]}, el compilador reserva exactamente $5 \times
+4 = 20$ bytes consecutivos:
+
+\begin{center}
+\begin{tabular}{ccccc}
+  \toprule
+  \texttt{arr[0]} & \texttt{arr[1]} & \texttt{arr[2]} & \texttt{arr[3]} & \texttt{arr[4]} \\
+  \midrule
+  10 & 20 & 30 & 40 & 50 \\
+  \texttt{0x100} & \texttt{0x104} & \texttt{0x108} & \texttt{0x10C} & \texttt{0x110} \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+El nombre del arreglo es un \textbf{apuntador constante} al primer elemento:
+\cpp{arr} $\equiv$ \cpp{\&arr[0]}.
+
+\subsection{Aritmética de apuntadores}
+
+Sumar un entero a un apuntador no suma bytes: suma \textbf{múltiplos del
+tamaño del tipo}.
+
+\begin{codigo}[caption={Aritmetica de apuntadores}]
+int arr[5] = {10, 20, 30, 40, 50};
+
+cout << arr     << endl;  // 0x100  (direccion del primer elemento)
+cout << arr + 1 << endl;  // 0x104  (+4 bytes, no +1)
+cout << arr + 2 << endl;  // 0x108  (+8 bytes)
+
+cout << *arr       << endl;  // 10  (arr[0])
+cout << *(arr + 1) << endl;  // 20  (arr[1])
+cout << *(arr + 2) << endl;  // 30  (arr[2])
+\end{codigo}
+
+\subsection{Equivalencia fundamental}
+
+Para cualquier arreglo, las dos notaciones son \textbf{idénticas} en el
+código máquina generado:
+
+\begin{center}
+  \Large $\texttt{arr[i]} \;\equiv\; \texttt{*(arr + i)}$
+\end{center}
+
+El compilador transforma internamente \cpp{arr[i]} en \cpp{*(arr + i)}.
+Los corchetes son azúcar sintáctica.
+
+\begin{codigo}[caption={Dos formas equivalentes de recorrer un arreglo}]
+int arr[5] = {10, 20, 30, 40, 50};
+
+for (int i = 0; i < 5; i++) {
+    cout << arr[i]       // notacion clasica
+         << " == "
+         << *(arr + i)   // notacion con apuntador
+         << endl;
+}
+\end{codigo}
+
+\begin{tecnico}
+  \textbf{Dato curioso:} dado que \cpp{arr[i]} $\equiv$ \cpp{*(arr + i)} y
+  la suma es conmutativa, \cpp{arr[i]} $\equiv$ \cpp{i[arr]} es una expresión
+  válida en C y C++. Es un truco de entrevistas técnicas — jamás lo uses en
+  código real.
+\end{tecnico}
+
+% =============================================================================
+\section{Comportamiento indefinido: acceso fuera de límites}
+% =============================================================================
+
+C++ \textbf{no verifica} los límites de un arreglo en tiempo de ejecución.
+Acceder fuera es \textit{undefined behavior} (UB): el resultado es impredecible.
+
+\begin{codigo}
+int arr[5] = {10, 20, 30, 40, 50};
+
+cout << arr[5];   // UB: lee memoria fuera del arreglo
+cout << arr[-1];  // UB: idem hacia atras
+\end{codigo}
+
+\begin{advertencia}
+  El comportamiento indefinido no significa que el programa ``fallará''. Puede
+  imprimir basura, devolver datos de otra variable, no fallar en la máquina
+  del desarrollador y sí en la del usuario, o permitir que un atacante
+  controle el flujo del programa. \textbf{Es la fuente de muchas
+  vulnerabilidades de seguridad críticas.}
+\end{advertencia}
+
+\begin{tecnico}
+  \textbf{El Gusano Morris (1988):} el primer malware de gran escala en
+  Internet explotó un \textit{buffer overflow} (acceso fuera de límites en un
+  arreglo) en el daemon \texttt{fingerd} de Unix. Infectó $\sim$6\,000
+  máquinas, el 10\% del Internet de la época, y le costó a su autor la primera
+  condena bajo la \textit{Computer Fraud and Abuse Act}.\\
+  \textit{Referencia:} Spafford, E. (1989). ``The Internet Worm Program: An
+  Analysis''. \textit{ACM SIGCOMM Computer Communication Review}, 19(1),
+  17--57. \url{https://doi.org/10.1145/66093.66095}
+\end{tecnico}
+
+Para acceso seguro, usa \cpp{std::vector} con el método \cpp{.at(i)}, que
+lanza una excepción si el índice está fuera de rango:
+
+\begin{codigo}
+#include <vector>
+vector<int> v = {10, 20, 30, 40, 50};
+cout << v.at(2);   // seguro: lanza std::out_of_range si i >= size
+cout << v.at(9);   // lanza excepcion -- no UB
+\end{codigo}
+
+% =============================================================================
+\section{Relación arreglo / apuntador}
+% =============================================================================
+
+\subsection{Array decay}
+
+Cuando usas el nombre de un arreglo en casi cualquier expresión, se convierte
+automáticamente en un apuntador al primer elemento. Esta conversión se llama
+\textbf{\textit{array decay}} (decaimiento de arreglo).
+
+\begin{codigo}
+int arr[5] = {10, 20, 30, 40, 50};
+int* p = arr;   // equivale a: int* p = &arr[0];
+
+// p y arr se comportan igual para indexar...
+cout << p[2];   // 30  <- igual que arr[2]
+
+// ...pero sizeof los distingue:
+cout << sizeof(arr) << endl;  // 20  (5 elementos x 4 bytes)
+cout << sizeof(p)   << endl;  //  8  (tamano de un apuntador en 64-bit)
+\end{codigo}
+
+\begin{recuerda}
+  \textbf{Consecuencia práctica del array decay:} cuando pasas un arreglo a
+  una función, la función solo recibe un apuntador; pierde la información del
+  tamaño. Por eso las funciones que operan sobre arreglos siempre reciben el
+  tamaño como parámetro adicional.
+\end{recuerda}
+
+% =============================================================================
+\section{Para saber más}
+% =============================================================================
+
+\subsection{Lecturas recomendadas}
+
+\begin{itemize}
+  \item \textbf{cppreference — Pointer declaration:}
+        \url{https://en.cppreference.com/w/cpp/language/pointer}
+  \item \textbf{cppreference — Reference declaration:}
+        \url{https://en.cppreference.com/w/cpp/language/reference}
+  \item \textbf{Kernighan \& Ritchie,} \textit{The C Programming Language},
+        2.ª ed. (1988), Capítulo 5: Pointers and Arrays. El capítulo que
+        definió cómo se enseñan los apuntadores durante décadas.
+  \item \textbf{Stroustrup, B.} \textit{A Tour of C++}, 3.ª ed. (2022),
+        \S1.7--1.8. Visión moderna y concisa de apuntadores en C++.
+  \item \textbf{C++ Core Guidelines — Bounds safety:}
+        \url{https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines\#S-bounds}
+\end{itemize}
+
+\subsection{Contexto histórico}
+
+\begin{tecnico}[Historia de los apuntadores en C]
+  Los apuntadores llegaron a C de mano de \textbf{Dennis Ritchie} en los
+  laboratorios Bell (1972), inspirados en el lenguaje B de Ken Thompson,
+  que a su vez derivaba del BCPL de Martin Richards (1967). La motivación
+  era práctica: escribir Unix de manera portable y eficiente sin ensamblador.
+  \par\smallskip
+  Ritchie recibió el Premio Turing en 1983 junto con Thompson ``por el
+  desarrollo del la teoría de los sistemas operativos genéricos, y en
+  particular por la implementación del sistema operativo UNIX''.
+  \par\smallskip
+  \textit{Referencia:} Ritchie, D. M. (1993). ``The Development of the C
+  Language''. \textit{ACM SIGPLAN Notices}, 28(3), 201--208.
+  \url{https://dl.acm.org/doi/10.1145/154766.155580}
+\end{tecnico}
+
+% =============================================================================
+\section{Resumen}
+% =============================================================================
+
+\begin{recuerda}
+\begin{center}
+\begin{tabular}{lll}
+  \toprule
+  \textbf{Concepto} & \textbf{Símbolo} & \textbf{Qué hace} \\
+  \midrule
+  Dirección-de   & \cpp{\&x}         & Dirección de memoria de \cpp{x} \\
+  Apuntador      & \cpp{int* p}      & Variable que guarda una dirección \\
+  Desreferencia  & \cpp{*p}          & Lee/escribe el valor en la dirección \\
+  Referencia     & \cpp{int\& r = x} & Alias: mismo espacio, otro nombre \\
+  Array decay    & \cpp{arr} en expr.& Se convierte en \cpp{\&arr[0]} \\
+  Aritmética     & \cpp{p + i}       & Avanza \cpp{i*sizeof(tipo)} bytes \\
+  Equivalencia   & \cpp{arr[i]}      & Idéntico a \cpp{*(arr+i)} \\
+  \bottomrule
+\end{tabular}
+\end{center}
+\end{recuerda}
+
+\end{document}

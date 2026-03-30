@@ -1,0 +1,240 @@
+% =============================================================================
+%  Notas del Profesor — Sesión 16: Apuntadores, Referencias y Arreglos
+%  Programación Avanzada — Universidad Panamericana
+%  Compilar: pdflatex sesion16_apuntadores_referencias_arreglos_profesor.tex
+% =============================================================================
+\documentclass[12pt, oneside]{article}
+\usepackage[profesor]{progavanzada}
+
+\begin{document}
+
+\portada{Sesión 16}{Apuntadores, Referencias y Arreglos}{2026}
+
+\tableofcontents
+\newpage
+
+% =============================================================================
+\section{Objetivos de la sesión}
+% =============================================================================
+
+Al finalizar la sesión el alumno será capaz de:
+
+\begin{enumerate}
+  \item Explicar qué es una dirección de memoria y cómo obtenerla con \cpp{\&}.
+  \item Declarar apuntadores y distinguir entre el valor del apuntador y el
+        valor apuntado.
+  \item Usar \cpp{*} para leer y escribir a través de un apuntador.
+  \item Explicar qué es una referencia y en qué se diferencia de un apuntador.
+  \item Aplicar aritmética de apuntadores sobre arreglos.
+  \item Reconocer la equivalencia \cpp{arr[i]} $\equiv$ \cpp{*(arr+i)}.
+  \item Identificar el acceso fuera de límites como comportamiento indefinido
+        y sus implicaciones en seguridad.
+\end{enumerate}
+
+\begin{notaprofesor}[Duración estimada]
+  100 minutos (sesión doble recomendada). Sugerido:\\
+  20 min — modelo de memoria y operador \cpp{\&} \\
+  25 min — apuntadores: declaración, \cpp{*}, modificar valores, \cpp{nullptr} \\
+  15 min — referencias y comparación con apuntadores \\
+  25 min — arreglos, aritmética de apuntadores, equivalencia \\
+  15 min — UB, acceso fuera de límites, \cpp{vector::at()}
+\end{notaprofesor}
+
+% =============================================================================
+\section{Prerrequisitos}
+% =============================================================================
+
+\begin{itemize}
+  \item Variables, tipos de datos y operadores básicos (sesiones 1--10)
+  \item Estructuras de control: \cpp{if}, \cpp{for}, \cpp{while} (sesiones 8--12)
+  \item Funciones: declaración, parámetros, valor de retorno (sesiones 13--15)
+\end{itemize}
+
+\begin{notaprofesor}
+  Si hay alumnos con experiencia en Python, Java o JavaScript, la analogía
+  más efectiva es: los apuntadores de C++ son como las \textit{referencias}
+  de esos lenguajes, pero sin gestión automática de memoria. La diferencia
+  clave es que en C++ la desreferencia es explícita y el programador
+  controla cuándo y cómo se accede a la memoria.
+\end{notaprofesor}
+
+% =============================================================================
+\section{Secuencia de clase}
+% =============================================================================
+
+\subsection{Apertura — El modelo de memoria (20 min)}
+
+Dibuja en el pizarrón el modelo de memoria como una tabla de celdas numeradas.
+Declara en vivo una variable \cpp{int x = 16;} y pregunta:
+
+\begin{itemize}
+  \item ¿Qué necesita el compilador saber para guardar \cpp{x}? (tipo, nombre, valor)
+  \item ¿Qué sucede en la RAM cuando se ejecuta esa línea?
+\end{itemize}
+
+Luego ejecuta en el cuaderno la primera celda y muestra la dirección hex.
+Haz hincapié en que la dirección cambia en cada ejecución (ASLR).
+
+\begin{notaprofesor}[Pregunta de sondeo — Modelo de memoria]
+  ``Si tengo \cpp{int a = 5; int b = 5;}, ¿\cpp{\&a == \&b}?''\\
+  Respuesta: \textbf{No}. Dos variables distintas siempre tienen direcciones
+  distintas, aunque tengan el mismo valor. El único caso en que dos nombres
+  comparten dirección es una referencia.
+\end{notaprofesor}
+
+\subsection{Apuntadores (25 min)}
+
+Introduce la declaración \cpp{int* p;} y enfatiza que el \texttt{*} en la
+declaración es parte del \textbf{tipo}, no del nombre. Muestra la distinción
+entre \cpp{int* p, q;} (p es apuntador, q es int) vs \cpp{int *p, *q;}.
+
+\begin{notaprofesor}[Error conceptual muy frecuente]
+  Los alumnos confunden el \cpp{*} de declaración con el \cpp{*} de
+  desreferencia. Dedica tiempo explícito a esto. Un ejercicio útil: dar
+  fragmentos de código y pedir que identifiquen el rol del \cpp{*} en cada
+  aparición.
+\end{notaprofesor}
+
+Demuestra el ciclo completo:
+\begin{enumerate}
+  \item Declarar \cpp{int* p;}
+  \item Asignar \cpp{p = \&x;}
+  \item Leer con \cpp{*p}
+  \item Escribir con \cpp{*p = 18;} y mostrar que \cpp{x} cambió
+\end{enumerate}
+
+Introduce \cpp{nullptr} y la buena práctica de inicializar siempre los
+apuntadores.
+
+\subsection{Referencias (15 min)}
+
+Muestra \cpp{int\& y = x;} y pide a los alumnos que predigan qué imprimirá
+\cpp{\&x} y \cpp{\&y} antes de ejecutarlo. La mayoría esperará direcciones
+distintas — el resultado igual es el \textit{momento aha} de la referencia.
+
+Usa la tabla comparativa (apuntador vs referencia) para consolidar. Insiste
+en que la referencia no puede ser reasignada ni nula.
+
+\subsection{Arreglos (25 min)}
+
+Dibuja el layout de memoria de \cpp{int arr[5] = \{10,20,30,40,50\};} en el
+pizarrón, con las direcciones. Muestra que \cpp{arr} imprime la misma
+dirección que \cpp{\&arr[0]}.
+
+Explica la aritmética de apuntadores con el diagrama de celdas: sumar 1
+avanza \cpp{sizeof(int)} = 4 bytes. Ejecuta las celdas de \cpp{arr+1},
+\cpp{arr+2} para que vean los incrementos hex.
+
+Presenta la equivalencia \cpp{arr[i]} $\equiv$ \cpp{*(arr+i)} y demuestra
+el \textit{array decay} con \cpp{sizeof(arr)} vs \cpp{sizeof(p)}.
+
+\begin{notaprofesor}[Dato curioso para despertar interés]
+  Muestra en vivo que \cpp{arr[2]} y \cpp{2[arr]} producen el mismo resultado.
+  Explica que es consecuencia de la conmutatividad de la suma en la aritmética
+  de apuntadores. Deja claro que \textbf{jamás se usa en código real} pero
+  es útil para entender cómo funciona internamente.
+\end{notaprofesor}
+
+\subsection{Comportamiento indefinido y seguridad (15 min)}
+
+Ejecuta la celda de acceso fuera de límites y muestra los resultados
+impredecibles. Conecta con el Gusano Morris como ejemplo histórico concreto.
+
+Introduce \cpp{std::vector::at()} como alternativa segura. Pregunta:
+``¿Por qué C++ no verifica límites por defecto?'' (rendimiento — dejar que
+el alumno razone sobre el trade-off).
+
+% =============================================================================
+\section{Errores conceptuales frecuentes}
+% =============================================================================
+
+\begin{notaprofesor}[FAQ y errores comunes]
+
+\textbf{1. ``¿Por qué necesito el tipo en un apuntador si ya tengo la dirección?''}\\
+La dirección dice \textit{dónde} está el dato, pero no \textit{cuánto} ocupa.
+Sin el tipo, el compilador no sabe cuántos bytes leer al desreferenciar.
+
+\vspace{0.6em}
+\textbf{2. Confundir \cpp{p} con \cpp{*p}}\\
+\cpp{p} es la dirección. \cpp{*p} es el valor en esa dirección. Un ejercicio
+útil: dar \cpp{int x=5; int* p=\&x;} y pedir el valor de \cpp{p}, \cpp{*p},
+\cpp{\&p}, \cpp{**(\&p)}.
+
+\vspace{0.6em}
+\textbf{3. Creer que \cpp{int\& r = x; r = y;} reasigna la referencia}\\
+No. \cpp{r = y} copia el \textit{valor} de \cpp{y} en \cpp{x}. La referencia
+sigue apuntando a \cpp{x}. Las referencias no se pueden reasignar.
+
+\vspace{0.6em}
+\textbf{4. ``El arreglo y el apuntador son lo mismo''}\\
+Son similares pero no idénticos. \cpp{sizeof}, no poder asignar a \cpp{arr++},
+y el comportamiento con \cpp{\&arr} vs \cpp{\&p} los distinguen.
+
+\vspace{0.6em}
+\textbf{5. Pensar que el UB ``siempre crashea''}\\
+El comportamiento indefinido puede pasar silenciosamente. Esta es la razón
+por la que es tan peligroso: el bug puede estar dormido y manifestarse solo
+en ciertas condiciones.
+
+\end{notaprofesor}
+
+% =============================================================================
+\section{Conexiones con temas posteriores}
+% =============================================================================
+
+\begin{itemize}
+  \item \textbf{Sesión 17} — Paso por referencia: aplica directamente
+        apuntadores y referencias como mecanismo de paso de parámetros.
+  \item \textbf{Sesiones 18--20} — Memoria dinámica: \cpp{new}/\cpp{delete},
+        que devuelven y liberan apuntadores.
+  \item \textbf{Sesiones 21--25} — Orientación a Objetos: \cpp{this} es un
+        apuntador al objeto actual; herencia y polimorfismo usan apuntadores
+        a la tabla virtual (\textit{vtable}).
+  \item \textbf{C++ moderno} — Smart pointers (\cpp{unique\_ptr},
+        \cpp{shared\_ptr}) reemplazan los apuntadores crudos en código de
+        producción gestionando la memoria automáticamente.
+\end{itemize}
+
+% =============================================================================
+\section{Material de la sesión}
+% =============================================================================
+
+\begin{itemize}
+  \item \textbf{Cuaderno:}
+        \texttt{sesiones/sesion16\_apuntadores\_referencias\_arreglos.ipynb}
+  \item \textbf{Ejemplos:}
+        \texttt{materialInicial/apuntadores/01--07\_apuntadores.cpp}
+  \item \textbf{Notas alumno:}
+        \texttt{notas\_alumno/pdf/sesion16\_apuntadores\_referencias\_arreglos.pdf}
+\end{itemize}
+
+% =============================================================================
+\section{Rúbrica de ejercicios}
+% =============================================================================
+
+\begin{center}
+\begin{tabular}{p{6cm}cc}
+  \toprule
+  \textbf{Ejercicio / Criterio} & \textbf{Puntos} & \textbf{Evidencia} \\
+  \midrule
+  \multicolumn{3}{l}{\textit{Ejercicio 1 — Swap con apuntadores}} \\
+  \quad Usa paso por apuntador o referencia & 3 & parámetros con \cpp{*} o \cpp{\&} \\
+  \quad El swap es correcto                 & 4 & valores intercambiados \\
+  \quad No usa \cpp{std::swap}              & 3 & implementación propia \\
+  \midrule
+  \multicolumn{3}{l}{\textit{Ejercicio 2 — Máximo con aritmética de apuntadores}} \\
+  \quad Usa \cpp{*(arr+i)} sin corchetes    & 4 & código sin \cpp{[]} \\
+  \quad Resultado correcto                  & 4 & máximo identificado \\
+  \quad Recorre exactamente \cpp{n} elementos & 2 & sin UB \\
+  \midrule
+  \multicolumn{3}{l}{\textit{Ejercicio 3 — Conversión de temperatura con referencia}} \\
+  \quad Usa referencia en el parámetro      & 4 & \cpp{double\&} o \cpp{double*} \\
+  \quad Fórmula correcta                    & 4 & $(F - 32) \times 5/9$ \\
+  \quad Modifica la variable original       & 2 & sin copia \\
+  \midrule
+  \textbf{Total}                            & \textbf{30} & \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\end{document}
