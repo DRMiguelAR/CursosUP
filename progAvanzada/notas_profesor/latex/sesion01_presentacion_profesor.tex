@@ -252,6 +252,77 @@ dramáticamente con práctica deliberada de 10--15 minutos al día.
 \end{itemize}
 
 % =============================================================================
+\section{Las partes del computador — Facilitación de la analogía del escritorio}
+% =============================================================================
+
+\begin{notaprofesor}[Cuándo introducir esta sección]
+  Preséntala después de la lluvia de ideas o antes del Padlet, según el ritmo
+  del grupo. Si la discusión sobre ``qué necesita un buen programador'' derivó
+  hacia el hardware o el funcionamiento interno, es el momento perfecto para
+  hacer la transición.
+\end{notaprofesor}
+
+\subsection{Cómo facilitar la analogía}
+
+Dibuja en el pizarrón un escritorio desde arriba (vista de planta). Añade
+los elementos uno por uno mientras haces preguntas al grupo:
+
+\begin{enumerate}
+  \item Dibuja al usuario sentado. \textbf{``¿Quién hace el trabajo real?''} → CPU.
+  \item Dibuja papeles sobre el escritorio. \textbf{``¿Dónde están las cosas que
+        usas \textit{ahorita}?''} → RAM.
+  \item Dibuja cajones. \textbf{``¿Dónde guardas lo que no estás usando?''} →
+        Almacenamiento (disco / SSD).
+  \item Dibuja las manos moviéndose. \textbf{``¿Cómo llegan los datos de los cajones
+        al escritorio?''} → Bus de datos.
+  \item Menciona las reglas de la oficina. \textbf{``¿Quién decide quién puede usar
+        el escritorio y cuánto espacio tiene cada quien?''} → Sistema operativo.
+\end{enumerate}
+
+Cierra con la pregunta: \textbf{``¿Qué pasa si llenamos el escritorio?''} →
+introduce la idea de memoria virtual y por qué la RAM limitada importa.
+
+\subsection{Tabla de referencia}
+
+\begin{center}
+\begin{tabular}{lll}
+  \toprule
+  \textbf{Parte} & \textbf{Analogía} & \textbf{Punto clave} \\
+  \midrule
+  CPU              & Usuario sentado          & Procesa instrucciones en orden \\
+  RAM              & Espacio sobre el escritorio & Rápida, volátil, limitada \\
+  Disco / SSD      & Cajones                  & Persistente, mucho más lento \\
+  Bus de datos     & Manos del usuario        & Transporta entre partes \\
+  Sistema operativo& Reglas de la oficina     & Administra recursos \\
+  Programa         & Tarea sobre el escritorio& Datos + instrucciones activos \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{La tabla de latencias (dato para compartir)}
+
+Muestra la tabla de perspectiva de velocidades. Pide al grupo que adivine
+las proporciones antes de revelarlas. Suelen sorprender: la diferencia entre
+RAM y disco mecánico (1 año vs 6 minutos en escala humana) siempre impacta.
+
+\begin{notaprofesor}
+  La tabla de latencias de Jeff Dean es una de las más citadas en la industria.
+  No se espera que los alumnos la memoricen; el objetivo es desarrollar
+  intuición sobre por qué el acceso a memoria importa en el diseño de programas.
+  Esto resuena directamente cuando lleguemos a apuntadores y memoria dinámica:
+  cada \texttt{new} tiene un costo real.\\
+  \textit{Referencia:} \url{https://gist.github.com/jboner/2841832}
+\end{notaprofesor}
+
+\subsection{Conexión explícita con el resto del curso}
+
+Termina la sección señalando el hilo conductor: \textbf{todo este curso es
+sobre entender y controlar ese escritorio}. Cuando veamos apuntadores estaremos
+hablando literalmente de celdas numeradas de la RAM. Cuando veamos
+\texttt{new}/\texttt{delete}, estaremos decidiendo cuándo poner y quitar
+cosas del escritorio sin que nadie lo haga por nosotros.
+
+% =============================================================================
 \section{Adaptaciones según el perfil del grupo}
 % =============================================================================
 

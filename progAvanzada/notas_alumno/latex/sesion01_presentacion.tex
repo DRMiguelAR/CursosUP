@@ -253,6 +253,102 @@ cuello de botella cuando ya tienes la solución clara en la cabeza.
 \end{tecnico}
 
 % =============================================================================
+\section{Las partes del computador — La analogía del escritorio}
+% =============================================================================
+
+Antes de escribir una sola línea de código es fundamental entender con
+qué estamos hablando. Un computador tiene partes muy distintas con roles
+muy distintos. La forma más intuitiva de verlas es compararlas con un
+\textbf{escritorio de trabajo físico}.
+
+\begin{center}
+\begin{tabular}{llp{6.5cm}}
+  \toprule
+  \textbf{Parte del computador} & \textbf{Analogía} & \textbf{Qué hace} \\
+  \midrule
+  \textbf{CPU}
+    & El usuario sentado
+    & Ejecuta instrucciones, una por una, a enorme velocidad.
+      Es quien ``piensa'' y procesa. \\[6pt]
+  \textbf{RAM (memoria)}
+    & El espacio sobre el escritorio
+    & Todo lo que estás usando \textit{ahora mismo} vive aquí.
+      Es rápida pero limitada: cuando cierras el programa,
+      se borra. \\[6pt]
+  \textbf{Almacenamiento} \newline (disco duro / SSD)
+    & Los cajones del escritorio
+    & Guarda información de forma permanente.
+      Mucho más lento que la RAM pero no se borra al apagar. \\[6pt]
+  \textbf{Bus de datos}
+    & Las manos del usuario
+    & Transporta datos entre la CPU, la RAM y el almacenamiento. \\[6pt]
+  \textbf{Sistema operativo}
+    & Las reglas de la oficina
+    & Administra quién usa el escritorio, cuánto espacio tiene
+      cada programa y cómo acceden a los cajones. \\[6pt]
+  \textbf{Programa en ejecución}
+    & La tarea sobre el escritorio
+    & El conjunto de papeles (datos) e instrucciones (pasos a seguir)
+      que el usuario está procesando en este momento. \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{El flujo de trabajo}
+
+Cuando abres un programa (por ejemplo, tu navegador), el sistema operativo
+\textbf{saca su código de los cajones} (almacenamiento) y lo coloca
+\textbf{sobre el escritorio} (RAM) para que el usuario (CPU) pueda trabajar
+con él. Cuantas más cosas tienes abiertas, más abarrotado queda el escritorio.
+Si se llena, el sistema empieza a usar los cajones como extensión del escritorio
+— eso se llama \textit{memoria virtual} y es mucho más lento.
+
+\begin{recuerda}
+  En C++ tú decides qué va al escritorio (RAM) y cuándo se quita. Eso es
+  exactamente lo que hace la gestión de memoria con \texttt{new} y
+  \texttt{delete}. Tener ese control es la razón por la que C++ es tan rápido;
+  también es la razón por la que requiere más cuidado que Python o Java, donde
+  un conserje automático (el \textit{garbage collector}) limpia el escritorio
+  por ti.
+\end{recuerda}
+
+\subsection{Velocidades: una perspectiva}
+
+La diferencia de velocidad entre las partes es enorme. Si escalamos el tiempo
+que tarda la CPU en ejecutar una instrucción a \textbf{1 segundo}, así se ven
+las demás operaciones:
+
+\begin{center}
+\begin{tabular}{lrr}
+  \toprule
+  \textbf{Operación} & \textbf{Tiempo real} & \textbf{Escala humana} \\
+  \midrule
+  Instrucción en CPU (caché L1) & $\sim$0.3 ns   & 1 segundo       \\
+  Acceso a RAM                  & $\sim$100 ns   & $\sim$6 minutos \\
+  SSD (lectura aleatoria)       & $\sim$100 \textmu s & $\sim$4 días    \\
+  Disco duro mecánico           & $\sim$10 ms    & $\sim$1 año     \\
+  Red (mismo país)              & $\sim$50 ms    & $\sim$5 años    \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\begin{tecnico}
+  Esta tabla de perspectiva fue popularizada por el ingeniero Jeff Dean de
+  Google y es conocida en la industria como ``Latency Numbers Every Programmer
+  Should Know''. Los valores han cambiado con el tiempo pero las proporciones
+  se mantienen. Conocer estas magnitudes guía decisiones de diseño: cuándo
+  cachear datos, cuándo usar una base de datos vs memoria, etc.\\
+  \textit{Referencia:} \url{https://gist.github.com/jboner/2841832}
+\end{tecnico}
+
+\subsection{Relevancia para este curso}
+
+Toda esta sesión suena abstracta hoy. Volverá a tener sentido concreto cuando
+veamos \textbf{apuntadores} (sesión 16): en ese momento estaremos hablando
+literalmente de celdas numeradas del escritorio (RAM) y de cómo mover datos
+entre ellas sin que el conserje intervenga.
+
+% =============================================================================
 \section{Lo que viene}
 % =============================================================================
 
