@@ -12,6 +12,13 @@ Convención de nombres
 Cuadernos disponibles
 ----------------------
 
+  sesion02_introduccion_cpp.ipynb
+      Introducción al lenguaje C++: historia y características, documentación
+      (cppreference, cplusplus, isocpp, learncpp), compiladores (g++, clang++, cling),
+      entornos de trabajo (consola, VS Code, xeus-cling, Google Cloud Shell),
+      compilar y ejecutar con g++ desde consola, estructura de un programa C++,
+      cout/cin, diferencias consola vs cuaderno.
+
   sesion16_apuntadores_referencias_arreglos.ipynb
       Introducción a apuntadores, referencias y arreglos en C++.
       Cubre: direcciones de memoria, declaración y desreferencia de apuntadores,
