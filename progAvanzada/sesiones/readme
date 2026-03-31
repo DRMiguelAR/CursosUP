@@ -12,6 +12,14 @@ Convención de nombres
 Cuadernos disponibles
 ----------------------
 
+  sesion05_bit_manipulation.ipynb
+      Operadores de manipulación de bits en C++.
+      Cubre: bitset para visualizar bits, literales binarios (0b) y hexadecimales (0x),
+      patrones especiales (todo ceros, todo unos, máscara de un bit con 1<<k),
+      desplazamientos izquierdo y derecho (<< y >>), NOT bit a bit (~),
+      AND (&), OR (|) y XOR (^) bit a bit con tablas de verdad y ejemplos,
+      y combinación de operadores con ejemplo paso a paso.
+
   sesion02_introduccion_cpp.ipynb
       Introducción al lenguaje C++: historia y características, documentación
       (cppreference, cplusplus, isocpp, learncpp), compiladores (g++, clang++, cling),
