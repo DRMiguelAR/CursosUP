@@ -1,0 +1,402 @@
+% =============================================================================
+%  Notas de clase — Sesión 08: Práctica competitiva con bits
+%  Programación Avanzada — Universidad Panamericana
+%  Compilar: pdflatex sesion08_practica_competitiva.tex
+% =============================================================================
+\documentclass[12pt, oneside]{article}
+\usepackage{progavanzada}
+\usepackage{array}
+\usepackage{multirow}
+
+\begin{document}
+
+\portada{Sesión 08}{Práctica competitiva con bits}{2026}
+
+\tableofcontents
+\newpage
+
+% =============================================================================
+\section{Instrucciones de la sesión}
+% =============================================================================
+
+Esta sesión es trabajo en \textbf{equipo de tres personas}.
+
+La idea es la misma que en cualquier maratón de programación: leer un problema,
+entenderlo, encontrar el patrón matemático y verificarlo con los ejemplos.
+En la siguiente sesión lo implementan.  Hoy, todo se resuelve \textbf{a mano}.
+
+\begin{advertencia}
+  \textbf{Entregable:} un documento (PDF generado de fotos o escaneado) con:
+  \begin{enumerate}
+    \item Los casos de prueba resueltos paso a paso para cada problema.
+    \item Un algoritmo claro (pseudocódigo, diagrama de flujo o fórmula
+          matemática) que funcione para cualquier entrada, no solo los ejemplos.
+  \end{enumerate}
+  Un algoritmo que diga ``veo el patrón'' no cuenta: debe poder ejecutarse
+  mecánicamente paso a paso.
+\end{advertencia}
+
+\begin{consejo}
+  \textbf{Estrategia recomendada para cada problema:}
+  \begin{enumerate}
+    \item Convertir los números a binario y observar qué pasa bit a bit.
+    \item Resolver los ejemplos del enunciado a mano para verificar que
+          entiendes el problema.
+    \item Resolver los casos de práctica adicionales.
+    \item Generalizar: ¿qué fórmula o proceso aplica para \textit{cualquier}
+          número?
+  \end{enumerate}
+\end{consejo}
+
+\newpage
+
+% =============================================================================
+\section{Problema 1: Los bits de la clase de programación}
+% =============================================================================
+
+\subsection{Enunciado}
+
+Uno de tus compañeros inventó un algoritmo que opera sobre una cadena de bits
+$A$ y va construyendo otra cadena $S$ (inicialmente vacía).  El proceso se
+repite hasta que $A$ queda vacía:
+
+\begin{itemize}
+  \item Si $A$ tiene \textbf{longitud impar}: el bit que está exactamente en el
+        centro se retira de $A$ y se agrega al final de $S$.
+  \item Si $A$ tiene \textbf{longitud par}: los dos bits del centro se comparan.
+        El \textbf{mayor} (o cualquiera en caso de empate) se agrega \textbf{primero}
+        al final de $S$, seguido del \textbf{menor}; ambos se retiran de $A$.
+\end{itemize}
+
+Al terminar, se imprime la representación decimal de $S$ como número binario.
+Si el resultado es mayor que $10^9+7$, imprime el residuo módulo $10^9+7$.
+
+\textbf{Entrada:} primera línea con $k$ (número de casos); luego $k$ cadenas
+binarias.
+
+\textbf{Salida:} para cada caso, \texttt{Caso \#x: y}.
+
+\subsection{Ejemplo del enunciado}
+
+\begin{center}
+\begin{tabular}{ll}
+  \toprule
+  \textbf{Entrada} & \textbf{Salida} \\
+  \midrule
+  \texttt{00000} & \texttt{Caso \#1: 0} \\
+  \texttt{0101101} & \texttt{Caso \#2: 106} \\
+  \texttt{100} & \texttt{Caso \#3: 2} \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{Traza de \texttt{0101101}:}
+
+\begin{center}
+\begin{tabular}{clp{4cm}l}
+  \toprule
+  \textbf{Paso} & \textbf{A} & \textbf{Acción} & \textbf{S acumulado} \\
+  \midrule
+  1 & \texttt{0101101} (7, impar)  & extrae centro [3]\,=\,\texttt{1}          & \texttt{1} \\
+  2 & \texttt{010101}  (6, par)    & centro [2,3]\,=\,\texttt{0,1}; mayor\,=\,\texttt{1}, menor\,=\,\texttt{0} & \texttt{110} \\
+  3 & \texttt{0101}    (4, par)    & centro [1,2]\,=\,\texttt{1,0}; mayor\,=\,\texttt{1}, menor\,=\,\texttt{0} & \texttt{11010} \\
+  4 & \texttt{01}      (2, par)    & centro [0,1]\,=\,\texttt{0,1}; mayor\,=\,\texttt{1}, menor\,=\,\texttt{0} & \texttt{1101010} \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+$S = \texttt{1101010}_2 = 106_{10}$ \checkmark
+
+\subsection{Casos de práctica}
+
+Resuelve los siguientes casos a mano.  Llena la tabla de traza y escribe el
+resultado final.
+
+\begin{center}
+\begin{tabular}{ccc}
+  \toprule
+  \textbf{A} & \textbf{S (binario)} & \textbf{Resultado decimal} \\
+  \midrule
+  \texttt{1}    & & \\[8pt]
+  \texttt{110}  & & \\[8pt]
+  \texttt{1010} & & \\[8pt]
+  \texttt{1111} & & \\[8pt]
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\vspace{1cm}
+\textbf{Espacio para la traza:}
+
+\vspace{4cm}
+
+\begin{consejo}
+  Convierte la cadena a posiciones numeradas de \textbf{izquierda a derecha}
+  empezando en 0.  El índice del centro izquierdo en una cadena de longitud $n$
+  par es $n/2 - 1$; el centro derecho es $n/2$.
+\end{consejo}
+
+\newpage
+
+% =============================================================================
+\section{Problema 2: Chasquidos Mágicos}
+% =============================================================================
+
+\subsection{Enunciado}
+
+Tienes $n$ enchufes inteligentes conectados en serie, todos inicialmente
+\textbf{apagados}.  Un enchufe cambia de estado al escuchar un chasquido,
+pero \textbf{solo si recibe corriente}.  La corriente llega al primer enchufe
+desde la pared; cada enchufe subsiguiente recibe corriente solo si el anterior
+está \textbf{encendido}.  La lámpara está conectada al último enchufe ($n$-ésimo).
+
+Dados $n$ (número de enchufes, $1 \le n \le 30$) y $c$ (número de chasquidos,
+$0 \le c \le 10^8$), determina si la lámpara quedó \textbf{PRENDIDA} o
+\textbf{APAGADA}.
+
+\subsection{Ejemplo del enunciado}
+
+\begin{center}
+\begin{tabular}{ccp{6cm}}
+  \toprule
+  $n$ & $c$ & \textbf{Resultado} \\
+  \midrule
+  1 & 0  & \texttt{APAGADA} \\
+  1 & 1  & \texttt{PRENDIDA} \\
+  4 & 0  & \texttt{APAGADA} \\
+  4 & 47 & \texttt{PRENDIDA} \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Casos de práctica}
+
+Traza la cadena de enchufes para \textbf{n=2} y \textbf{n=3}.
+Escribe el estado de cada enchufe (0=apagado, 1=encendido) después de cada
+chasquido.  El enchufe $n$ determina si la lámpara está prendida.
+
+\textbf{n = 2} (enchufe 2 = lámpara):
+
+\begin{center}
+\begin{tabular}{c|c|c|c}
+  \toprule
+  \textbf{Chasquidos} & \textbf{E1} & \textbf{E2} & \textbf{Lámpara} \\
+  \midrule
+  0 & 0 & 0 & APAGADA \\
+  1 & & & \\[4pt]
+  2 & & & \\[4pt]
+  3 & & & \\[4pt]
+  4 & & & \\[4pt]
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\vspace{0.5cm}
+
+\textbf{n = 3} (enchufe 3 = lámpara):
+
+\begin{center}
+\begin{tabular}{c|c|c|c|c}
+  \toprule
+  \textbf{Chasquidos} & \textbf{E1} & \textbf{E2} & \textbf{E3} & \textbf{Lámpara} \\
+  \midrule
+  0 & 0 & 0 & 0 & APAGADA \\
+  1 & & & & \\[4pt]
+  2 & & & & \\[4pt]
+  3 & & & & \\[4pt]
+  4 & & & & \\[4pt]
+  5 & & & & \\[4pt]
+  6 & & & & \\[4pt]
+  7 & & & & \\[4pt]
+  8 & & & & \\[4pt]
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\vspace{0.5cm}
+¿Qué patrón observas entre la columna ``Chasquidos'' escrita en binario y el
+estado de cada enchufe?
+
+\vspace{1.5cm}
+
+\begin{consejo}
+  Después de llenar las tablas, escribe $c$ en binario al lado de cada fila y
+  compara columna por columna.  La respuesta se vuelve muy obvia.
+\end{consejo}
+
+\newpage
+
+% =============================================================================
+\section{Problema 3: Separación de bits — posiciones pares e impares}
+% =============================================================================
+
+\subsection{Enunciado}
+
+Dado un número entero $n$ (menor a $2^{31}-1$) en base 10, separa sus bits en
+dos números $a$ y $b$:
+
+\begin{itemize}
+  \item Los bits de $n$ que están en \textbf{posición impar} (bit 1, bit 3,
+        bit 5, \ldots, contando desde 0 en el bit menos significativo) y que
+        valen 1, forman el número $a$.  Todos los demás bits de $a$ son 0.
+  \item Los bits de $n$ que están en \textbf{posición par} (bit 0, bit 2,
+        bit 4, \ldots) y que valen 1, forman el número $b$.
+\end{itemize}
+
+Leer enteros hasta recibir un 0.  Por cada número imprimir ``$a$ $b$'' en una
+línea.
+
+\subsection{Ejemplo del enunciado}
+
+\begin{center}
+\begin{tabular}{ccccc}
+  \toprule
+  $n$ & \textbf{Binario} & \textbf{Bits impares} ($a$) & \textbf{Bits pares} ($b$) & \textbf{Salida} \\
+  \midrule
+  13 & \texttt{1101} & \texttt{1000}=8  & \texttt{0101}=5 & \texttt{8 5} \\
+   6 & \texttt{0110} & \texttt{0010}=2  & \texttt{0100}=4 & \texttt{2 4} \\
+   7 & \texttt{0111} & \texttt{0010}=2  & \texttt{0101}=5 & \texttt{2 5} \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\begin{recuerda}
+  \textbf{Posiciones de bits:} el bit menos significativo (el que vale $2^0$)
+  está en la posición 0 (par).  El siguiente (valor $2^1$) está en posición 1
+  (impar).  Y así sucesivamente.
+\end{recuerda}
+
+\subsection{Casos de práctica}
+
+Completa la siguiente tabla. Pista: escribe el número en binario y subraya
+los bits en posición impar para obtener $a$, y los bits en posición par para $b$.
+
+\begin{center}
+\begin{tabular}{cccccc}
+  \toprule
+  $n$ & \textbf{Binario} & \textbf{Pos. impares (a)} & $a$ & \textbf{Pos. pares (b)} & $b$ \\
+  \midrule
+   3  & & & & & \\[6pt]
+   5  & & & & & \\[6pt]
+  10  & & & & & \\[6pt]
+  12  & & & & & \\[6pt]
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\vspace{0.5cm}
+
+¿Hay una máscara binaria que, aplicada con AND a $n$, extraiga exactamente los
+bits en posición impar?  ¿Y para los bits en posición par?
+
+\vspace{2cm}
+
+\begin{consejo}
+  Escribe en binario la constante \texttt{0xAAAAAAAA} y la constante
+  \texttt{0x55555555}.  Fíjate qué posiciones de bits están encendidas en cada
+  una.
+\end{consejo}
+
+\newpage
+
+% =============================================================================
+\section{Problema 4: Separación de bits — enumerar 1s}
+% =============================================================================
+
+\subsection{Enunciado}
+
+Dado $n$, se enumeran los bits que valen 1 en $n$ de \textbf{derecha a izquierda}
+empezando a contar desde 1.  Los 1s enumerados con un número \textbf{impar}
+(1.°, 3.°, 5.°, \ldots) forman el número $a$ (conservando su posición de bit
+dentro de $n$).  Los 1s enumerados con un número \textbf{par} (2.°, 4.°, 6.°,
+\ldots) forman el número $b$.
+
+Leer enteros hasta recibir un 0.  Por cada número imprimir ``$a$ $b$''.
+
+\subsection{Ejemplo del enunciado}
+
+\begin{center}
+\begin{tabular}{p{1.2cm}p{2cm}p{4.8cm}cc}
+  \toprule
+  $n$ & \textbf{Binario} & \textbf{Enumeración de 1s (der.\ $\to$ izq.)} & $a$ & $b$ \\
+  \midrule
+  13 & \texttt{1101}
+     & bit0=1 (1°, impar), bit2=1 (2°, par), bit3=1 (3°, impar)
+     & 9 & 4 \\
+   6 & \texttt{0110}
+     & bit1=1 (1°, impar), bit2=1 (2°, par)
+     & 2 & 4 \\
+   7 & \texttt{0111}
+     & bit0=1 (1°, impar), bit1=1 (2°, par), bit2=1 (3°, impar)
+     & 5 & 2 \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{Verificación para n=13 (\texttt{1101}):}
+El 1.° y 3.° uno están en bits 0 y 3 → $a = 2^0 + 2^3 = 1+8 = 9$.
+El 2.° uno está en bit 2 → $b = 2^2 = 4$.
+
+\subsection{Casos de práctica}
+
+\begin{center}
+\begin{tabular}{p{0.8cm}p{2cm}p{4.5cm}cc}
+  \toprule
+  $n$ & \textbf{Binario} & \textbf{Enumeración de 1s} & $a$ & $b$ \\
+  \midrule
+   3  & & & & \\[14pt]
+   5  & & & & \\[14pt]
+  10  & & & & \\[14pt]
+  12  & & & & \\[14pt]
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\vspace{0.5cm}
+
+¿Observas alguna relación entre este problema y el anterior (posiciones pares
+e impares)?  ¿La separación que obtienes aquí siempre coincide con la de
+posiciones pares/impares?  ¿Cuándo sí y cuándo no?
+
+\vspace{2cm}
+
+\begin{consejo}
+  Empieza por $n$s pequeños con muy pocos 1s, como $n = 2^k$ (potencias de 2).
+  Observa qué ocurre.  Luego prueba con $n=3$ (dos 1s) y $n=7$ (tres 1s) donde
+  el patrón se vuelve más claro.
+\end{consejo}
+
+% =============================================================================
+\section{Resumen y entregable}
+% =============================================================================
+
+\begin{center}
+\begin{tabular}{lp{7cm}}
+  \toprule
+  \textbf{Problema} & \textbf{Clave a encontrar} \\
+  \midrule
+  Algoritmo de Phil    & Proceso de extracción de bits centrales; traza
+                         paso a paso del algoritmo \\[4pt]
+  Chasquidos Mágicos   & Relación entre el estado de los enchufes y la
+                         representación binaria de $c$ \\[4pt]
+  Separación pares/imp & Máscara AND que aísla los bits en posiciones pares
+                         o impares \\[4pt]
+  Separación enum.\ 1s & Enumeración de los bits encendidos y distribución
+                         entre $a$ y $b$ \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\vspace{0.5cm}
+
+\begin{advertencia}
+  \textbf{Entrega:} sube a Canvas un PDF con fotos de:
+  \begin{enumerate}
+    \item Los casos de prueba de cada problema resueltos a mano.
+    \item El algoritmo (pseudocódigo, fórmula o diagrama) para cada problema.
+  \end{enumerate}
+  Incluye el \textbf{nombre completo de los tres integrantes} del equipo en
+  la primera página.
+\end{advertencia}
+
+\end{document}
