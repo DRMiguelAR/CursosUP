@@ -1,0 +1,501 @@
+% =============================================================================
+%  Notas de clase — Sesión 05: Bit Manipulation
+%  Programación Avanzada — Universidad Panamericana
+%  Compilar: pdflatex sesion05_bit_manipulation.tex
+% =============================================================================
+\documentclass[12pt, oneside]{article}
+\usepackage{progavanzada}
+
+\begin{document}
+
+\portada{Sesión 05}{Bit Manipulation}{2026}
+
+\tableofcontents
+\newpage
+
+% =============================================================================
+\section{¿Por qué operar directamente sobre bits?}
+% =============================================================================
+
+Ya sabemos que toda la información en una computadora son bits.
+Hasta ahora los hemos leído y convertido entre bases, pero sin tocarlos.
+Esta sesión vamos a \textbf{manipularlos directamente} desde C++.
+
+¿Para qué sirve eso?
+
+\begin{itemize}
+  \item \textbf{Velocidad}: las operaciones de bits son las más baratas que
+        existen en un procesador — cuestan un solo ciclo de reloj, sin importar
+        si el operando tiene 8 o 64 bits.
+  \item \textbf{Compacidad}: puedes empacar 32 valores booleanos en un solo
+        \texttt{int}, en lugar de usar 32 variables separadas.
+  \item \textbf{Programación de sistemas}: drivers, protocolos de red,
+        compresión, cifrado y programación competitiva hacen uso intensivo
+        de estas operaciones.
+\end{itemize}
+
+Los operadores que vamos a estudiar son:
+
+\begin{center}
+\begin{tabular}{lll}
+  \toprule
+  \textbf{Operador} & \textbf{Símbolo} & \textbf{Qué hace} \\
+  \midrule
+  Desplazamiento izquierdo & \cpp{<<}                    & Mueve todos los bits a la izquierda \\
+  Desplazamiento derecho   & \cpp{>>}                    & Mueve todos los bits a la derecha \\
+  NOT bit a bit            & \texttt{\textasciitilde}    & Invierte cada bit \\
+  AND bit a bit            & \texttt{\&}                 & 1 solo si ambos bits son 1 \\
+  OR bit a bit             & \texttt{|}                  & 1 si al menos un bit es 1 \\
+  XOR bit a bit            & \texttt{\textasciicircum}   & 1 si los bits son distintos \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+% =============================================================================
+\section{Visualizar bits: \texttt{bitset<N>}}
+% =============================================================================
+
+Antes de operar, necesitamos \textbf{ver} los bits. C++ incluye \texttt{bitset<N>}
+en la biblioteca \texttt{<bitset>}: convierte cualquier entero a su representación
+en exactamente $N$ bits.
+
+\begin{ejemplo}[Ver 30 en binario]
+\begin{verbatim}
+#include <bitset>
+using bin8 = bitset<8>;
+
+int x = 30;
+cout << bin8(x);   // imprime: 00011110
+\end{verbatim}
+$30 = 16 + 8 + 4 + 2$, y los cuatro bits bajos encendidos confirman eso.
+\end{ejemplo}
+
+\texttt{bitset} es solo para \textbf{visualización}: no cambia el valor
+almacenado ni el tipo de la variable.
+
+\subsection{Literales en distintas bases}
+
+C++14 permite escribir el mismo valor en decimal, binario (\cpp{0b}) o
+hexadecimal (\cpp{0x}). Para el compilador son idénticos.
+
+\begin{center}
+\begin{tabular}{lll}
+  \toprule
+  \textbf{Forma} & \textbf{Ejemplo} & \textbf{Valor} \\
+  \midrule
+  Decimal        & \cpp{30}          & 30 \\
+  Binario        & \cpp{0b00011110}  & 30 \\
+  Hexadecimal    & \cpp{0x1E}        & 30 \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+Usar \cpp{0b} o \cpp{0x} no cambia nada en tiempo de ejecución — es solo
+una comodidad para que el código sea más legible cuando trabajamos con máscaras
+o valores relacionados con bits.
+
+\begin{consejo}
+  Un \cpp{char} también es un entero de 8 bits. Puedes inicializarlo con
+  \cpp{char c = 0b01001101;} (que resulta ser la \texttt{'M'}) y usar
+  \texttt{bitset} para ver sus bits igual que con un \texttt{int}.
+\end{consejo}
+
+% =============================================================================
+\section{Patrones especiales}
+% =============================================================================
+
+Tres patrones aparecen constantemente en cualquier código que manipule bits.
+Vale la pena memorizarlos.
+
+\subsection{Todos los bits apagados: \texttt{x = 0}}
+
+Obvio pero importante: el valor 0 tiene todos sus bits en 0.
+
+\subsection{Todos los bits encendidos: \texttt{x = -1}}
+
+En complemento a 2, $-1 = 2^n - 1$, que en binario es todo 1s sin importar
+cuántos bits tenga el tipo. Es la forma idiomática en C++ de poner a 1 todos
+los bits de una variable.
+
+\begin{verbatim}
+int x = -1;   // 11111111 11111111 11111111 11111111  (32 bits)
+\end{verbatim}
+
+\subsection{Un solo bit encendido: \texttt{1 << k}}
+
+\cpp{1 << k} tiene exactamente el bit $k$ encendido y todos los demás apagados.
+Vale $2^k$.
+
+\begin{center}
+\begin{tabular}{ccc}
+  \toprule
+  \textbf{Expresión} & \textbf{Valor} & \textbf{Binario (8 bits)} \\
+  \midrule
+  \cpp{1 << 0} & 1   & \texttt{00000001} \\
+  \cpp{1 << 1} & 2   & \texttt{00000010} \\
+  \cpp{1 << 2} & 4   & \texttt{00000100} \\
+  \cpp{1 << 3} & 8   & \texttt{00001000} \\
+  \cpp{1 << 4} & 16  & \texttt{00010000} \\
+  \cpp{1 << 5} & 32  & \texttt{00100000} \\
+  \cpp{1 << 6} & 64  & \texttt{01000000} \\
+  \cpp{1 << 7} & 128 & \texttt{10000000} \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+Estas expresiones se llaman \textbf{máscaras de un bit} y son el ingrediente
+básico de casi toda técnica de bit manipulation.
+
+% =============================================================================
+\section{Desplazamientos}
+% =============================================================================
+
+\subsection{Desplazamiento izquierdo \texttt{<<}}
+
+\cpp{x << k} mueve todos los bits de \texttt{x} hacia la izquierda $k$
+posiciones. Los bits que salen por la izquierda se \textbf{pierden}; los
+huecos de la derecha se llenan con \textbf{0}.
+
+\medskip
+\textbf{Efecto aritmético:} \cpp{x << k} $= x \times 2^k$
+(siempre que no haya desbordamiento).
+
+\begin{ejemplo}[\texttt{6 << 2 = 24}]
+\begin{center}
+\begin{tabular}{ll}
+  \texttt{6} (antes):  & \texttt{0 0 0 0 0 1 1 0} \\
+  Desplazar 2:         & $\leftarrow\leftarrow$ \\
+  \texttt{24} (después): & \texttt{0 0 0 1 1 0 0 0} \\
+\end{tabular}
+\end{center}
+$6 \times 4 = 24$. \checkmark
+\end{ejemplo}
+
+\subsection{Desplazamiento derecho \texttt{>>}}
+
+\cpp{x >> k} mueve todos los bits hacia la derecha $k$ posiciones.
+Los bits que salen por la derecha se \textbf{pierden}; los huecos de la
+izquierda se llenan con \textbf{0} (para enteros positivos).
+
+\medskip
+\textbf{Efecto aritmético:} \cpp{x >> k} $= \lfloor x / 2^k \rfloor$
+(división entera, trunca hacia abajo).
+
+\begin{ejemplo}[\texttt{100 >> 3 = 12}]
+$100 / 8 = 12.5$ — el desplazamiento trunca y da 12.
+
+En binario: \texttt{01100100} $\;\to\;$ \texttt{00001100} = 12. \checkmark
+\end{ejemplo}
+
+\begin{advertencia}
+  El desplazamiento a la derecha de \textbf{negativos} es
+  \textit{implementation-defined} en C++ hasta C++19.
+  En la práctica, la mayoría de los compiladores extienden con el bit de
+  signo (desplazamiento aritmético), pero no es obligatorio por el estándar.
+  Para evitar sorpresas, trabaja con enteros sin signo (\texttt{unsigned int})
+  cuando desplaces a la derecha.
+\end{advertencia}
+
+% =============================================================================
+\section{Operadores lógicos bit a bit}
+% =============================================================================
+
+A diferencia de los operadores lógicos \texttt{\&\&} y \texttt{||} que
+operan sobre valores completos, los operadores bit a bit actúan
+\textbf{posición a posición} de forma independiente sobre cada par de bits.
+
+\subsection{NOT bit a bit (\texttt{\textasciitilde})}
+
+\texttt{\textasciitilde{}x} invierte cada bit: 0 $\to$ 1, 1 $\to$ 0.
+
+\begin{center}
+\begin{tabular}{cc}
+  \toprule
+  bit & \texttt{\textasciitilde}bit \\
+  \midrule
+  0 & 1 \\
+  1 & 0 \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\begin{recuerda}
+  En complemento a 2, \texttt{\textasciitilde{}x} equivale siempre a $-(x+1)$:
+  \[
+    \mathtt{\sim 30} = -31, \qquad \mathtt{\sim 0} = -1, \qquad \mathtt{\sim(-1)} = 0
+  \]
+\end{recuerda}
+
+\subsection{AND bit a bit (\texttt{\&})}
+
+\texttt{a \& b} produce \textbf{1} solo si \textbf{ambos} bits
+correspondientes son 1.
+
+\begin{center}
+\begin{tabular}{ccc}
+  \toprule
+  \texttt{a} & \texttt{b} & \texttt{a \& b} \\
+  \midrule
+  1 & 1 & 1 \\
+  1 & 0 & 0 \\
+  0 & 1 & 0 \\
+  0 & 0 & 0 \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{Uso típico:} \textit{apagar} bits específicos y \textit{consultar}
+si un bit está encendido.
+
+\begin{ejemplo}[\texttt{23 \& 35 = 3}]
+\begin{center}
+\begin{tabular}{ll}
+  \texttt{23}:       & \texttt{0001 0111} \\
+  \texttt{35}:       & \texttt{0010 0011} \\
+  \texttt{23 \& 35}: & \texttt{0000 0011} = 3 \\
+\end{tabular}
+\end{center}
+Solo sobreviven los bits encendidos en \textbf{los dos} operandos a la vez
+(posiciones 0 y 1).
+\end{ejemplo}
+
+\subsection{OR bit a bit (\texttt{|})}
+
+\texttt{a | b} produce \textbf{1} si \textbf{al menos uno} de los dos bits
+es 1.
+
+\begin{center}
+\begin{tabular}{ccc}
+  \toprule
+  \texttt{a} & \texttt{b} & \texttt{a | b} \\
+  \midrule
+  1 & 1 & 1 \\
+  1 & 0 & 1 \\
+  0 & 1 & 1 \\
+  0 & 0 & 0 \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{Uso típico:} \textit{encender} bits específicos.
+
+\begin{ejemplo}[\texttt{23 | 35 = 55}]
+\begin{center}
+\begin{tabular}{ll}
+  \texttt{23}:      & \texttt{0001 0111} \\
+  \texttt{35}:      & \texttt{0010 0011} \\
+  \texttt{23 | 35}: & \texttt{0011 0111} = 55 \\
+\end{tabular}
+\end{center}
+El resultado recoge todos los bits encendidos en cualquiera de los dos operandos.
+\end{ejemplo}
+
+\subsection{XOR bit a bit (\texttt{\textasciicircum})}
+
+\texttt{a \textasciicircum{} b} produce \textbf{1} si los dos bits son
+\textbf{distintos} (eXclusive OR — OR exclusivo).
+
+\begin{center}
+\begin{tabular}{ccc}
+  \toprule
+  \texttt{a} & \texttt{b} & \texttt{a \textasciicircum{} b} \\
+  \midrule
+  1 & 1 & 0 \\
+  1 & 0 & 1 \\
+  0 & 1 & 1 \\
+  0 & 0 & 0 \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{Uso típico:} \textit{invertir} bits específicos.
+
+\begin{ejemplo}[\texttt{23 \textasciicircum{} 35 = 52}]
+\begin{center}
+\begin{tabular}{ll}
+  \texttt{23}:                      & \texttt{0001 0111} \\
+  \texttt{35}:                      & \texttt{0010 0011} \\
+  \texttt{23 \textasciicircum{} 35}: & \texttt{0011 0100} = 52 \\
+\end{tabular}
+\end{center}
+Los bits donde 23 y 35 \textbf{coinciden} se apagan; los que \textbf{difieren}
+se encienden.
+\end{ejemplo}
+
+\begin{tecnico}[Propiedades del XOR]
+  Dos identidades del XOR son fundamentales en algoritmos:
+  \begin{itemize}
+    \item \texttt{x \textasciicircum{} x = 0} siempre
+          (cualquier valor XOR consigo mismo es cero).
+    \item \texttt{x \textasciicircum{} 0 = x} siempre
+          (XOR con cero deja el valor intacto).
+  \end{itemize}
+  Consecuencia: \texttt{(x \textasciicircum{} k) \textasciicircum{} k = x}.
+  Aplicar XOR dos veces con el mismo valor regresa al original.
+  Esta propiedad es la base de varios algoritmos de cifrado simple y de
+  detección de errores.
+\end{tecnico}
+
+% =============================================================================
+\section{Combinando operadores}
+% =============================================================================
+
+Los operadores de bits se combinan igual que la aritmética normal.
+El orden de precedencia en C++ (de mayor a menor) es:
+
+\begin{center}
+\begin{tabular}{cl}
+  \toprule
+  \textbf{Precedencia} & \textbf{Operadores} \\
+  \midrule
+  Mayor & \texttt{\textasciitilde} (NOT) \\
+        & \texttt{<<}, \texttt{>>} (desplazamientos) \\
+        & \texttt{\&} (AND) \\
+        & \texttt{\textasciicircum} (XOR) \\
+  Menor & \texttt{|} (OR) \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\begin{consejo}
+  Cuando combines operadores, usa paréntesis generosamente.
+  \texttt{a \& b | c} no siempre hace lo que parece a primera vista.
+\end{consejo}
+
+\begin{ejemplo}[Evaluar \texttt{(\textasciitilde(13 >> 2)) \& 39} paso a paso]
+\begin{center}
+\begin{tabular}{lll}
+  \toprule
+  \textbf{Paso} & \textbf{Expresión} & \textbf{Resultado} \\
+  \midrule
+  1 & \texttt{x = 13}                        & \texttt{0000 1101} \\
+  2 & \texttt{x >> 2}                        & \texttt{0000 0011} = 3 \\
+  3 & \texttt{\textasciitilde(x >> 2)}        & \texttt{...1111 1100} (invierte todo) \\
+  4 & \texttt{y = 39}                        & \texttt{0010 0111} \\
+  5 & \texttt{\textasciitilde(x>>2) \& y}    & \texttt{0010 0100} = \textbf{36} \\
+  \bottomrule
+\end{tabular}
+\end{center}
+El NOT produce un número con casi todos los bits encendidos; el AND final
+con 39 filtra y deja pasar solo los bits que 39 tiene encendidos.
+\end{ejemplo}
+
+% =============================================================================
+\section{Ejercicios}
+% =============================================================================
+
+\subsection{Desplazamientos}
+
+\begin{enumerate}
+
+  \item Sin usar calculadora, calcula el resultado decimal y la representación
+        binaria de 8 bits de cada expresión.
+        \begin{enumerate}
+          \item \texttt{7 << 2}
+          \item \texttt{100 >> 2}
+          \item \texttt{1 << 5}
+          \item \texttt{96 >> 3}
+        \end{enumerate}
+
+  \item ¿Cuántos desplazamientos a la izquierda necesitas para convertir
+        el valor 3 en 48? Justifica.
+
+  \item El valor de \texttt{x} es un número entre 1 y 255 (8 bits).
+        Describe qué le ocurre al patrón de bits si aplicas \texttt{x >> 8}.
+
+\end{enumerate}
+
+\subsection{NOT, AND, OR y XOR}
+
+\begin{enumerate}[resume]
+
+  \item Calcula los siguientes resultados a mano. Muestra el proceso con
+        la representación de 8 bits de cada operando.
+        \begin{enumerate}
+          \item \texttt{17 \& 12}
+          \item \texttt{13 | 12}
+          \item \texttt{17 \textasciicircum{} 12}
+          \item \texttt{\textasciitilde{} 12}
+                (expresa el resultado en decimal)
+        \end{enumerate}
+
+  \item El valor \texttt{x = 0b10110011}. Evalúa:
+        \begin{enumerate}
+          \item \texttt{x \& 0b00001111} \quad (¿qué hace esta operación?)
+          \item \texttt{x | 0b00001111} \quad (¿qué hace esta operación?)
+          \item \texttt{x \textasciicircum{} 0b11111111}
+                \quad (¿qué hace esta operación?)
+        \end{enumerate}
+
+  \item Completa la tabla (todos los valores en 8 bits):
+        \begin{center}
+        \begin{tabular}{cccc}
+          \toprule
+          \texttt{a} & \texttt{b} & \texttt{a \& b} & \texttt{a | b} \\
+          \midrule
+          \texttt{11001100} & \texttt{10101010} & ? & ? \\
+          \texttt{11110000} & \texttt{00001111} & ? & ? \\
+          \texttt{10101010} & \texttt{10101010} & ? & ? \\
+          \bottomrule
+        \end{tabular}
+        \end{center}
+
+\end{enumerate}
+
+\subsection{Combinando operadores}
+
+\begin{enumerate}[resume]
+
+  \item Evalúa las siguientes expresiones paso a paso, mostrando el resultado
+        binario de 8 bits en cada etapa.
+        \begin{enumerate}
+          \item \texttt{(\textasciitilde{} 7) | (1 << 1) | (1 << 3) | (1 << 5)}
+                seguido de \texttt{\& 29}
+          \item \texttt{(\textasciitilde(13 >> 2)) \& 39}
+        \end{enumerate}
+
+  \item La expresión \texttt{x \textasciicircum{} y \textasciicircum{} y}
+        siempre produce el mismo resultado sin importar el valor de \texttt{y}.
+        ¿Cuál es ese resultado y por qué?
+
+  \item Dado \texttt{n} un entero positivo, ¿qué representa la expresión
+        \texttt{n \& (n - 1)} en términos de bits? Pruébalo con \texttt{n = 12}.
+
+\end{enumerate}
+
+% =============================================================================
+\section{Resumen}
+% =============================================================================
+
+\begin{recuerda}
+\begin{itemize}
+  \item \textbf{\texttt{bitset<N>}}: visualiza $N$ bits de un entero.
+        Solo para impresión, no cambia el valor.
+  \item \textbf{Literales}: \cpp{0b...} (binario), \cpp{0x...} (hexadecimal);
+        equivalentes en tiempo de ejecución.
+  \item \textbf{Patrones clave}: \texttt{0} = todo apagado;
+        \texttt{-1} = todo encendido;
+        \cpp{1 << k} = solo el bit $k$ encendido ($= 2^k$).
+  \item \textbf{Desplazamientos}:
+        \cpp{x << k} $= x \times 2^k$;
+        \quad \cpp{x >> k} $= \lfloor x / 2^k \rfloor$.
+  \item \textbf{NOT} (\texttt{\textasciitilde{}x}):
+        invierte todos los bits. Equivale a $-(x+1)$.
+  \item \textbf{AND} (\texttt{\&}):
+        1 si \textbf{ambos} bits son 1. Filtra/apaga bits.
+  \item \textbf{OR} (\texttt{|}):
+        1 si \textbf{al menos uno} es 1. Enciende bits.
+  \item \textbf{XOR} (\texttt{\textasciicircum}):
+        1 si los bits son \textbf{distintos}. Invierte bits.
+        Propiedades: \texttt{x \textasciicircum{} x = 0};
+        \quad \texttt{x \textasciicircum{} 0 = x}.
+  \item \textbf{Precedencia} (mayor a menor):
+        \texttt{\textasciitilde} $>$
+        desplazamientos $>$
+        \texttt{\&} $>$
+        \texttt{\textasciicircum} $>$
+        \texttt{|}. Usar paréntesis para claridad.
+\end{itemize}
+\end{recuerda}
+
+\end{document}

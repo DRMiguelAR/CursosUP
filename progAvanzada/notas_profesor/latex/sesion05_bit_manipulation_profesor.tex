@@ -1,0 +1,312 @@
+% =============================================================================
+%  Notas del Profesor — Sesión 05: Bit Manipulation
+%  Programación Avanzada — Universidad Panamericana
+%  Compilar: pdflatex sesion05_bit_manipulation_profesor.tex
+% =============================================================================
+\documentclass[12pt, oneside]{article}
+\usepackage[profesor]{progavanzada}
+
+\begin{document}
+
+\portada{Sesión 05}{Bit Manipulation}{2026}
+
+\tableofcontents
+\newpage
+
+% =============================================================================
+\section{Objetivos de la sesión}
+% =============================================================================
+
+Al finalizar la sesión el alumno será capaz de:
+
+\begin{enumerate}
+  \item Leer y escribir literales binarios (\cpp{0b}) y hexadecimales (\cpp{0x})
+        en C++.
+  \item Usar \texttt{bitset<N>} para visualizar la representación binaria de
+        un valor.
+  \item Calcular el resultado de \cpp{<<}, \cpp{>>},
+        \texttt{\textasciitilde}, \texttt{\&}, \texttt{|} y
+        \texttt{\textasciicircum} sobre valores de 8 bits a mano.
+  \item Identificar los tres patrones especiales (todo ceros, todo unos, máscara
+        de un bit) y reconocerlos en código.
+  \item Evaluar expresiones que combinen varios operadores de bits paso a paso.
+\end{enumerate}
+
+\begin{notaprofesor}[Duración estimada]
+  50 minutos. Sugerido: 5 min apertura + 10 min visualización y literales +
+  10 min patrones especiales + 15 min operadores lógicos + 10 min ejercicios.
+  La sesión 06 es práctica en el cuaderno; estos ejercicios son en papel.
+\end{notaprofesor}
+
+% =============================================================================
+\section{Secuencia de clase}
+% =============================================================================
+
+\subsection{Apertura (5 min)}
+
+Arranca con esta pregunta al grupo:
+
+\begin{notaprofesor}[Pregunta de arranque]
+  \textit{``¿Cuántas operaciones necesita el procesador para calcular
+  \texttt{x * 8}?''}\\[4pt]
+  La mayoría dirá ``una multiplicación''. La respuesta real: si usas
+  \texttt{x << 3}, el procesador lo resuelve con \textbf{un solo ciclo de
+  reloj}. Una multiplicación normal tarda entre 3 y 5 ciclos.
+  Ese ahorro, repetido millones de veces, importa.\\[4pt]
+  Sigue con: \textit{``Hoy vamos a aprender a hablarle al procesador en su
+  idioma natural: bits.''}
+\end{notaprofesor}
+
+\subsection{Visualización: \texttt{bitset} y literales (10 min)}
+
+Muestra en el cuaderno (o proyecta) la celda de código con \texttt{bitset}:
+\begin{verbatim}
+int x = 30;
+cout << bin8(x);   // 00011110
+\end{verbatim}
+
+Pregunta al grupo: \textit{``¿Por qué \texttt{00011110}?''} Deja que los
+alumnos cuenten las potencias de 2 en voz alta: $16+8+4+2=30$.
+
+\begin{notaprofesor}[Literal binario vs.\ decimal]
+  Muestra \texttt{0b00011110}, \texttt{0x1E} y \texttt{30} imprimiendo
+  exactamente lo mismo. El punto: la base es solo presentación. El compilador
+  guarda los mismos bits sin importar cómo escribiste el literal.\\[4pt]
+  Pregunta de sondeo: \textit{``¿Qué imprimiría
+  \texttt{cout << 0b0101}?''} — Respuesta: 5. No imprime ``0101''; para eso
+  se necesita \texttt{bitset}.
+\end{notaprofesor}
+
+Después introduce los patrones especiales. La tabla de \cpp{1 << k}
+funciona bien en el cuaderno porque los alumnos pueden ejecutarla celda
+por celda y ver el bit moverse.
+
+\subsection{Operadores bit a bit (15 min)}
+
+Presenta NOT, AND, OR y XOR con sus tablas de verdad. Para cada uno:
+\begin{enumerate}
+  \item Tabla de verdad de 1 bit.
+  \item Ejemplo con 8 bits (alinear operandos en columnas en el pizarrón).
+  \item El ``uso típico'' — para qué sirve en la práctica.
+\end{enumerate}
+
+\begin{notaprofesor}[Confusión frecuente: \texttt{\&} vs.\ \texttt{\&\&}]
+  Varios alumnos confundirán \texttt{\&} (AND bit a bit) con \texttt{\&\&}
+  (AND lógico). El AND lógico trata todo valor distinto de cero como
+  \texttt{true}; el AND bit a bit opera posición a posición. Ejemplo
+  que los distingue:
+  \begin{center}
+  \begin{tabular}{lccc}
+    & \texttt{a = 2} & \texttt{b = 1} & Resultado \\
+    \hline
+    \texttt{a \&\& b} & (true) & (true) & \texttt{1} (true) \\
+    \texttt{a \& b}   & \texttt{10} & \texttt{01} & \texttt{0} \\
+  \end{tabular}
+  \end{center}
+  El mismo par de valores da resultados completamente distintos.
+\end{notaprofesor}
+
+\begin{notaprofesor}[El XOR como cifrador]
+  Si el grupo lleva bien el ritmo, menciona el truco: aplicar XOR con
+  la misma clave dos veces recupera el original (\texttt{(x \^{} k) \^{} k = x}).
+  Es la base del cifrado Vernam (one-time pad), el único sistema de cifrado
+  matemáticamente irrompible. Funciona bien como anécdota de cierre.
+\end{notaprofesor}
+
+\subsection{Ejercicios en clase (10 min)}
+
+Los ejercicios de la sección 7 de las notas del alumno. Recomendado:
+\begin{itemize}
+  \item Los ejercicios 1, 4 y 7a en clase (desplazamientos + tabla AND/OR
+        + expresión combinada).
+  \item Los demás quedan como tarea para reforzar antes de la sesión 06
+        (práctica en cuaderno).
+\end{itemize}
+
+\begin{notaprofesor}[Ejercicio 9: \texttt{n \& (n-1)}]
+  Este ejercicio es una pista hacia la sesión 06. \texttt{n \& (n-1)}
+  apaga el bit encendido de menor peso. Si \texttt{n} es potencia de 2,
+  solo tiene un bit encendido, así que el resultado es cero.
+  Es el corazón del algoritmo para contar bits activos (popcount eficiente)
+  que verán en la sesión 06.
+\end{notaprofesor}
+
+% =============================================================================
+\section{FAQs}
+% =============================================================================
+
+\begin{notaprofesor}[¿Por qué \texttt{\textasciitilde 30 = -31}?]
+  En complemento a 2, \texttt{\textasciitilde x = -(x+1)}.
+  Intuitivamente: \texttt{x + \textasciitilde x = -1} (todos los bits
+  encendidos), así que \texttt{\textasciitilde x = -1 - x = -(x+1)}.\\[4pt]
+  Verificación rápida: \texttt{\textasciitilde 0 = -1} (todo 1s),
+  \texttt{\textasciitilde(-1) = 0} (todo 0s).
+\end{notaprofesor}
+
+\begin{notaprofesor}[¿Los desplazamientos son más rápidos que multiplicar?]
+  En hardware moderno la diferencia es menor que antes (los procesadores
+  tienen multiplicadores muy optimizados), pero el compilador \textbf{ya}
+  convierte \texttt{x * 8} en \texttt{x << 3} automáticamente cuando puede.
+  La razón real para aprender desplazamientos: leer código de sistemas y
+  programación competitiva donde el idioma son bits, no aritmética.
+\end{notaprofesor}
+
+\begin{notaprofesor}[¿Qué pasa con \texttt{>>} en números negativos?]
+  El estándar C++ (hasta C++19) dice que el comportamiento de \texttt{>>}
+  sobre negativos es \textit{implementation-defined}. En la práctica, g++
+  y clang hacen extensión de signo (aritmética), así que \texttt{-8 >> 1 = -4}.
+  Pero el código correcto usa \texttt{unsigned int} si necesita desplazar
+  a la derecha de forma portable.
+\end{notaprofesor}
+
+\begin{notaprofesor}[¿Por qué \texttt{-1} tiene todos los bits en 1?]
+  En complemento a 2, $-1$ se almacena como $2^n - 1$. Para 32 bits:
+  $2^{32} - 1 = 4{,}294{,}967{,}295 = \texttt{0xFFFFFFFF}$ = todo 1s.\\[4pt]
+  Forma alternativa de verlo: \texttt{0} tiene todo en 0. Le restamos 1
+  y como no podemos (prestamos de un bit que no existe), todos los bits
+  se encadenan y quedan en 1.
+\end{notaprofesor}
+
+% =============================================================================
+\section{Soluciones a los ejercicios}
+% =============================================================================
+
+\subsection{Desplazamientos}
+
+\begin{notaprofesor}[Ejercicio 1]
+\begin{enumerate}[label=\alph*)]
+  \item \texttt{7 << 2} $= 7 \times 4 = 28$; binario: \texttt{00011100}.
+  \item \texttt{100 >> 2} $= \lfloor 100/4 \rfloor = 25$; binario: \texttt{00011001}.
+  \item \texttt{1 << 5} $= 32$; binario: \texttt{00100000}.
+  \item \texttt{96 >> 3} $= \lfloor 96/8 \rfloor = 12$; binario: \texttt{00001100}.
+\end{enumerate}
+\end{notaprofesor}
+
+\begin{notaprofesor}[Ejercicio 2]
+  $48 / 3 = 16 = 2^4$, así que cuatro desplazamientos a la izquierda.
+  Verificación: \texttt{3 << 4} $= 3 \times 16 = 48$. \checkmark
+\end{notaprofesor}
+
+\begin{notaprofesor}[Ejercicio 3]
+  Si \texttt{x} tiene a lo más 8 bits, desplazarlo 8 posiciones expulsa
+  todos sus bits; el resultado es \texttt{0}. (Técnicamente, si \texttt{x}
+  es \texttt{int} de 32 bits, los 24 bits altos son 0, y todos los bits
+  de \texttt{x} ``caen'' fuera por la derecha.)
+\end{notaprofesor}
+
+\subsection{NOT, AND, OR y XOR}
+
+\begin{notaprofesor}[Ejercicio 4]
+\begin{enumerate}[label=\alph*)]
+  \item \texttt{17 \& 12}:\\
+        \texttt{00010001 \& 00001100 = 00000000 = 0}.
+        No comparten ningún bit encendido.
+  \item \texttt{13 | 12}:\\
+        \texttt{00001101 | 00001100 = 00001101 = 13}.
+        Los bits de 12 ya están en 13, así que OR no aporta nada nuevo.
+  \item \texttt{17 \^{} 12}:\\
+        \texttt{00010001 \^{} 00001100 = 00011101 = 29}.
+  \item \texttt{\textasciitilde 12 = -(12+1) = -13}.
+        En 32 bits: \texttt{11111111111111111111111111110011}.
+\end{enumerate}
+\end{notaprofesor}
+
+\begin{notaprofesor}[Ejercicio 5 — \texttt{x = 0b10110011}]
+\begin{enumerate}[label=\alph*)]
+  \item \texttt{x \& 0b00001111 = 0b00000011 = 3}.
+        AND con \texttt{0x0F} \textbf{conserva solo los 4 bits bajos}
+        (nibble bajo) y apaga los 4 altos. Operación clásica para extraer
+        el nibble bajo.
+  \item \texttt{x | 0b00001111 = 0b10111111 = 191}.
+        OR con \texttt{0x0F} \textbf{enciende los 4 bits bajos} sin tocar
+        los demás.
+  \item \texttt{x \^{} 0b11111111 = 0b01001100 = 76}.
+        XOR con \texttt{0xFF} \textbf{invierte todos los bits}, equivalente
+        a NOT para los 8 bits bajos. Notar que difiere de \texttt{\textasciitilde x}
+        en que este solo actúa sobre 8 bits, no los 32.
+\end{enumerate}
+\end{notaprofesor}
+
+\begin{notaprofesor}[Ejercicio 6 — tabla AND/OR]
+\begin{center}
+\begin{tabular}{cccc}
+  \toprule
+  \texttt{a} & \texttt{b} & \texttt{a \& b} & \texttt{a | b} \\
+  \midrule
+  \texttt{11001100} & \texttt{10101010} & \texttt{10001000} & \texttt{11101110} \\
+  \texttt{11110000} & \texttt{00001111} & \texttt{00000000} & \texttt{11111111} \\
+  \texttt{10101010} & \texttt{10101010} & \texttt{10101010} & \texttt{10101010} \\
+  \bottomrule
+\end{tabular}
+\end{center}
+La segunda fila es interesante: cuando los patrones son \textbf{complementos}
+entre sí, AND da todo 0s y OR da todo 1s.
+La tercera fila: AND y OR con sí mismo devuelve el original.
+\end{notaprofesor}
+
+\subsection{Combinando operadores}
+
+\begin{notaprofesor}[Ejercicio 7a — \texttt{(\textasciitilde 7 | (1<<1) | (1<<3) | (1<<5)) \& 29}]
+  Paso a paso:
+  \begin{enumerate}
+    \item \texttt{\textasciitilde 7 = ...11111000} (apaga los bits 0, 1, 2)
+    \item \texttt{| (1<<1) = ...11111010} (enciende el bit 1)
+    \item \texttt{| (1<<3) = ...11111010} (bit 3 ya estaba)
+    \item \texttt{| (1<<5) = ...11111010} (bit 5 ya estaba)
+    \item \texttt{29 = 0b00011101}
+    \item AND: \texttt{0b00011101 \& 0b11111010 = 0b00011000 = 24}
+  \end{enumerate}
+\end{notaprofesor}
+
+\begin{notaprofesor}[Ejercicio 7b — \texttt{(\textasciitilde(13 >> 2)) \& 39}]
+  \begin{enumerate}
+    \item \texttt{13 = 0b00001101}
+    \item \texttt{13 >> 2 = 0b00000011 = 3}
+    \item \texttt{\textasciitilde 3 = ...11111100}
+    \item \texttt{39 = 0b00100111}
+    \item \texttt{\textasciitilde 3 \& 39 = 0b00100100 = 36}
+  \end{enumerate}
+\end{notaprofesor}
+
+\begin{notaprofesor}[Ejercicio 8 — \texttt{x \^{} y \^{} y}]
+  Por las propiedades del XOR: \texttt{y \^{} y = 0}, y \texttt{x \^{} 0 = x}.
+  Resultado: siempre \texttt{x}, sin importar \texttt{y}.
+  Este truco es la base del \textit{XOR swap} (intercambiar dos variables
+  sin una temporal) que verán en la sesión 06.
+\end{notaprofesor}
+
+\begin{notaprofesor}[Ejercicio 9 — \texttt{n \& (n-1)} con \texttt{n = 12}]
+  \texttt{12 = 0b00001100}. \quad \texttt{11 = 0b00001011}.\\[4pt]
+  \texttt{12 \& 11 = 0b00001000 = 8}.\\[4pt]
+  El resultado apaga el bit encendido de \textbf{menor peso} de \texttt{n}
+  (el bit 2 en este caso). Si \texttt{n} es potencia de 2 (un solo bit
+  encendido), el resultado es 0. Esta es la prueba más eficiente para
+  saber si un número es potencia de 2: \texttt{n > 0 \&\& (n \& (n-1)) == 0}.
+\end{notaprofesor}
+
+% =============================================================================
+\section{Demo en vivo sugerida}
+% =============================================================================
+
+\begin{notaprofesor}[Conversión mayúsculas/minúsculas con XOR]
+  Esta demo conecta la sesión 04 (ASCII) con la sesión 05 (bits):
+  \begin{verbatim}
+  char c = 'A';              // 0x41 = 0100 0001
+  char lower = c ^ 0x20;    // 0x61 = 0110 0001  = 'a'
+  char back  = lower ^ 0x20; // 0x41 = 0100 0001  = 'A'
+  \end{verbatim}
+  El XOR con \texttt{0x20} invierte el bit 5, que es exactamente el bit
+  que distingue mayúsculas de minúsculas en ASCII.
+  Aplicarlo dos veces devuelve la letra original.\\[4pt]
+  Punto de discusión: ¿funciona igual con \texttt{|} o \texttt{\&}?
+  No: OR solo sube, AND solo baja. XOR es el único que \textit{alterna}.
+\end{notaprofesor}
+
+\begin{notaprofesor}[Sugerencia de apertura del cuaderno]
+  Si la sesión 05 va bien y sobra tiempo, abre el cuaderno y ejecuta la
+  celda de los patrones especiales (\texttt{1 << k} del 0 al 7). Ver el bit
+  ``caminar'' hacia la izquierda en la terminal suele generar buena discusión
+  sobre lo que físicamente representa cada bit en la memoria.
+\end{notaprofesor}
+
+\end{document}
