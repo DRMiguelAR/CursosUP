@@ -1,0 +1,380 @@
+% =============================================================================
+%  Notas del Profesor — Sesión 06: Práctica de Bit Manipulation
+%  Programación Avanzada — Universidad Panamericana
+%  Compilar: pdflatex sesion06_practica_bits_profesor.tex
+% =============================================================================
+\documentclass[12pt, oneside]{article}
+\usepackage[profesor]{progavanzada}
+
+\begin{document}
+
+\portada{Sesión 06}{Práctica de Bit Manipulation}{2026}
+
+\tableofcontents
+\newpage
+
+% =============================================================================
+\section{Objetivos de la sesión}
+% =============================================================================
+
+Al finalizar la sesión el alumno será capaz de:
+
+\begin{enumerate}
+  \item Aplicar las cuatro técnicas fundamentales (leer, encender, apagar,
+        invertir un bit) sobre cualquier posición $k$.
+  \item Construir y usar la máscara de $k$ bits bajos con \cpp{(1 << k) - 1}.
+  \item Resolver problemas clásicos de programación competitiva usando
+        operaciones de bits: potencia de 2, popcount, elemento único,
+        distancia de Hamming, bit más bajo, paridad y bitmask.
+  \item Trazear una expresión combinada de bits paso a paso y verificarla
+        en el cuaderno.
+\end{enumerate}
+
+\begin{notaprofesor}[Duración estimada]
+  50 minutos. Sugerido: 5 min repaso + 10 min técnicas fundamentales en pizarrón
+  + 35 min práctica en el cuaderno (Bloques A, B y C en ese orden).
+  El Bloque C es el más rico; prioriza los problemas 1–5 en clase y deja
+  6–8 como tarea.
+\end{notaprofesor}
+
+% =============================================================================
+\section{Secuencia de clase}
+% =============================================================================
+
+\subsection{Repaso rápido (5 min)}
+
+Antes de abrir el cuaderno, haz un repaso oral de los operadores de la sesión 05.
+
+\begin{notaprofesor}[Pregunta de arranque]
+  \textit{``¿Qué hace \texttt{x \& (x-1)}?''}\\[4pt]
+  La mayoría no sabrá. La respuesta: apaga el bit encendido de menor peso
+  de \texttt{x}. Promete que al final de la clase van a entender por qué
+  eso es útil para contar bits en $O(\text{bits encendidos})$ en lugar de
+  $O(32)$.
+\end{notaprofesor}
+
+\subsection{Técnicas fundamentales en pizarrón (10 min)}
+
+Presenta la tabla de las cuatro técnicas. Para cada una, dibuja el ejemplo
+con \texttt{x = 0b10110100} en el pizarrón:
+
+\begin{enumerate}
+  \item Escribe \texttt{x} en binario y señala el bit $k$ que vas a modificar.
+  \item Muestra la máscara \texttt{1 << k} debajo.
+  \item Aplica OR / AND-NOT / XOR y tacha los bits que cambian.
+\end{enumerate}
+
+\begin{notaprofesor}[Intuición para la tabla]
+  La intuición que más ayuda al alumno:
+  \begin{itemize}
+    \item OR con 1 siempre produce 1 — ``enciende sin preguntar''.
+    \item AND con 0 siempre produce 0 — ``apaga sin preguntar''.
+    \item XOR con 1 invierte — ``cambia el estado''.
+    \item OR/AND/XOR con 0 deja el bit intacto — ``no toca lo que no debe''.
+  \end{itemize}
+  La máscara \cpp{1 << k} garantiza que solo el bit $k$ sea 1 en la
+  máscara; el resto son 0, así que no tocan los demás bits de \texttt{x}.
+\end{notaprofesor}
+
+\subsection{Práctica en el cuaderno (35 min)}
+
+Los alumnos trabajan en el cuaderno en orden Bloque A → B → C.
+Circula y ayuda principalmente con:
+\begin{itemize}
+  \item Bloque A: que muestren los bits intermedios, no solo el resultado.
+  \item Bloque B, ejercicio 6: que entiendan que basta una expresión, no un
+        \texttt{if}.
+  \item Bloque C, problema 3: que lleguen solos a la idea del XOR antes de
+        que se los digas.
+\end{itemize}
+
+\begin{notaprofesor}[Cierre del problema 3]
+  El momento más valioso de la sesión es cuando un alumno descubre el truco
+  del XOR en el problema 3. Si nadie llega, da la pista gradualmente:
+  \begin{enumerate}
+    \item \textit{``¿Qué es \texttt{x \textasciicircum{} x}?''} — 0.
+    \item \textit{``¿Y \texttt{x \textasciicircum{} 0}?''} — x.
+    \item \textit{``¿Qué pasa si en el arreglo aparecen pares? ¿Se cancelan?''} — sí.
+    \item \textit{``Entonces ¿qué queda al final?''} — el elemento único.
+  \end{enumerate}
+  Una vez que lo ven, el efecto ``eureka'' hace que lo recuerden para siempre.
+\end{notaprofesor}
+
+% =============================================================================
+\section{Soluciones a los ejercicios}
+% =============================================================================
+
+\subsection{Bloque A — Calentamiento}
+
+\begin{notaprofesor}[Ejercicio 1 — \texttt{17 \& 12}]
+  \texttt{17 = 00010001},
+  \texttt{12 = 00001100},
+  \texttt{17 \& 12 = 00000000 = 0}.\\[4pt]
+  No comparten ningún bit encendido.
+\end{notaprofesor}
+
+\begin{notaprofesor}[Ejercicio 2 — \texttt{7 << 2}]
+  \texttt{7 = 00000111},
+  \texttt{7 << 2 = 00011100 = 28} $= 7 \times 4$.
+\end{notaprofesor}
+
+\begin{notaprofesor}[Ejercicio 3 — \texttt{13 | 12}]
+  \texttt{13 = 00001101},
+  \texttt{12 = 00001100},
+  \texttt{13 | 12 = 00001101 = 13}.\\[4pt]
+  Los bits de 12 ya estaban en 13; OR no aporta nada nuevo.
+\end{notaprofesor}
+
+\begin{notaprofesor}[Ejercicio 4 — \texttt{(\textasciitilde 7 | (1<<1) | (1<<3) | (1<<5)) \& 29}]
+  Paso a paso (8 bits):
+  \begin{enumerate}
+    \item \texttt{\textasciitilde 7 = \ldots11111000} — apaga los bits 0, 1, 2.
+    \item \texttt{| (1<<1) = \ldots11111010} — enciende el bit 1.
+    \item \texttt{| (1<<3)} — bit 3 ya estaba. \texttt{\ldots11111010}.
+    \item \texttt{| (1<<5)} — bit 5 ya estaba. \texttt{\ldots11111010}.
+    \item \texttt{29 = 0b00011101}.
+    \item AND: \texttt{00011101 \& 11111010 = 00011000 = \textbf{24}}.
+  \end{enumerate}
+\end{notaprofesor}
+
+\begin{notaprofesor}[Ejercicio 5 — \texttt{(\textasciitilde(13 >> 2)) \& 39}]
+  \begin{enumerate}
+    \item \texttt{13 = 0b00001101}
+    \item \texttt{13 >> 2 = 0b00000011 = 3}
+    \item \texttt{\textasciitilde 3 = \ldots11111100}
+    \item \texttt{39 = 0b00100111}
+    \item \texttt{\ldots11111100 \& 00100111 = 00100100 = \textbf{36}}
+  \end{enumerate}
+  Este es el ejemplo de la sesión 05; quien lo resuelva sin mirar demuestra
+  que entendió la mecánica de combinar operadores.
+\end{notaprofesor}
+
+\subsection{Bloque B — Implementación}
+
+\begin{notaprofesor}[Ejercicio 6 — Cuatro funciones]
+\begin{verbatim}
+int leerBit   (int x, int k) { return (x >> k) & 1;    }
+int encender  (int x, int k) { return x | (1 << k);    }
+int apagar    (int x, int k) { return x & ~(1 << k);   }
+int invertir  (int x, int k) { return x ^ (1 << k);    }
+\end{verbatim}
+
+  Con \texttt{x = 202 = 0b11001010}:
+  \begin{itemize}
+    \item \texttt{leerBit(202, 3) = (202 >> 3) \& 1 = 25 \& 1 = 1}. \checkmark
+    \item \texttt{apagar(202, 6)  = 202 \& \textasciitilde(64) = 202 \& \ldots10111111
+          = 10001010 = 138}. \checkmark
+    \item \texttt{encender(202, 0) = 202 | 1 = 11001011 = 203}. \checkmark
+    \item \texttt{invertir(202, 7) = 202 \^{} 128 = 11001010 \^{} 10000000
+          = 01001010 = 74}. \checkmark
+  \end{itemize}
+\end{notaprofesor}
+
+\begin{notaprofesor}[Ejercicio 7 — Máscara de $k$ bits]
+\begin{verbatim}
+int mascara(int k) { return (1 << k) - 1; }
+\end{verbatim}
+  Verificación: \texttt{mascara(3) = 8 - 1 = 7 = 0b00000111}. \checkmark\\
+  \texttt{mascara(5) = 32 - 1 = 31 = 0b00011111}. \checkmark\\
+  \texttt{mascara(8) = 256 - 1 = 255 = 0b11111111}. \checkmark
+\end{notaprofesor}
+
+\subsection{Bloque C — Programación competitiva}
+
+\begin{notaprofesor}[Problema 1 — ¿Es potencia de 2?]
+\begin{verbatim}
+int esPotencia2(int n) {
+    return n > 0 && !(n & (n - 1));
+}
+\end{verbatim}
+  Si $n$ es potencia de 2 tiene exactamente un bit encendido.
+  \texttt{n-1} apaga ese bit y enciende todos los menores.
+  AND con \texttt{n}: los patrones son complementarios, resultado = 0.\\[4pt]
+  Ejemplo: \texttt{n=4 = 100}, \texttt{n-1=3 = 011}, \texttt{4 \& 3 = 0}. \checkmark\\
+  Ejemplo: \texttt{n=6 = 110}, \texttt{n-1=5 = 101}, \texttt{6 \& 5 = 100 $\neq$ 0}. \checkmark
+\end{notaprofesor}
+
+\begin{notaprofesor}[Problema 2 — Popcount (dos versiones)]
+  \textbf{Versión A} (bucle sobre todos los bits, $O(32)$):
+\begin{verbatim}
+int popcount(int n) {
+    int cuenta = 0;
+    while (n) {
+        cuenta += n & 1;
+        n >>= 1;
+    }
+    return cuenta;
+}
+\end{verbatim}
+
+  \textbf{Versión B} (truco \texttt{n \& (n-1)}, $O(\text{bits encendidos})$):
+\begin{verbatim}
+int popcount(int n) {
+    int cuenta = 0;
+    while (n) {
+        n &= n - 1;   // apaga el bit encendido más bajo
+        cuenta++;
+    }
+    return cuenta;
+}
+\end{verbatim}
+  Para \texttt{n = 13 = 1101}: apaga bit 0 → \texttt{1100}, luego
+  bit 2 → \texttt{1000}, luego bit 3 → \texttt{0000}. Tres iteraciones. \checkmark
+\end{notaprofesor}
+
+\begin{notaprofesor}[Problema 3 — Elemento único]
+\begin{verbatim}
+int elementoUnico(vector<int>& arr) {
+    int res = 0;
+    for (int x : arr) res ^= x;
+    return res;
+}
+\end{verbatim}
+  \texttt{x \textasciicircum{} x = 0} para todo \texttt{x}, y
+  \texttt{x \textasciicircum{} 0 = x}. Al hacer XOR de todo el arreglo,
+  los pares se cancelan y el único elemento impar queda.\\[4pt]
+  Con \{3, 5, 3, 7, 5\}: $3\oplus5\oplus3\oplus7\oplus5 = 0\oplus7\oplus0 = 7$. \checkmark
+\end{notaprofesor}
+
+\begin{notaprofesor}[Problema 4 — Intercambio con XOR]
+\begin{verbatim}
+a ^= b;   // a = a ^ b
+b ^= a;   // b = b ^ (a ^ b) = a
+a ^= b;   // a = (a ^ b) ^ a = b
+\end{verbatim}
+  Traza con \texttt{a=42, b=73}:
+  \begin{enumerate}
+    \item \texttt{a = 42 \textasciicircum{} 73 = 99}; \texttt{b = 73}
+    \item \texttt{b = 73 \textasciicircum{} 99 = 42}; \texttt{a = 99}
+    \item \texttt{a = 99 \textasciicircum{} 42 = 73}. \checkmark
+  \end{enumerate}
+  \textbf{Advertencia:} este truco falla si \texttt{a} y \texttt{b} son
+  la misma variable (\texttt{a \textasciicircum{} a = 0} borra el valor).
+  En la práctica, \texttt{std::swap} es preferible.
+\end{notaprofesor}
+
+\begin{notaprofesor}[Problema 5 — Distancia de Hamming]
+\begin{verbatim}
+int hamming(int a, int b) {
+    return popcount(a ^ b);
+}
+\end{verbatim}
+  \texttt{a \textasciicircum{} b} produce 1 en cada posición donde difieren.
+  Contar esos 1s es exactamente el popcount del XOR.\\[4pt]
+  \texttt{29 \textasciicircum{} 15 = 11101 \textasciicircum{} 01111 = 10010};
+  popcount = 2. \checkmark
+\end{notaprofesor}
+
+\begin{notaprofesor}[Problema 6 — Bit encendido más bajo]
+\begin{verbatim}
+int bitMasBajo(int n) { return n & -n; }
+\end{verbatim}
+  En complemento a 2, \texttt{-n} invierte todos los bits y suma 1.
+  Ese ``suma 1'' propaga un carry desde el bit más bajo hasta el primer
+  1 de \texttt{n}, que queda encendido. AND con \texttt{n} conserva
+  solo ese bit.\\[4pt]
+  \texttt{n=12 = 01100}, \texttt{-n = 10100}, \texttt{12 \& -12 = 00100 = 4}. \checkmark
+\end{notaprofesor}
+
+\begin{notaprofesor}[Problema 7 — Paridad]
+  \textbf{Versión simple} (bucle):
+\begin{verbatim}
+int paridad(int n) {
+    int res = 0;
+    while (n) {
+        res ^= (n & 1);
+        n >>= 1;
+    }
+    return res;
+}
+\end{verbatim}
+
+  \textbf{Versión rápida} (XOR en cascada, $O(\log 32)$):
+\begin{verbatim}
+int paridad(int n) {
+    n ^= n >> 16;
+    n ^= n >> 8;
+    n ^= n >> 4;
+    n ^= n >> 2;
+    n ^= n >> 1;
+    return n & 1;
+}
+\end{verbatim}
+  Cada desplazamiento combina la mitad alta con la baja; al final solo
+  importa el bit 0.
+\end{notaprofesor}
+
+\begin{notaprofesor}[Problema 8 ★ — Contar subconjuntos]
+\begin{verbatim}
+{
+    int k = 3;
+    string elementos = "ABC";
+    for (int mask = 0; mask < (1 << k); mask++) {
+        cout << bitset<3>(mask) << "  ->  {";
+        bool primero = true;
+        for (int i = 0; i < k; i++) {
+            if ((mask >> i) & 1) {
+                if (!primero) cout << ", ";
+                cout << elementos[i];
+                primero = false;
+            }
+        }
+        cout << "}" << endl;
+    }
+}
+\end{verbatim}
+  Este patrón —iterar de 0 a $2^k - 1$ y examinar cada bit— es la base
+  de la \textbf{programación dinámica sobre máscaras} (bitmask DP), una
+  técnica estándar en ICPC y Codeforces para problemas con conjuntos
+  pequeños ($k \leq 20$).
+\end{notaprofesor}
+
+% =============================================================================
+\section{FAQs}
+% =============================================================================
+
+\begin{notaprofesor}[¿Por qué \texttt{n \& -n} da el bit más bajo?]
+  Para entenderlo, considera \texttt{n = 01100}. En complemento a 2,
+  \texttt{-n = 10011 + 1 = 10100}. Al hacer AND:
+  \begin{center}
+  \begin{tabular}{ll}
+    \texttt{n}    & \texttt{01100} \\
+    \texttt{-n}   & \texttt{10100} \\
+    \texttt{n\&-n} & \texttt{00100} \\
+  \end{tabular}
+  \end{center}
+  Los bits por encima del primer 1 son opuestos entre \texttt{n} y
+  \texttt{-n} (AND da 0). Los bits por debajo del primer 1 son
+  todos 0 en \texttt{n} (AND da 0). Solo el primer 1 coincide. \checkmark
+\end{notaprofesor}
+
+\begin{notaprofesor}[¿El XOR swap tiene algún uso real hoy?]
+  Históricamente se usaba para ahorrar un registro de CPU cuando los
+  procesadores tenían muy pocos. Hoy \textbf{no tiene ventaja} sobre
+  \texttt{std::swap}: el compilador optimiza ambas versiones igual.
+  Su valor en este curso es didáctico: demuestra las propiedades del XOR
+  de forma concreta.
+\end{notaprofesor}
+
+\begin{notaprofesor}[¿Cuándo usaría bitmask en la vida real?]
+  Tres casos concretos que los alumnos pueden encontrar pronto:
+  \begin{enumerate}
+    \item \textbf{Flags de configuración}: \texttt{O\_RDONLY | O\_CREAT}
+          en las llamadas al sistema de Unix — cada bit activa una opción.
+    \item \textbf{Conjuntos pequeños en DP}: cuando el estado del problema
+          es un subconjunto de $\leq 20$ elementos, se representa como un
+          entero y se itera en $O(2^k)$.
+    \item \textbf{Comunicaciones}: los checksums CRC usan XOR en polinomios
+          de bits para detectar errores de transmisión.
+  \end{enumerate}
+\end{notaprofesor}
+
+\begin{notaprofesor}[¿\texttt{popcount} ya existe en C++?]
+  Sí. Desde C++20 hay \texttt{std::popcount(n)} en \texttt{<bit>}.
+  En GCC, la extensión \texttt{\_\_builtin\_popcount(n)} ha existido
+  mucho antes y se compila a una sola instrucción de hardware (\texttt{POPCNT})
+  en CPUs modernas. En competencias se usa \texttt{\_\_builtin\_popcount}
+  por brevedad. El ejercicio es para entender cómo funciona internamente.
+\end{notaprofesor}
+
+\end{document}
