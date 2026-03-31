@@ -1,0 +1,27 @@
+Generar un código en c++:
+La función main debe recibir del usuario un número entero x y otro entero i
+Se debe generar una función para cada una de las siguientes operaciones:
+Reciba el entero x y un número i, prenda el i-ésimo bit del número x y regrese el número resultante.
+Reciba el entero x y un número i, y que cambie el valor del i-ésimo bit (1 se convierte en 0 y 0 se convierte en 1) y regrese el resultante
+Reciba el entero x y un número i y que apague el i-ésimo bit, y regrese el resultante.
+Reciba el entero x y un número i y regrese verdadero si el i-ésimo bit está prendido y falso si está apagado.
+Reciba el entero x y prenda los bits 2,4,6 y 8 y regrese el resultante
+Reciba el entero x y cambie el valor de los bits 3, 5 y 7 (cambie 0 a 1 y 1 a 0) y regrese el resultante
+Reciba el entero x y apague los bits en posiciones pares (0, 2,4, etc)
+ 
+
+Imprimir el número original y la transformación para cada una de las funciones anteriores.
+x= 35, i= 4
+x= 103, i= 6
+x= 2049, i=10
+
+
+Entrega:
+
+Subir un documento con:
+
+El código de cada ejercicio.
+Las entradas en binario de cada prueba (32 bits)
+Las entradas en representación decimal (entero)
+los resultados en binario de cada prueba( 32 bits)
+Los resultados en representación decimal (entero)
