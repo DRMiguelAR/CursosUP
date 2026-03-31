@@ -166,34 +166,34 @@ Interchange}, 1963) asigna un número a cada carácter imprimible y de control.
 \subsection{Tabla de letras mayúsculas}
 
 \begin{center}
-\begin{tabular}{ccc|ccc|ccc}
+\begin{tabular}{cc|cc|cc}
   \toprule
-  \textbf{Letra} & \textbf{Dec} & \textbf{Hex} &
-  \textbf{Letra} & \textbf{Dec} & \textbf{Hex} &
-  \textbf{Letra} & \textbf{Dec} & \textbf{Hex} \\
+  \textbf{Letra} & \textbf{Hex} &
+  \textbf{Letra} & \textbf{Hex} &
+  \textbf{Letra} & \textbf{Hex} \\
   \midrule
-  A & 65 & 41 & J & 74 & 4A & S & 83 & 53 \\
-  B & 66 & 42 & K & 75 & 4B & T & 84 & 54 \\
-  C & 67 & 43 & L & 76 & 4C & U & 85 & 55 \\
-  D & 68 & 44 & M & 77 & 4D & V & 86 & 56 \\
-  E & 69 & 45 & N & 78 & 4E & W & 87 & 57 \\
-  F & 70 & 46 & O & 79 & 4F & X & 88 & 58 \\
-  G & 71 & 47 & P & 80 & 50 & Y & 89 & 59 \\
-  H & 72 & 48 & Q & 81 & 51 & Z & 90 & 5A \\
-  I & 73 & 49 & R & 82 & 52 &   &    &    \\
+  A & 41 & J & 4A & S & 53 \\
+  B & 42 & K & 4B & T & 54 \\
+  C & 43 & L & 4C & U & 55 \\
+  D & 44 & M & 4D & V & 56 \\
+  E & 45 & N & 4E & W & 57 \\
+  F & 46 & O & 4F & X & 58 \\
+  G & 47 & P & 50 & Y & 59 \\
+  H & 48 & Q & 51 & Z & 5A \\
+  I & 49 & R & 52 &   &    \\
   \bottomrule
 \end{tabular}
 \end{center}
 
 \begin{ejemplo}[``MAR'' en ASCII]
 \begin{center}
-\begin{tabular}{cccc}
+\begin{tabular}{ccc}
   \toprule
-  \textbf{Letra} & \textbf{Binario} & \textbf{Hex} & \textbf{Decimal} \\
+  \textbf{Letra} & \textbf{Hex} & \textbf{Binario} \\
   \midrule
-  M & \texttt{01001101} & 4D & 77 \\
-  A & \texttt{01000001} & 41 & 65 \\
-  R & \texttt{01010010} & 52 & 82 \\
+  M & 4D & \texttt{0100 1101} \\
+  A & 41 & \texttt{0100 0001} \\
+  R & 52 & \texttt{0101 0010} \\
   \bottomrule
 \end{tabular}
 \end{center}
@@ -205,15 +205,15 @@ El texto ``MAR'' ocupa exactamente \textbf{3 bytes} en memoria.
 Observa el patrón binario de las mayúsculas y sus minúsculas:
 
 \begin{center}
-\begin{tabular}{cccc}
+\begin{tabular}{ccc}
   \toprule
-  & \textbf{Binario} & \textbf{Hex} & \textbf{Decimal} \\
+  & \textbf{Hex} & \textbf{Binario} \\
   \midrule
-  \texttt{A} & \texttt{0\textbf{1}000001} & 41 & 65 \\
-  \texttt{a} & \texttt{0\textbf{1}100001} & 61 & 97 \\
+  \texttt{A} & 41 & \texttt{010\textbf{0} 0001} \\
+  \texttt{a} & 61 & \texttt{011\textbf{0} 0001} \\
   \midrule
-  \texttt{M} & \texttt{0\textbf{1}001101} & 4D & 77 \\
-  \texttt{m} & \texttt{0\textbf{1}101101} & 6D & 109 \\
+  \texttt{M} & 4D & \texttt{010\textbf{0} 1101} \\
+  \texttt{m} & 6D & \texttt{011\textbf{0} 1101} \\
   \bottomrule
 \end{tabular}
 \end{center}
@@ -233,6 +233,76 @@ equivalente a sumar o restar 32.
   \texttt{c + 32} o, más elegante, \texttt{c \textasciicircum{} 0x20}
   (XOR con el bit 5).
 \end{consejo}
+
+\subsection{Dígitos y signos de puntuación}
+
+Los caracteres \texttt{'0'}–\texttt{'9'} tienen un patrón muy limpio:
+el nibble alto siempre es \texttt{0011} (hex \texttt{3}) y el nibble bajo
+es \textbf{exactamente el valor binario del dígito}.
+
+\begin{center}
+\begin{tabular}{ccc}
+  \toprule
+  \textbf{Carácter} & \textbf{Hex} & \textbf{Binario} \\
+  \midrule
+  \texttt{'0'} & 30 & \texttt{0011 \textbf{0000}} \\
+  \texttt{'1'} & 31 & \texttt{0011 \textbf{0001}} \\
+  \texttt{'2'} & 32 & \texttt{0011 \textbf{0010}} \\
+  \texttt{'3'} & 33 & \texttt{0011 \textbf{0011}} \\
+  \texttt{'4'} & 34 & \texttt{0011 \textbf{0100}} \\
+  \texttt{'5'} & 35 & \texttt{0011 \textbf{0101}} \\
+  \texttt{'6'} & 36 & \texttt{0011 \textbf{0110}} \\
+  \texttt{'7'} & 37 & \texttt{0011 \textbf{0111}} \\
+  \texttt{'8'} & 38 & \texttt{0011 \textbf{1000}} \\
+  \texttt{'9'} & 39 & \texttt{0011 \textbf{1001}} \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\begin{consejo}
+  Para convertir \texttt{'7'} al número entero 7 basta con hacer
+  \texttt{'7' \& 0x0F} (AND con los 4 bits bajos) o simplemente
+  \texttt{'7' - '0'}. Ambas operaciones eliminan el prefijo \texttt{0011}.
+\end{consejo}
+
+Los signos de control y puntuación ocupan los valores más bajos y
+medios de la tabla:
+
+\begin{center}
+\begin{tabular}{lcc}
+  \toprule
+  \textbf{Carácter} & \textbf{Hex} & \textbf{Binario} \\
+  \midrule
+  \texttt{NUL} (nulo \texttt{\textbackslash 0})        & 00 & \texttt{0000 0000} \\
+  \texttt{TAB} (tabulador \texttt{\textbackslash t})   & 09 & \texttt{0000 1001} \\
+  \texttt{LF}  (salto de línea \texttt{\textbackslash n}) & 0A & \texttt{0000 1010} \\
+  \texttt{CR}  (retorno de carro \texttt{\textbackslash r}) & 0D & \texttt{0000 1101} \\
+  \texttt{ESC} (escape)                                & 1B & \texttt{0001 1011} \\
+  \midrule
+  \texttt{' '} (espacio)   & 20 & \texttt{0010 0000} \\
+  \texttt{'!'}             & 21 & \texttt{0010 0001} \\
+  \texttt{'"'}             & 22 & \texttt{0010 0010} \\
+  \texttt{'+'}             & 2B & \texttt{0010 1011} \\
+  \texttt{'-'}             & 2D & \texttt{0010 1101} \\
+  \texttt{'/'}             & 2F & \texttt{0010 1111} \\
+  \midrule
+  \texttt{':'}             & 3A & \texttt{0011 1010} \\
+  \texttt{';'}             & 3B & \texttt{0011 1011} \\
+  \texttt{'='}             & 3D & \texttt{0011 1101} \\
+  \midrule
+  \texttt{'\{'}            & 7B & \texttt{0111 1011} \\
+  \texttt{'\}'}            & 7D & \texttt{0111 1101} \\
+  \texttt{DEL} (borrar)    & 7F & \texttt{0111 1111} \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\begin{recuerda}
+  El espacio (\texttt{0x20} = \texttt{0010 0000}) y el \texttt{NUL}
+  (\texttt{0x00}) son caracteres reales con su propio byte.
+  Un archivo de texto que ``parece vacío'' puede estar lleno de espacios,
+  tabuladores o saltos de línea — todos con representación binaria propia.
+\end{recuerda}
 
 \begin{tecnico}[ASCII extendido y Unicode]
   El ASCII original usa 7 bits (128 caracteres). Para incluir acentos,
