@@ -484,6 +484,117 @@ la representación truncada de $0.3$.
 \end{tecnico}
 
 % =============================================================================
+\section{Ejercicios}
+% =============================================================================
+
+\subsection{Complemento a 2}
+
+\begin{enumerate}
+
+  \item Representa los siguientes valores en \textbf{8 bits en complemento
+        a 2}. Muestra el proceso (invertir + sumar 1).
+        \begin{enumerate}
+          \item $-35$
+          \item $-1$
+          \item $-128$
+        \end{enumerate}
+
+  \item Dado el siguiente patrón de 8 bits interpretado como complemento
+        a 2, ¿qué valor decimal representa? Muestra cómo lo determinas.
+        \begin{enumerate}
+          \item \texttt{1111 0110}
+          \item \texttt{1000 0001}
+          \item \texttt{0111 1111}
+        \end{enumerate}
+
+  \item ¿Cuál es el rango de valores representables con \textbf{16 bits}
+        en complemento a 2? ¿Y sin signo?
+
+  \item Un programador declara una variable de 8 bits sin signo
+        (\texttt{uint8\_t}) y le asigna el valor 200. Luego la niega
+        con el algoritmo de complemento a 2. ¿Qué valor obtiene?
+        ¿Por qué el resultado es sorprendente?
+
+\end{enumerate}
+
+\subsection{ASCII}
+
+\begin{enumerate}[resume]
+
+  \item Decodifica el siguiente mensaje. Cada byte está en hexadecimal.
+        \[
+          \texttt{48\ 6F\ 6C\ 61}
+        \]
+
+  \item Escribe tu nombre completo (sin acentos) como secuencia de bytes
+        en hexadecimal. Indica cuántos bytes ocupa.
+
+  \item El byte \texttt{0x6C} es una letra minúscula. Sin consultar la
+        tabla, determina cuál es la mayúscula correspondiente y su valor
+        hexadecimal. Explica el procedimiento.
+
+  \item ¿Qué imprimiría un programa que lee los bytes
+        \texttt{0x39\ 0x0A\ 0x38\ 0x0A} y los envía a la pantalla
+        carácter por carácter?
+
+\end{enumerate}
+
+\subsection{Fracciones en binario}
+
+\begin{enumerate}[resume]
+
+  \item Convierte las siguientes fracciones a binario usando el algoritmo
+        de multiplicación por 2. Indica si el resultado es exacto o
+        periódico y, en ese caso, cuál es el patrón que se repite.
+        \begin{enumerate}
+          \item $\dfrac{3}{8}$
+          \item $\dfrac{1}{6}$
+          \item $0.625$
+        \end{enumerate}
+
+  \item Sin hacer la conversión, determina cuáles de las siguientes
+        fracciones tienen representación \textbf{exacta} en binario y
+        cuáles no. Justifica con los factores primos.
+        \[
+          \frac{1}{16}, \quad \frac{1}{12}, \quad \frac{3}{4},
+          \quad \frac{1}{14}, \quad \frac{5}{8}
+        \]
+
+  \item Convierte $5.375_{10}$ a binario (parte entera y fraccionaria).
+
+\end{enumerate}
+
+\subsection{IEEE 754}
+
+\begin{enumerate}[resume]
+
+  \item Clasifica cada número como exactamente representable o no en
+        \texttt{float}. Justifica.
+        \begin{enumerate}
+          \item $0.5$
+          \item $0.1$
+          \item $\frac{1}{32}$
+          \item $\frac{1}{10}$
+        \end{enumerate}
+
+  \item Un \texttt{float} de 32 bits tiene el siguiente patrón:
+        \[
+          \underbrace{0}_{signo}\;
+          \underbrace{01111111}_{exponente}\;
+          \underbrace{10000000000000000000000}_{mantisa}
+        \]
+        \begin{enumerate}
+          \item ¿Es positivo o negativo?
+          \item El exponente real es $e - 127$. ¿Cuánto vale aquí?
+          \item La mantisa representa $1.1_2$. ¿Qué número decimal es?
+        \end{enumerate}
+
+  \item Explica con tus palabras por qué la expresión \texttt{0.1 + 0.2 == 0.3}
+        devuelve \texttt{false} en C++, aunque matemáticamente sea correcta.
+
+\end{enumerate}
+
+% =============================================================================
 \section{Resumen}
 % =============================================================================
 
