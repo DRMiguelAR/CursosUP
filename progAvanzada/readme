@@ -36,7 +36,7 @@ Notas disponibles
 | 04     | Representaciones Binarias           | notas_alumno/pdf/sesion04_representaciones_binarias.pdf        | notas_profesor/pdf/sesion04_representaciones_binarias_profesor.pdf        |
 | 05     | Bit Manipulation                    | notas_alumno/pdf/sesion05_bit_manipulation.pdf                 | notas_profesor/pdf/sesion05_bit_manipulation_profesor.pdf                 |
 | 06     | Práctica de Bit Manipulation        | notas_alumno/pdf/sesion06_practica_bits.pdf                    | notas_profesor/pdf/sesion06_practica_bits_profesor.pdf                    |
-| 08     | Práctica competitiva con bits       | notas_alumno/pdf/sesion08_practica_competitiva.pdf             | notas_profesor/pdf/sesion08_practica_competitiva_profesor.pdf             |
+| 07     | Práctica competitiva con bits       | notas_alumno/pdf/sesion07_practica_competitiva.pdf             | notas_profesor/pdf/sesion07_practica_competitiva_profesor.pdf             |
 | 16     | Apuntadores, referencias y arreglos | notas_alumno/pdf/sesion16_apuntadores_referencias_arreglos.pdf | notas_profesor/pdf/sesion16_apuntadores_referencias_arreglos_profesor.pdf |
 
 Sesiones registradas
@@ -48,5 +48,6 @@ Sesiones registradas
 | 02     | Introducción a C++                      | sesiones/sesion02_introduccion_cpp.ipynb                 |
 | 05     | Manipulación de bits                    | sesiones/sesion05_bit_manipulation.ipynb                 |
 | 06     | Práctica de bits                        | sesiones/sesion06_practica_bits.ipynb                    |
+| 08     | Implementación: problemas de bits       | sesiones/sesion08_implementacion_bits.ipynb              |
 | 16     | Apuntadores, referencias y arreglos     | sesiones/sesion16_apuntadores_referencias_arreglos.ipynb |
 | 17     | Paso por referencia                     | sesiones/sesion17_paso_por_referencia.ipynb              |
