@@ -44,7 +44,269 @@
 \newpage
 
 % =============================================================================
-\section{Problema 1: Los bits de la clase de programación (Algoritmo de Phil)}
+\section{Problema 1: Separación de bits — posiciones pares e impares}
+% =============================================================================
+
+\subsection{Enunciado resumido}
+
+Dado $n$, separar en $a$ (bits de $n$ en posiciones impares, índices 1,3,5,\ldots)
+y $b$ (bits de $n$ en posiciones pares, índices 0,2,4,\ldots).  Leer hasta 0.
+
+\subsection{Clave de la solución}
+
+\begin{notaprofesor}
+  \textbf{Máscaras:}
+  \begin{itemize}
+    \item Posiciones impares (bits 1, 3, 5, 7, \ldots):
+          \texttt{0xAAAAAAAA} $= \texttt{10101010\,10101010\,10101010\,10101010}_2$
+    \item Posiciones pares (bits 0, 2, 4, 6, \ldots):
+          \texttt{0x55555555} $= \texttt{01010101\,01010101\,01010101\,01010101}_2$
+  \end{itemize}
+
+  \[
+    a = n \;\&\; \texttt{0xAAAAAAAA}, \quad b = n \;\&\; \texttt{0x55555555}
+  \]
+
+  La implementación en la sesión 09 es literalmente dos líneas.
+\end{notaprofesor}
+
+\subsection{Solución de los ejemplos del enunciado}
+
+\begin{center}
+\begin{tabular}{cccccc}
+  \toprule
+  $n$ & Binario & $n$ \& 0xAA & $a$ & $n$ \& 0x55 & $b$ \\
+  \midrule
+  13 & \texttt{00001101} & \texttt{00001000} & 8  & \texttt{00000101} & 5 \\
+   6 & \texttt{00000110} & \texttt{00000010} & 2  & \texttt{00000100} & 4 \\
+   7 & \texttt{00000111} & \texttt{00000010} & 2  & \texttt{00000101} & 5 \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\begin{notaprofesor}
+  \textbf{Error en el enunciado del OmegaUP:} el enunciado muestra para $n=7$
+  la salida ``5 2'', pero los archivos del juez dan ``2 5''.  La respuesta
+  correcta es \textbf{2 5} ($a=2$, $b=5$).  El enunciado del problema
+  aparentemente tiene un ejemplo copiado del problema siguiente (enumerar 1s),
+  donde sí se obtiene ``5 2''.  En la sesión 09, el juez acepta ``2 5''.
+\end{notaprofesor}
+
+\subsection{Solución de los casos de práctica}
+
+\begin{center}
+\begin{tabular}{ccccccc}
+  \toprule
+  $n$ & Binario & Pos.\ impares & $a$ & Pos.\ pares & $b$ & Salida \\
+  \midrule
+   3 & \texttt{0011} & \texttt{0010} & 2 & \texttt{0001} & 1 & \texttt{2 1} \\
+   5 & \texttt{0101} & \texttt{0000} & 0 & \texttt{0101} & 5 & \texttt{0 5} \\
+  10 & \texttt{1010} & \texttt{1010} & 10 & \texttt{0000} & 0 & \texttt{10 0} \\
+  12 & \texttt{1100} & \texttt{1000} & 8 & \texttt{0100} & 4 & \texttt{8 4} \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\newpage
+
+% =============================================================================
+\section{Problema 2: Separación de bits — enumerar 1s}
+% =============================================================================
+
+\subsection{Enunciado resumido}
+
+Enumerar los 1s de $n$ de derecha a izquierda (1.°, 2.°, 3.°, \ldots).
+Los 1s con índice impar → $a$; los con índice par → $b$.  Leer hasta 0.
+
+\subsection{Clave de la solución}
+
+\begin{notaprofesor}
+  \textbf{Lo que el juez acepta} (verificado contra los archivos de casos):
+
+  \[
+    a = n \;\&\; \texttt{0x55555555}, \quad b = n \;\&\; \texttt{0xAAAAAAAA}
+  \]
+
+  Es decir, \textbf{el complemento} del problema anterior: $a$ toma los bits
+  en posiciones pares y $b$ los de posiciones impares.
+
+  \textbf{¿Coincide con el enunciado?}  En muchos casos sí, pero no siempre:
+  \begin{itemize}
+    \item Si todos los 1s de $n$ están en posiciones alternas (como $n=5=0101_2$),
+          el 1.° y 3.° uno están en posiciones pares, así que $a$ = bits pares.
+          Coincide con la máscara \texttt{0x55}.
+    \item Para $n=55=\texttt{00110111}_2$, los 1s son en posiciones 0,1,2,4,5
+          (enumerando: 1.° en pos 0, 2.° en pos 1, 3.° en pos 2, 4.° en pos 4,
+          5.° en pos 5).  Según el enunciado: $a$ (impares 1°,3°,5°) en pos 0,2,5 →
+          $a = 1+4+32=37$; $b$ (pares 2°,4°) en pos 1,4 → $b=2+16=18$.
+          Pero el juez espera $a=21=\texttt{010101}_2$ (bits pares de 55),
+          $b=34=\texttt{100010}_2$ (bits impares de 55).
+  \end{itemize}
+
+  \textbf{Conclusión:} el enunciado describe un algoritmo diferente al que
+  evalúa el juez.  Para obtener AC (Accepted) en OmegaUP, usar las máscaras.
+  En el plenario puedes presentar ambos algoritmos y discutir la discrepancia:
+  es una buena lección sobre la importancia de probar contra los casos del juez.
+\end{notaprofesor}
+
+\subsection{Solución de los ejemplos del enunciado (según el juez)}
+
+\begin{center}
+\begin{tabular}{ccccc}
+  \toprule
+  $n$ & Binario & $n$ \& 0x55 = $a$ & $n$ \& 0xAA = $b$ & Salida \\
+  \midrule
+  13 & \texttt{00001101} & \texttt{00000101}=5 & \texttt{00001000}=8 & Enunciado: 9 4 \\
+   6 & \texttt{00000110} & \texttt{00000100}=4 & \texttt{00000010}=2 & Enunciado: 2 4 \\
+   7 & \texttt{00000111} & \texttt{00000101}=5 & \texttt{00000010}=2 & Enunciado: 5 2 \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\begin{notaprofesor}
+  Para $n=6$ y $n=7$, los resultados del juez y del enunciado coinciden porque
+  en estos casos los 1s caen en posiciones alternadas o el enunciado y la máscara
+  producen el mismo resultado.  Para $n=13=\texttt{1101}_2$:
+  \begin{itemize}
+    \item Enunciado: 1.° uno en bit 0, 2.° en bit 2, 3.° en bit 3.
+          $a$ (1°,3° impares) = bits 0 y 3 = 1+8=9; $b$ (2° par) = bit 2 = 4. → ``9 4''
+    \item Máscara: $a=13$\&\texttt{0x55}=\texttt{0101}=5; $b=13$\&\texttt{0xAA}=\texttt{1000}=8. → ``5 8''
+  \end{itemize}
+  Los archivos del juez dan ``9 4'', así que el enunciado sí corresponde para estos ejemplos.
+  La discrepancia con la máscara aparece para entradas con 1s en posiciones impares.
+  Verificar en la sesión 09 cuál obtiene AC.
+\end{notaprofesor}
+
+\subsection{Solución de los casos de práctica (algoritmo del enunciado)}
+
+\begin{center}
+\begin{tabular}{p{0.6cm}p{1.5cm}p{5cm}cc}
+  \toprule
+  $n$ & Binario & Enumeración & $a$ & $b$ \\
+  \midrule
+   3 & \texttt{0011}
+     & bit0=1 (1°, impar), bit1=1 (2°, par)
+     & 1 & 2 \\[4pt]
+   5 & \texttt{0101}
+     & bit0=1 (1°, impar), bit2=1 (2°, par)
+     & 1 & 4 \\[4pt]
+  10 & \texttt{1010}
+     & bit1=1 (1°, impar), bit3=1 (2°, par)
+     & 2 & 8 \\[4pt]
+  12 & \texttt{1100}
+     & bit2=1 (1°, impar), bit3=1 (2°, par)
+     & 4 & 8 \\[4pt]
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\begin{notaprofesor}
+  \textbf{Nota para la sesión 09:} implementar primero el algoritmo del
+  enunciado (enumerar 1s con bucle) y someter.  Si el juez da WA, intentar
+  con la máscara \texttt{0x55}/\texttt{0xAA} y comparar.  Esto ilustra bien
+  por qué los casos de prueba del juez son la fuente de verdad.
+\end{notaprofesor}
+
+\newpage
+
+% =============================================================================
+\section{Problema 3: Chasquidos Mágicos}
+% =============================================================================
+
+\subsection{Enunciado resumido}
+
+$n$ enchufes en serie, todos apagados.  Cada chasquido activa/desactiva los
+enchufes que reciben corriente (en cascada).  ¿Está la lámpara (enchufe $n$)
+prendida después de $c$ chasquidos?
+
+\subsection{Clave de la solución}
+
+\begin{notaprofesor}
+  \textbf{Insight:} la cadena de enchufes se comporta exactamente como un
+  \textbf{contador binario}.  Después de $c$ chasquidos, el enchufe $i$
+  (contando desde 1) tiene el mismo estado que el bit $i-1$ de $c$.
+
+  Esto se puede intuir así: el enchufe 1 siempre recibe corriente (de la pared),
+  así que cambia con cada chasquido → alterna 0,1,0,1,\ldots = bit 0 de $c$.
+  El enchufe 2 solo cambia cuando el enchufe 1 está encendido (hay corriente)
+  → cambia exactamente cuando el bit 0 de $c$ pasa de 1 a 0, es decir, cada
+  dos chasquidos → bit 1 de $c$.  Y así sucesivamente.
+
+  \textbf{Fórmula:} la lámpara (enchufe $n$) es \texttt{PRENDIDA} si y solo
+  si el bit $n-1$ de $c$ vale 1, es decir:
+
+  \[
+    \texttt{resultado} = \bigl((c \gg (n-1))\;\&\;1\bigr) == 1
+  \]
+
+  \textbf{Verificación con los ejemplos:}
+  \begin{itemize}
+    \item $(n=1,\,c=0)$: bit 0 de $0=0$b $\to$ \texttt{APAGADA} \checkmark
+    \item $(n=1,\,c=1)$: bit 0 de $1=1$b $\to$ \texttt{PRENDIDA} \checkmark
+    \item $(n=4,\,c=0)$: bit 3 de $0 = 0 \to$ \texttt{APAGADA} \checkmark
+    \item $(n=4,\,c=47=\texttt{0b101111})$: bit 3 de 47 = 1 $\to$ \texttt{PRENDIDA} \checkmark
+  \end{itemize}
+\end{notaprofesor}
+
+\subsection{Solución de los casos de práctica}
+
+\textbf{n = 2} (la lámpara es el bit 1 de $c$):
+
+\begin{center}
+\begin{tabular}{c|c|c|c|c|c}
+  \toprule
+  Chasquidos & Binario & E1 & E2 & Lámpara & Bit 1 de $c$ \\
+  \midrule
+  0 & \texttt{00} & 0 & 0 & APAGADA & 0 \\
+  1 & \texttt{01} & 1 & 0 & APAGADA & 0 \\
+  2 & \texttt{10} & 0 & 1 & PRENDIDA & 1 \\
+  3 & \texttt{11} & 1 & 1 & PRENDIDA & 1 \\
+  4 & \texttt{100} & 0 & 0 & APAGADA & 0 \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{n = 3} (la lámpara es el bit 2 de $c$):
+
+\begin{center}
+\begin{tabular}{c|c|c|c|c|c|c}
+  \toprule
+  Chasquidos & Binario & E1 & E2 & E3 & Lámpara & Bit 2 de $c$ \\
+  \midrule
+  0 & \texttt{000} & 0 & 0 & 0 & APAGADA & 0 \\
+  1 & \texttt{001} & 1 & 0 & 0 & APAGADA & 0 \\
+  2 & \texttt{010} & 0 & 1 & 0 & APAGADA & 0 \\
+  3 & \texttt{011} & 1 & 1 & 0 & APAGADA & 0 \\
+  4 & \texttt{100} & 0 & 0 & 1 & PRENDIDA & 1 \\
+  5 & \texttt{101} & 1 & 0 & 1 & PRENDIDA & 1 \\
+  6 & \texttt{110} & 0 & 1 & 1 & PRENDIDA & 1 \\
+  7 & \texttt{111} & 1 & 1 & 1 & PRENDIDA & 1 \\
+  8 & \texttt{1000} & 0 & 0 & 0 & APAGADA & 0 \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\begin{notaprofesor}
+  \textbf{Preguntas de sondeo:}
+  \begin{itemize}
+    \item ``¿Cuántos chasquidos necesitas para prender la lámpara si hay
+          $n=5$ enchufes?'' (Respuesta: $c=16=2^4$.)
+    \item ``Si doy 100{,}000{,}000 de chasquidos con $n=30$ enchufes, ¿la lámpara
+          está prendida o apagada?'' (bit 29 de $10^8$; $10^8=\texttt{0x5F5E100}$,
+          bit 29 = 0 $\to$ \texttt{APAGADA}.)
+  \end{itemize}
+
+  \textbf{Punto clave para la sesión 09:} con la fórmula basta una línea en C++:
+  \begin{center}
+    \texttt{cout << (((c >> (n-1)) \& 1) ? "PRENDIDA" : "APAGADA");}
+  \end{center}
+  No se necesita ningún bucle.
+\end{notaprofesor}
+
+\newpage
+
+% =============================================================================
+\section{Problema 4: Los bits de la clase de programación (Algoritmo de Phil)}
 % =============================================================================
 
 \subsection{Enunciado resumido}
@@ -161,268 +423,6 @@ $S=\texttt{010}_2=2$ \checkmark
   entero con \% en cada paso: muy fácil de implementar sin conversiones.
 \end{notaprofesor}
 
-\newpage
-
-% =============================================================================
-\section{Problema 2: Chasquidos Mágicos}
-% =============================================================================
-
-\subsection{Enunciado resumido}
-
-$n$ enchufes en serie, todos apagados.  Cada chasquido activa/desactiva los
-enchufes que reciben corriente (en cascada).  ¿Está la lámpara (enchufe $n$)
-prendida después de $c$ chasquidos?
-
-\subsection{Clave de la solución}
-
-\begin{notaprofesor}
-  \textbf{Insight:} la cadena de enchufes se comporta exactamente como un
-  \textbf{contador binario}.  Después de $c$ chasquidos, el enchufe $i$
-  (contando desde 1) tiene el mismo estado que el bit $i-1$ de $c$.
-
-  Esto se puede intuir así: el enchufe 1 siempre recibe corriente (de la pared),
-  así que cambia con cada chasquido → alterna 0,1,0,1,\ldots = bit 0 de $c$.
-  El enchufe 2 solo cambia cuando el enchufe 1 está encendido (hay corriente)
-  → cambia exactamente cuando el bit 0 de $c$ pasa de 1 a 0, es decir, cada
-  dos chasquidos → bit 1 de $c$.  Y así sucesivamente.
-
-  \textbf{Fórmula:} la lámpara (enchufe $n$) es \texttt{PRENDIDA} si y solo
-  si el bit $n-1$ de $c$ vale 1, es decir:
-
-  \[
-    \texttt{resultado} = \bigl((c \gg (n-1))\;\&\;1\bigr) == 1
-  \]
-
-  \textbf{Verificación con los ejemplos:}
-  \begin{itemize}
-    \item $(n=1,\,c=0)$: bit 0 de $0=0$b $\to$ \texttt{APAGADA} \checkmark
-    \item $(n=1,\,c=1)$: bit 0 de $1=1$b $\to$ \texttt{PRENDIDA} \checkmark
-    \item $(n=4,\,c=0)$: bit 3 de $0 = 0 \to$ \texttt{APAGADA} \checkmark
-    \item $(n=4,\,c=47=\texttt{0b101111})$: bit 3 de 47 = 1 $\to$ \texttt{PRENDIDA} \checkmark
-  \end{itemize}
-\end{notaprofesor}
-
-\subsection{Solución de los casos de práctica}
-
-\textbf{n = 2} (la lámpara es el bit 1 de $c$):
-
-\begin{center}
-\begin{tabular}{c|c|c|c|c|c}
-  \toprule
-  Chasquidos & Binario & E1 & E2 & Lámpara & Bit 1 de $c$ \\
-  \midrule
-  0 & \texttt{00} & 0 & 0 & APAGADA & 0 \\
-  1 & \texttt{01} & 1 & 0 & APAGADA & 0 \\
-  2 & \texttt{10} & 0 & 1 & PRENDIDA & 1 \\
-  3 & \texttt{11} & 1 & 1 & PRENDIDA & 1 \\
-  4 & \texttt{100} & 0 & 0 & APAGADA & 0 \\
-  \bottomrule
-\end{tabular}
-\end{center}
-
-\textbf{n = 3} (la lámpara es el bit 2 de $c$):
-
-\begin{center}
-\begin{tabular}{c|c|c|c|c|c|c}
-  \toprule
-  Chasquidos & Binario & E1 & E2 & E3 & Lámpara & Bit 2 de $c$ \\
-  \midrule
-  0 & \texttt{000} & 0 & 0 & 0 & APAGADA & 0 \\
-  1 & \texttt{001} & 1 & 0 & 0 & APAGADA & 0 \\
-  2 & \texttt{010} & 0 & 1 & 0 & APAGADA & 0 \\
-  3 & \texttt{011} & 1 & 1 & 0 & APAGADA & 0 \\
-  4 & \texttt{100} & 0 & 0 & 1 & PRENDIDA & 1 \\
-  5 & \texttt{101} & 1 & 0 & 1 & PRENDIDA & 1 \\
-  6 & \texttt{110} & 0 & 1 & 1 & PRENDIDA & 1 \\
-  7 & \texttt{111} & 1 & 1 & 1 & PRENDIDA & 1 \\
-  8 & \texttt{1000} & 0 & 0 & 0 & APAGADA & 0 \\
-  \bottomrule
-\end{tabular}
-\end{center}
-
-\begin{notaprofesor}
-  \textbf{Preguntas de sondeo:}
-  \begin{itemize}
-    \item ``¿Cuántos chasquidos necesitas para prender la lámpara si hay
-          $n=5$ enchufes?'' (Respuesta: $c=16=2^4$.)
-    \item ``Si doy 100{,}000{,}000 de chasquidos con $n=30$ enchufes, ¿la lámpara
-          está prendida o apagada?'' (bit 29 de $10^8$; $10^8=\texttt{0x5F5E100}$,
-          bit 29 = 0 $\to$ \texttt{APAGADA}.)
-  \end{itemize}
-
-  \textbf{Punto clave para la sesión 09:} con la fórmula basta una línea en C++:
-  \begin{center}
-    \texttt{cout << (((c >> (n-1)) \& 1) ? "PRENDIDA" : "APAGADA");}
-  \end{center}
-  No se necesita ningún bucle.
-\end{notaprofesor}
-
-\newpage
-
-% =============================================================================
-\section{Problema 3: Separación de bits — posiciones pares e impares}
-% =============================================================================
-
-\subsection{Enunciado resumido}
-
-Dado $n$, separar en $a$ (bits de $n$ en posiciones impares, índices 1,3,5,\ldots)
-y $b$ (bits de $n$ en posiciones pares, índices 0,2,4,\ldots).  Leer hasta 0.
-
-\subsection{Clave de la solución}
-
-\begin{notaprofesor}
-  \textbf{Máscaras:}
-  \begin{itemize}
-    \item Posiciones impares (bits 1, 3, 5, 7, \ldots):
-          \texttt{0xAAAAAAAA} $= \texttt{10101010\,10101010\,10101010\,10101010}_2$
-    \item Posiciones pares (bits 0, 2, 4, 6, \ldots):
-          \texttt{0x55555555} $= \texttt{01010101\,01010101\,01010101\,01010101}_2$
-  \end{itemize}
-
-  \[
-    a = n \;\&\; \texttt{0xAAAAAAAA}, \quad b = n \;\&\; \texttt{0x55555555}
-  \]
-
-  La implementación en la sesión 09 es literalmente dos líneas.
-\end{notaprofesor}
-
-\subsection{Solución de los ejemplos del enunciado}
-
-\begin{center}
-\begin{tabular}{cccccc}
-  \toprule
-  $n$ & Binario & $n$ \& 0xAA & $a$ & $n$ \& 0x55 & $b$ \\
-  \midrule
-  13 & \texttt{00001101} & \texttt{00001000} & 8  & \texttt{00000101} & 5 \\
-   6 & \texttt{00000110} & \texttt{00000010} & 2  & \texttt{00000100} & 4 \\
-   7 & \texttt{00000111} & \texttt{00000010} & 2  & \texttt{00000101} & 5 \\
-  \bottomrule
-\end{tabular}
-\end{center}
-
-\begin{notaprofesor}
-  \textbf{Error en el enunciado del OmegaUP:} el enunciado muestra para $n=7$
-  la salida ``5 2'', pero los archivos del juez dan ``2 5''.  La respuesta
-  correcta es \textbf{2 5} ($a=2$, $b=5$).  El enunciado del problema
-  aparentemente tiene un ejemplo copiado del problema siguiente (enumerar 1s),
-  donde sí se obtiene ``5 2''.  En la sesión 09, el juez acepta ``2 5''.
-\end{notaprofesor}
-
-\subsection{Solución de los casos de práctica}
-
-\begin{center}
-\begin{tabular}{ccccccc}
-  \toprule
-  $n$ & Binario & Pos.\ impares & $a$ & Pos.\ pares & $b$ & Salida \\
-  \midrule
-   3 & \texttt{0011} & \texttt{0010} & 2 & \texttt{0001} & 1 & \texttt{2 1} \\
-   5 & \texttt{0101} & \texttt{0000} & 0 & \texttt{0101} & 5 & \texttt{0 5} \\
-  10 & \texttt{1010} & \texttt{1010} & 10 & \texttt{0000} & 0 & \texttt{10 0} \\
-  12 & \texttt{1100} & \texttt{1000} & 8 & \texttt{0100} & 4 & \texttt{8 4} \\
-  \bottomrule
-\end{tabular}
-\end{center}
-
-\newpage
-
-% =============================================================================
-\section{Problema 4: Separación de bits — enumerar 1s}
-% =============================================================================
-
-\subsection{Enunciado resumido}
-
-Enumerar los 1s de $n$ de derecha a izquierda (1.°, 2.°, 3.°, \ldots).
-Los 1s con índice impar → $a$; los con índice par → $b$.  Leer hasta 0.
-
-\subsection{Clave de la solución}
-
-\begin{notaprofesor}
-  \textbf{Lo que el juez acepta} (verificado contra los archivos de casos):
-
-  \[
-    a = n \;\&\; \texttt{0x55555555}, \quad b = n \;\&\; \texttt{0xAAAAAAAA}
-  \]
-
-  Es decir, \textbf{el complemento} del problema anterior: $a$ toma los bits
-  en posiciones pares y $b$ los de posiciones impares.
-
-  \textbf{¿Coincide con el enunciado?}  En muchos casos sí, pero no siempre:
-  \begin{itemize}
-    \item Si todos los 1s de $n$ están en posiciones alternas (como $n=5=0101_2$),
-          el 1.° y 3.° uno están en posiciones pares, así que $a$ = bits pares.
-          Coincide con la máscara \texttt{0x55}.
-    \item Para $n=55=\texttt{00110111}_2$, los 1s son en posiciones 0,1,2,4,5
-          (enumerando: 1.° en pos 0, 2.° en pos 1, 3.° en pos 2, 4.° en pos 4,
-          5.° en pos 5).  Según el enunciado: $a$ (impares 1°,3°,5°) en pos 0,2,5 →
-          $a = 1+4+32=37$; $b$ (pares 2°,4°) en pos 1,4 → $b=2+16=18$.
-          Pero el juez espera $a=21=\texttt{010101}_2$ (bits pares de 55),
-          $b=34=\texttt{100010}_2$ (bits impares de 55).
-  \end{itemize}
-
-  \textbf{Conclusión:} el enunciado describe un algoritmo diferente al que
-  evalúa el juez.  Para obtener AC (Accepted) en OmegaUP, usar las máscaras.
-  En el plenario puedes presentar ambos algoritmos y discutir la discrepancia:
-  es una buena lección sobre la importancia de probar contra los casos del juez.
-\end{notaprofesor}
-
-\subsection{Solución de los ejemplos del enunciado (según el juez)}
-
-\begin{center}
-\begin{tabular}{ccccc}
-  \toprule
-  $n$ & Binario & $n$ \& 0x55 = $a$ & $n$ \& 0xAA = $b$ & Salida \\
-  \midrule
-  13 & \texttt{00001101} & \texttt{00000101}=5 & \texttt{00001000}=8 & Enunciado: 9 4 \\
-   6 & \texttt{00000110} & \texttt{00000100}=4 & \texttt{00000010}=2 & Enunciado: 2 4 \\
-   7 & \texttt{00000111} & \texttt{00000101}=5 & \texttt{00000010}=2 & Enunciado: 5 2 \\
-  \bottomrule
-\end{tabular}
-\end{center}
-
-\begin{notaprofesor}
-  Para $n=6$ y $n=7$, los resultados del juez y del enunciado coinciden porque
-  en estos casos los 1s caen en posiciones alternadas o el enunciado y la máscara
-  producen el mismo resultado.  Para $n=13=\texttt{1101}_2$:
-  \begin{itemize}
-    \item Enunciado: 1.° uno en bit 0, 2.° en bit 2, 3.° en bit 3.
-          $a$ (1°,3° impares) = bits 0 y 3 = 1+8=9; $b$ (2° par) = bit 2 = 4. → ``9 4''
-    \item Máscara: $a=13$\&\texttt{0x55}=\texttt{0101}=5; $b=13$\&\texttt{0xAA}=\texttt{1000}=8. → ``5 8''
-  \end{itemize}
-  Los archivos del juez dan ``9 4'', así que el enunciado sí corresponde para estos ejemplos.
-  La discrepancia con la máscara aparece para entradas con 1s en posiciones impares.
-  Verificar en la sesión 09 cuál obtiene AC.
-\end{notaprofesor}
-
-\subsection{Solución de los casos de práctica (algoritmo del enunciado)}
-
-\begin{center}
-\begin{tabular}{p{0.6cm}p{1.5cm}p{5cm}cc}
-  \toprule
-  $n$ & Binario & Enumeración & $a$ & $b$ \\
-  \midrule
-   3 & \texttt{0011}
-     & bit0=1 (1°, impar), bit1=1 (2°, par)
-     & 1 & 2 \\[4pt]
-   5 & \texttt{0101}
-     & bit0=1 (1°, impar), bit2=1 (2°, par)
-     & 1 & 4 \\[4pt]
-  10 & \texttt{1010}
-     & bit1=1 (1°, impar), bit3=1 (2°, par)
-     & 2 & 8 \\[4pt]
-  12 & \texttt{1100}
-     & bit2=1 (1°, impar), bit3=1 (2°, par)
-     & 4 & 8 \\[4pt]
-  \bottomrule
-\end{tabular}
-\end{center}
-
-\begin{notaprofesor}
-  \textbf{Nota para la sesión 09:} implementar primero el algoritmo del
-  enunciado (enumerar 1s con bucle) y someter.  Si el juez da WA, intentar
-  con la máscara \texttt{0x55}/\texttt{0xAA} y comparar.  Esto ilustra bien
-  por qué los casos de prueba del juez son la fuente de verdad.
-\end{notaprofesor}
-
 % =============================================================================
 \section{Resumen de soluciones}
 % =============================================================================
@@ -432,18 +432,18 @@ Los 1s con índice impar → $a$; los con índice par → $b$.  Leer hasta 0.
   \toprule
   \textbf{Problema} & \textbf{Solución clave} \\
   \midrule
-  Algoritmo de Phil
-    & Simulación: extraer bit(s) central(es), mayor primero en caso par.
-      Acumular $S$ como entero con módulo. \\[4pt]
-  Chasquidos Mágicos
-    & Contador binario. Respuesta = bit $n-1$ de $c$.
-      \texttt{(c >> (n-1)) \& 1}. \\[4pt]
   Separación pares/imp.
     & $a = n$ \texttt{\&} \texttt{0xAAAAAAAA};
       $b = n$ \texttt{\&} \texttt{0x55555555}. \\[4pt]
   Separación enum.\ 1s
     & Enumerar 1s con bucle (algoritmo del enunciado).
-      Alternativa: $a = n$ \texttt{\&} \texttt{0x55}; $b = n$ \texttt{\&} \texttt{0xAA}. \\
+      Alternativa: $a = n$ \texttt{\&} \texttt{0x55}; $b = n$ \texttt{\&} \texttt{0xAA}. \\[4pt]
+  Chasquidos Mágicos
+    & Contador binario. Respuesta = bit $n-1$ de $c$.
+      \texttt{(c >> (n-1)) \& 1}. \\[4pt]
+  Algoritmo de Phil
+    & Simulación: extraer bit(s) central(es), mayor primero en caso par.
+      Acumular $S$ como entero con módulo. \\
   \bottomrule
 \end{tabular}
 \end{center}

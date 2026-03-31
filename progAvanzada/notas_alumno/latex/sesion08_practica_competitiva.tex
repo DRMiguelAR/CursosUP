@@ -51,95 +51,149 @@ En la siguiente sesión lo implementan.  Hoy, todo se resuelve \textbf{a mano}.
 \newpage
 
 % =============================================================================
-\section{Problema 1: Los bits de la clase de programación}
+\section{Problema 1: Separación de bits — posiciones pares e impares}
 % =============================================================================
 
 \subsection{Enunciado}
 
-Uno de tus compañeros inventó un algoritmo que opera sobre una cadena de bits
-$A$ y va construyendo otra cadena $S$ (inicialmente vacía).  El proceso se
-repite hasta que $A$ queda vacía:
+Dado un número entero $n$ (menor a $2^{31}-1$) en base 10, separa sus bits en
+dos números $a$ y $b$:
 
 \begin{itemize}
-  \item Si $A$ tiene \textbf{longitud impar}: el bit que está exactamente en el
-        centro se retira de $A$ y se agrega al final de $S$.
-  \item Si $A$ tiene \textbf{longitud par}: los dos bits del centro se comparan.
-        El \textbf{mayor} (o cualquiera en caso de empate) se agrega \textbf{primero}
-        al final de $S$, seguido del \textbf{menor}; ambos se retiran de $A$.
+  \item Los bits de $n$ que están en \textbf{posición impar} (bit 1, bit 3,
+        bit 5, \ldots, contando desde 0 en el bit menos significativo) y que
+        valen 1, forman el número $a$.  Todos los demás bits de $a$ son 0.
+  \item Los bits de $n$ que están en \textbf{posición par} (bit 0, bit 2,
+        bit 4, \ldots) y que valen 1, forman el número $b$.
 \end{itemize}
 
-Al terminar, se imprime la representación decimal de $S$ como número binario.
-Si el resultado es mayor que $10^9+7$, imprime el residuo módulo $10^9+7$.
-
-\textbf{Entrada:} primera línea con $k$ (número de casos); luego $k$ cadenas
-binarias.
-
-\textbf{Salida:} para cada caso, \texttt{Caso \#x: y}.
+Leer enteros hasta recibir un 0.  Por cada número imprimir ``$a$ $b$'' en una
+línea.
 
 \subsection{Ejemplo del enunciado}
 
 \begin{center}
-\begin{tabular}{ll}
+\begin{tabular}{ccccc}
   \toprule
-  \textbf{Entrada} & \textbf{Salida} \\
+  $n$ & \textbf{Binario} & \textbf{Bits impares} ($a$) & \textbf{Bits pares} ($b$) & \textbf{Salida} \\
   \midrule
-  \texttt{00000} & \texttt{Caso \#1: 0} \\
-  \texttt{0101101} & \texttt{Caso \#2: 106} \\
-  \texttt{100} & \texttt{Caso \#3: 2} \\
+  13 & \texttt{1101} & \texttt{1000}=8  & \texttt{0101}=5 & \texttt{8 5} \\
+   6 & \texttt{0110} & \texttt{0010}=2  & \texttt{0100}=4 & \texttt{2 4} \\
+   7 & \texttt{0111} & \texttt{0010}=2  & \texttt{0101}=5 & \texttt{2 5} \\
   \bottomrule
 \end{tabular}
 \end{center}
 
-\textbf{Traza de \texttt{0101101}:}
-
-\begin{center}
-\begin{tabular}{clp{4cm}l}
-  \toprule
-  \textbf{Paso} & \textbf{A} & \textbf{Acción} & \textbf{S acumulado} \\
-  \midrule
-  1 & \texttt{0101101} (7, impar)  & extrae centro [3]\,=\,\texttt{1}          & \texttt{1} \\
-  2 & \texttt{010101}  (6, par)    & centro [2,3]\,=\,\texttt{0,1}; mayor\,=\,\texttt{1}, menor\,=\,\texttt{0} & \texttt{110} \\
-  3 & \texttt{0101}    (4, par)    & centro [1,2]\,=\,\texttt{1,0}; mayor\,=\,\texttt{1}, menor\,=\,\texttt{0} & \texttt{11010} \\
-  4 & \texttt{01}      (2, par)    & centro [0,1]\,=\,\texttt{0,1}; mayor\,=\,\texttt{1}, menor\,=\,\texttt{0} & \texttt{1101010} \\
-  \bottomrule
-\end{tabular}
-\end{center}
-
-$S = \texttt{1101010}_2 = 106_{10}$ \checkmark
+\begin{recuerda}
+  \textbf{Posiciones de bits:} el bit menos significativo (el que vale $2^0$)
+  está en la posición 0 (par).  El siguiente (valor $2^1$) está en posición 1
+  (impar).  Y así sucesivamente.
+\end{recuerda}
 
 \subsection{Casos de práctica}
 
-Resuelve los siguientes casos a mano.  Llena la tabla de traza y escribe el
-resultado final.
+Completa la siguiente tabla. Pista: escribe el número en binario y subraya
+los bits en posición impar para obtener $a$, y los bits en posición par para $b$.
 
 \begin{center}
-\begin{tabular}{ccc}
+\begin{tabular}{cccccc}
   \toprule
-  \textbf{A} & \textbf{S (binario)} & \textbf{Resultado decimal} \\
+  $n$ & \textbf{Binario} & \textbf{Pos. impares (a)} & $a$ & \textbf{Pos. pares (b)} & $b$ \\
   \midrule
-  \texttt{1}    & & \\[8pt]
-  \texttt{110}  & & \\[8pt]
-  \texttt{1010} & & \\[8pt]
-  \texttt{1111} & & \\[8pt]
+   3  & & & & & \\[6pt]
+   5  & & & & & \\[6pt]
+  10  & & & & & \\[6pt]
+  12  & & & & & \\[6pt]
   \bottomrule
 \end{tabular}
 \end{center}
 
-\vspace{1cm}
-\textbf{Espacio para la traza:}
+\vspace{0.5cm}
 
-\vspace{4cm}
+¿Hay una máscara binaria que, aplicada con AND a $n$, extraiga exactamente los
+bits en posición impar?  ¿Y para los bits en posición par?
+
+\vspace{2cm}
 
 \begin{consejo}
-  Convierte la cadena a posiciones numeradas de \textbf{izquierda a derecha}
-  empezando en 0.  El índice del centro izquierdo en una cadena de longitud $n$
-  par es $n/2 - 1$; el centro derecho es $n/2$.
+  Escribe en binario la constante \texttt{0xAAAAAAAA} y la constante
+  \texttt{0x55555555}.  Fíjate qué posiciones de bits están encendidas en cada
+  una.
 \end{consejo}
 
 \newpage
 
 % =============================================================================
-\section{Problema 2: Chasquidos Mágicos}
+\section{Problema 2: Separación de bits — enumerar 1s}
+% =============================================================================
+
+\subsection{Enunciado}
+
+Dado $n$, se enumeran los bits que valen 1 en $n$ de \textbf{derecha a izquierda}
+empezando a contar desde 1.  Los 1s enumerados con un número \textbf{impar}
+(1.°, 3.°, 5.°, \ldots) forman el número $a$ (conservando su posición de bit
+dentro de $n$).  Los 1s enumerados con un número \textbf{par} (2.°, 4.°, 6.°,
+\ldots) forman el número $b$.
+
+Leer enteros hasta recibir un 0.  Por cada número imprimir ``$a$ $b$''.
+
+\subsection{Ejemplo del enunciado}
+
+\begin{center}
+\begin{tabular}{p{1.2cm}p{2cm}p{4.8cm}cc}
+  \toprule
+  $n$ & \textbf{Binario} & \textbf{Enumeración de 1s (der.\ $\to$ izq.)} & $a$ & $b$ \\
+  \midrule
+  13 & \texttt{1101}
+     & bit0=1 (1°, impar), bit2=1 (2°, par), bit3=1 (3°, impar)
+     & 9 & 4 \\
+   6 & \texttt{0110}
+     & bit1=1 (1°, impar), bit2=1 (2°, par)
+     & 2 & 4 \\
+   7 & \texttt{0111}
+     & bit0=1 (1°, impar), bit1=1 (2°, par), bit2=1 (3°, impar)
+     & 5 & 2 \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{Verificación para n=13 (\texttt{1101}):}
+El 1.° y 3.° uno están en bits 0 y 3 → $a = 2^0 + 2^3 = 1+8 = 9$.
+El 2.° uno está en bit 2 → $b = 2^2 = 4$.
+
+\subsection{Casos de práctica}
+
+\begin{center}
+\begin{tabular}{p{0.8cm}p{2cm}p{4.5cm}cc}
+  \toprule
+  $n$ & \textbf{Binario} & \textbf{Enumeración de 1s} & $a$ & $b$ \\
+  \midrule
+   3  & & & & \\[14pt]
+   5  & & & & \\[14pt]
+  10  & & & & \\[14pt]
+  12  & & & & \\[14pt]
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\vspace{0.5cm}
+
+¿Observas alguna relación entre este problema y el anterior (posiciones pares
+e impares)?  ¿La separación que obtienes aquí siempre coincide con la de
+posiciones pares/impares?  ¿Cuándo sí y cuándo no?
+
+\vspace{2cm}
+
+\begin{consejo}
+  Empieza por $n$s pequeños con muy pocos 1s, como $n = 2^k$ (potencias de 2).
+  Observa qué ocurre.  Luego prueba con $n=3$ (dos 1s) y $n=7$ (tres 1s) donde
+  el patrón se vuelve más claro.
+\end{consejo}
+
+\newpage
+
+% =============================================================================
+\section{Problema 3: Chasquidos Mágicos}
 % =============================================================================
 
 \subsection{Enunciado}
@@ -227,143 +281,89 @@ estado de cada enchufe?
 \newpage
 
 % =============================================================================
-\section{Problema 3: Separación de bits — posiciones pares e impares}
+\section{Problema 4: Los bits de la clase de programación}
 % =============================================================================
 
 \subsection{Enunciado}
 
-Dado un número entero $n$ (menor a $2^{31}-1$) en base 10, separa sus bits en
-dos números $a$ y $b$:
+Uno de tus compañeros inventó un algoritmo que opera sobre una cadena de bits
+$A$ y va construyendo otra cadena $S$ (inicialmente vacía).  El proceso se
+repite hasta que $A$ queda vacía:
 
 \begin{itemize}
-  \item Los bits de $n$ que están en \textbf{posición impar} (bit 1, bit 3,
-        bit 5, \ldots, contando desde 0 en el bit menos significativo) y que
-        valen 1, forman el número $a$.  Todos los demás bits de $a$ son 0.
-  \item Los bits de $n$ que están en \textbf{posición par} (bit 0, bit 2,
-        bit 4, \ldots) y que valen 1, forman el número $b$.
+  \item Si $A$ tiene \textbf{longitud impar}: el bit que está exactamente en el
+        centro se retira de $A$ y se agrega al final de $S$.
+  \item Si $A$ tiene \textbf{longitud par}: los dos bits del centro se comparan.
+        El \textbf{mayor} (o cualquiera en caso de empate) se agrega \textbf{primero}
+        al final de $S$, seguido del \textbf{menor}; ambos se retiran de $A$.
 \end{itemize}
 
-Leer enteros hasta recibir un 0.  Por cada número imprimir ``$a$ $b$'' en una
-línea.
+Al terminar, se imprime la representación decimal de $S$ como número binario.
+Si el resultado es mayor que $10^9+7$, imprime el residuo módulo $10^9+7$.
+
+\textbf{Entrada:} primera línea con $k$ (número de casos); luego $k$ cadenas
+binarias.
+
+\textbf{Salida:} para cada caso, \texttt{Caso \#x: y}.
 
 \subsection{Ejemplo del enunciado}
 
 \begin{center}
-\begin{tabular}{ccccc}
+\begin{tabular}{ll}
   \toprule
-  $n$ & \textbf{Binario} & \textbf{Bits impares} ($a$) & \textbf{Bits pares} ($b$) & \textbf{Salida} \\
+  \textbf{Entrada} & \textbf{Salida} \\
   \midrule
-  13 & \texttt{1101} & \texttt{1000}=8  & \texttt{0101}=5 & \texttt{8 5} \\
-   6 & \texttt{0110} & \texttt{0010}=2  & \texttt{0100}=4 & \texttt{2 4} \\
-   7 & \texttt{0111} & \texttt{0010}=2  & \texttt{0101}=5 & \texttt{2 5} \\
+  \texttt{00000} & \texttt{Caso \#1: 0} \\
+  \texttt{0101101} & \texttt{Caso \#2: 106} \\
+  \texttt{100} & \texttt{Caso \#3: 2} \\
   \bottomrule
 \end{tabular}
 \end{center}
 
-\begin{recuerda}
-  \textbf{Posiciones de bits:} el bit menos significativo (el que vale $2^0$)
-  está en la posición 0 (par).  El siguiente (valor $2^1$) está en posición 1
-  (impar).  Y así sucesivamente.
-\end{recuerda}
+\textbf{Traza de \texttt{0101101}:}
+
+\begin{center}
+\begin{tabular}{clp{4cm}l}
+  \toprule
+  \textbf{Paso} & \textbf{A} & \textbf{Acción} & \textbf{S acumulado} \\
+  \midrule
+  1 & \texttt{0101101} (7, impar)  & extrae centro [3]\,=\,\texttt{1}          & \texttt{1} \\
+  2 & \texttt{010101}  (6, par)    & centro [2,3]\,=\,\texttt{0,1}; mayor\,=\,\texttt{1}, menor\,=\,\texttt{0} & \texttt{110} \\
+  3 & \texttt{0101}    (4, par)    & centro [1,2]\,=\,\texttt{1,0}; mayor\,=\,\texttt{1}, menor\,=\,\texttt{0} & \texttt{11010} \\
+  4 & \texttt{01}      (2, par)    & centro [0,1]\,=\,\texttt{0,1}; mayor\,=\,\texttt{1}, menor\,=\,\texttt{0} & \texttt{1101010} \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+$S = \texttt{1101010}_2 = 106_{10}$ \checkmark
 
 \subsection{Casos de práctica}
 
-Completa la siguiente tabla. Pista: escribe el número en binario y subraya
-los bits en posición impar para obtener $a$, y los bits en posición par para $b$.
+Resuelve los siguientes casos a mano.  Llena la tabla de traza y escribe el
+resultado final.
 
 \begin{center}
-\begin{tabular}{cccccc}
+\begin{tabular}{ccc}
   \toprule
-  $n$ & \textbf{Binario} & \textbf{Pos. impares (a)} & $a$ & \textbf{Pos. pares (b)} & $b$ \\
+  \textbf{A} & \textbf{S (binario)} & \textbf{Resultado decimal} \\
   \midrule
-   3  & & & & & \\[6pt]
-   5  & & & & & \\[6pt]
-  10  & & & & & \\[6pt]
-  12  & & & & & \\[6pt]
+  \texttt{1}    & & \\[8pt]
+  \texttt{110}  & & \\[8pt]
+  \texttt{1010} & & \\[8pt]
+  \texttt{1111} & & \\[8pt]
   \bottomrule
 \end{tabular}
 \end{center}
 
-\vspace{0.5cm}
+\vspace{1cm}
+\textbf{Espacio para la traza:}
 
-¿Hay una máscara binaria que, aplicada con AND a $n$, extraiga exactamente los
-bits en posición impar?  ¿Y para los bits en posición par?
-
-\vspace{2cm}
+\vspace{4cm}
 
 \begin{consejo}
-  Escribe en binario la constante \texttt{0xAAAAAAAA} y la constante
-  \texttt{0x55555555}.  Fíjate qué posiciones de bits están encendidas en cada
-  una.
-\end{consejo}
-
-\newpage
-
-% =============================================================================
-\section{Problema 4: Separación de bits — enumerar 1s}
-% =============================================================================
-
-\subsection{Enunciado}
-
-Dado $n$, se enumeran los bits que valen 1 en $n$ de \textbf{derecha a izquierda}
-empezando a contar desde 1.  Los 1s enumerados con un número \textbf{impar}
-(1.°, 3.°, 5.°, \ldots) forman el número $a$ (conservando su posición de bit
-dentro de $n$).  Los 1s enumerados con un número \textbf{par} (2.°, 4.°, 6.°,
-\ldots) forman el número $b$.
-
-Leer enteros hasta recibir un 0.  Por cada número imprimir ``$a$ $b$''.
-
-\subsection{Ejemplo del enunciado}
-
-\begin{center}
-\begin{tabular}{p{1.2cm}p{2cm}p{4.8cm}cc}
-  \toprule
-  $n$ & \textbf{Binario} & \textbf{Enumeración de 1s (der.\ $\to$ izq.)} & $a$ & $b$ \\
-  \midrule
-  13 & \texttt{1101}
-     & bit0=1 (1°, impar), bit2=1 (2°, par), bit3=1 (3°, impar)
-     & 9 & 4 \\
-   6 & \texttt{0110}
-     & bit1=1 (1°, impar), bit2=1 (2°, par)
-     & 2 & 4 \\
-   7 & \texttt{0111}
-     & bit0=1 (1°, impar), bit1=1 (2°, par), bit2=1 (3°, impar)
-     & 5 & 2 \\
-  \bottomrule
-\end{tabular}
-\end{center}
-
-\textbf{Verificación para n=13 (\texttt{1101}):}
-El 1.° y 3.° uno están en bits 0 y 3 → $a = 2^0 + 2^3 = 1+8 = 9$.
-El 2.° uno está en bit 2 → $b = 2^2 = 4$.
-
-\subsection{Casos de práctica}
-
-\begin{center}
-\begin{tabular}{p{0.8cm}p{2cm}p{4.5cm}cc}
-  \toprule
-  $n$ & \textbf{Binario} & \textbf{Enumeración de 1s} & $a$ & $b$ \\
-  \midrule
-   3  & & & & \\[14pt]
-   5  & & & & \\[14pt]
-  10  & & & & \\[14pt]
-  12  & & & & \\[14pt]
-  \bottomrule
-\end{tabular}
-\end{center}
-
-\vspace{0.5cm}
-
-¿Observas alguna relación entre este problema y el anterior (posiciones pares
-e impares)?  ¿La separación que obtienes aquí siempre coincide con la de
-posiciones pares/impares?  ¿Cuándo sí y cuándo no?
-
-\vspace{2cm}
-
-\begin{consejo}
-  Empieza por $n$s pequeños con muy pocos 1s, como $n = 2^k$ (potencias de 2).
-  Observa qué ocurre.  Luego prueba con $n=3$ (dos 1s) y $n=7$ (tres 1s) donde
-  el patrón se vuelve más claro.
+  Convierte la cadena a posiciones numeradas de \textbf{izquierda a derecha}
+  empezando en 0.  El índice del centro izquierdo en una cadena de longitud $n$
+  par es $n/2 - 1$; el centro derecho es $n/2$.
 \end{consejo}
 
 % =============================================================================
@@ -375,14 +375,14 @@ posiciones pares/impares?  ¿Cuándo sí y cuándo no?
   \toprule
   \textbf{Problema} & \textbf{Clave a encontrar} \\
   \midrule
-  Algoritmo de Phil    & Proceso de extracción de bits centrales; traza
-                         paso a paso del algoritmo \\[4pt]
-  Chasquidos Mágicos   & Relación entre el estado de los enchufes y la
-                         representación binaria de $c$ \\[4pt]
   Separación pares/imp & Máscara AND que aísla los bits en posiciones pares
                          o impares \\[4pt]
   Separación enum.\ 1s & Enumeración de los bits encendidos y distribución
-                         entre $a$ y $b$ \\
+                         entre $a$ y $b$ \\[4pt]
+  Chasquidos Mágicos   & Relación entre el estado de los enchufes y la
+                         representación binaria de $c$ \\[4pt]
+  Algoritmo de Phil    & Proceso de extracción de bits centrales; traza
+                         paso a paso del algoritmo \\
   \bottomrule
 \end{tabular}
 \end{center}
