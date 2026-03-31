@@ -1,0 +1,10 @@
+
+1- Resolver en papel los casos de prueba de cada uno de los problemas
+
+2- Generar en papel un algoritmo (diagrama de flujo o pseudocódigo) para cada uno de los problemas, explicando cómo se resolvería en general el problema para cualquier entrada
+
+
+
+Entrega:
+
+Documento con las fotos de los casos de prueba y los algoritmos
