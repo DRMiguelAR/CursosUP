@@ -128,15 +128,41 @@ Muestra la tabla A–Z en el pizarrón o proyector. Puntos clave:
 
 Secuencia sugerida:
 \begin{enumerate}
-  \item Pregunta: \textit{``¿Cómo escribirías 0.1 en binario?''}
-        Muestra que $0.1_{10} = 0.0\overline{0011}_2$ (periódico).
-        Conecta con $\frac{1}{3} = 0.\overline{3}$ en decimal: no es raro,
-        depende de la base.
-  \item Muestra la estructura: signo (1 bit), exponente (8 bits),
-        mantisa (23 bits) para \texttt{float}.
-  \item Regla práctica: \textbf{nunca} comparar flotantes con \texttt{==}.
+  \item \textbf{Factores primos de la base} (arranque conceptual).
+        Pregunta: \textit{``¿Por qué $\frac{1}{3}$ es periódica en
+        decimal pero $\frac{1}{2}$ no?''} Guía al grupo a la respuesta:
+        $2$ divide a $10$, pero $3$ no. Generaliza: $\frac{1}{n}$ es
+        exacta en base $b$ cuando $n$ solo tiene factores primos que
+        también divide a $b$. En base 2, el único factor es $2$, así que
+        solo $\frac{1}{2^k}$ es exacta.
+        Esto \textbf{no es culpa de la computadora}; es matemática pura.
+
+  \item \textbf{Algoritmo de multiplicación por 2} para convertir
+        fracciones. Desarrolla en pizarrón $\frac{1}{4}$ (exacto) y
+        $\frac{1}{3}$ (periódico). Con $\frac{1}{3}$ el grupo verá el
+        ciclo aparecer naturalmente: en el segundo paso el estado de la
+        parte fraccionaria vuelve al inicio, y se ve por qué el patrón
+        $01$ se repite indefinidamente.
+
+  \item \textbf{$0.1_{10}$ en binario}: aplica el mismo algoritmo.
+        Muestra que el ciclo comienza en el segundo paso y produce el
+        patrón $\overline{0011}$, de donde $0.1_{10} = 0.0\overline{0011}_2$.
+
+  \item \textbf{Estructura IEEE 754}: signo (1 bit), exponente (8 bits),
+        mantisa (23 bits) para \texttt{float}. La mantisa trunca la
+        secuencia infinita, introduciendo el error.
+
+  \item \textbf{Regla práctica}: nunca comparar flotantes con \texttt{==}.
         Usa \texttt{|a-b| < epsilon}.
 \end{enumerate}
+
+\begin{notaprofesor}[Pregunta de sondeo efectiva]
+  Después de mostrar que $\frac{1}{3} = 0.\overline{01}_2$, pregunta:\\
+  \textit{``¿Cuántos bits necesitarías para representar exactamente
+  $\frac{1}{3}$?''} Respuesta: infinitos. Esto ancla por qué el error
+  de redondeo es \textbf{inevitable} y no un bug que alguien pueda
+  corregir añadiendo más bits.
+\end{notaprofesor}
 
 \begin{notaprofesor}[Demostración en vivo opcional]
   Si tienes el cuaderno Jupyter abierto, ejecuta:

@@ -283,12 +283,118 @@ almacena — es un \textbf{bit implícito gratis}.
   \item \textbf{Mantisa}: los bits después del punto del $1.xxx\ldots$
 \end{itemize}
 
+\subsection{¿Qué fracciones tienen representación exacta?}
+
+En base 10, una fracción $\frac{1}{n}$ tiene representación decimal
+\textbf{finita} si y solo si $n$ no tiene factores primos distintos de
+\textbf{2} y \textbf{5} (los factores de 10).
+
+\begin{center}
+\begin{tabular}{lll}
+  \toprule
+  \textbf{Fracción} & \textbf{Decimal} & \textbf{¿Exacta?} \\
+  \midrule
+  $\frac{1}{2}$ & $0.5$               & Sí — $2$ divide a $10$ \\
+  $\frac{1}{4}$ & $0.25$              & Sí — $4 = 2^2$ \\
+  $\frac{1}{5}$ & $0.2$               & Sí — $5$ divide a $10$ \\
+  $\frac{1}{3}$ & $0.\overline{3}$    & No — $3$ no divide a $10$ \\
+  $\frac{1}{6}$ & $0.1\overline{6}$   & No — tiene factor $3$ \\
+  $\frac{1}{7}$ & $0.\overline{142857}$ & No — $7$ no divide a $10$ \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+En base 2, el único factor primo es el \textbf{2}.
+Por eso solo las fracciones de la forma $\frac{1}{2^k}$ son exactas;
+todo lo demás es periódico.
+
+\begin{center}
+\begin{tabular}{lll}
+  \toprule
+  \textbf{Fracción} & \textbf{Binario} & \textbf{¿Exacta en base 2?} \\
+  \midrule
+  $\frac{1}{2}$ & $0.1_2$                   & Sí \\
+  $\frac{1}{4}$ & $0.01_2$                  & Sí \\
+  $\frac{1}{8}$ & $0.001_2$                 & Sí \\
+  $\frac{1}{3}$ & $0.\overline{01}_2$        & No — patrón 01 se repite \\
+  $\frac{1}{5}$ & $0.\overline{0011}_2$      & No — patrón 0011 se repite \\
+  $\frac{1}{10}$& $0.0\overline{0011}_2$     & No ($\frac{1}{5}\div 2$) \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\begin{recuerda}
+  La representación periódica no es un defecto de la computadora:
+  es una propiedad matemática. $\frac{1}{3}$ es igual de
+  ``infinita'' en decimal como en binario. La diferencia es que en base 10
+  lo vemos con $\frac{1}{3}$ pero no con $\frac{1}{10}$, y en base 2
+  pasa lo contrario.
+\end{recuerda}
+
+\subsection{Cómo convertir la parte fraccionaria a binario}
+
+El algoritmo es análogo a las divisiones sucesivas para la parte entera,
+pero en sentido inverso: \textbf{multiplica por 2 repetidamente}.
+
+\begin{enumerate}
+  \item Multiplica la parte fraccionaria por 2.
+  \item Si el resultado es $\geq 1$: escribe un \textbf{1} y conserva
+        solo la parte fraccionaria (resta 1).
+  \item Si el resultado es $< 1$: escribe un \textbf{0}.
+  \item Repite con la parte fraccionaria restante.
+        Si llegas a 0, terminaste. Si el estado se repite, el número
+        es \textbf{periódico}.
+\end{enumerate}
+
+\begin{ejemplo}[Convertir $\frac{1}{4} = 0.25$ a binario]
+\begin{center}
+\begin{tabular}{r@{\ $\times 2=$\ }ll}
+  $0.25$ & $0.50$ & $\to$ bit \textbf{0} \\
+  $0.50$ & $1.00$ & $\to$ bit \textbf{1}, resto $0.00$ \\
+\end{tabular}
+\end{center}
+$\frac{1}{4} = 0.01_2$ \checkmark
+\end{ejemplo}
+
+\begin{ejemplo}[Convertir $\frac{1}{3} \approx 0.333\ldots$ a binario]
+\begin{center}
+\begin{tabular}{r@{\ $\times 2=$\ }ll}
+  $0.\overline{3}$ & $0.\overline{6}$ & $\to$ bit \textbf{0} \\
+  $0.\overline{6}$ & $1.\overline{3}$ & $\to$ bit \textbf{1}, resto $0.\overline{3}$ \\
+  $0.\overline{3}$ & $0.\overline{6}$ & $\to$ bit \textbf{0} \quad (¡mismo estado inicial!) \\
+  $\vdots$ & $\vdots$ & $\vdots$ \\
+\end{tabular}
+\end{center}
+El estado se repite desde el primer paso: $\frac{1}{3} = 0.\overline{01}_2$
+
+\[
+  \frac{1}{3} = 0.010101\ldots_2
+\]
+\end{ejemplo}
+
+\begin{ejemplo}[Convertir $0.1_{10}$ a binario]
+\begin{center}
+\begin{tabular}{r@{\ $\times 2=$\ }ll}
+  $0.1$ & $0.2$ & $\to$ bit \textbf{0} \\
+  $0.2$ & $0.4$ & $\to$ bit \textbf{0} \\
+  $0.4$ & $0.8$ & $\to$ bit \textbf{0} \\
+  $0.8$ & $1.6$ & $\to$ bit \textbf{1}, resto $0.6$ \\
+  $0.6$ & $1.2$ & $\to$ bit \textbf{1}, resto $0.2$ \\
+  $0.2$ & $0.4$ & $\to$ bit \textbf{0} \quad (mismo estado que línea 2) \\
+  $\vdots$ & $\vdots$ & $\vdots$ \\
+\end{tabular}
+\end{center}
+$0.1_{10} = 0.0\overline{0011}_2$
+\end{ejemplo}
+
 \subsection{¿Por qué \texttt{0.1 + 0.2 $\neq$ 0.3} en la computadora?}
 
-Porque $0.1$ en binario es una fracción \textbf{periódica}
-($0.0\overline{0011}_2$), igual que $\frac{1}{3}$ es periódica en
-decimal ($0.\overline{3}$). Al truncar la mantisa a 23 o 52 bits se
-introduce un pequeño error de redondeo que se acumula en las operaciones.
+Porque $0.1_{10} = 0.0\overline{0011}_2$ es un número periódico en
+binario. Al almacenarlo en un \texttt{float} (23 bits de mantisa) o
+\texttt{double} (52 bits), la secuencia infinita se \textbf{trunca},
+introduciendo un error pequeño pero no nulo.
+Al sumar dos de esos errores el resultado no coincide exactamente con
+la representación truncada de $0.3$.
 
 \begin{advertencia}
   Nunca compares flotantes con \texttt{==} en C++. Usa una tolerancia:\\
@@ -321,6 +427,10 @@ introduce un pequeño error de redondeo que se acumula en las operaciones.
   \item \textbf{ASCII}: cada carácter es un byte.
         Mayúsculas = \texttt{0x41}–\texttt{0x5A};
         minúsculas = mayúscula $+ 32$.
+  \item $\frac{1}{n}$ es exacta en base $b$ solo si $n$ no tiene factores
+        primos ajenos a $b$. En base 2: solo $\frac{1}{2^k}$ es exacta.
+  \item Para convertir una parte fraccionaria a binario: multiplica por 2,
+        anota el dígito entero, repite con el resto.
   \item \textbf{IEEE 754}: flotantes = signo + exponente + mantisa.
         Los errores de redondeo son normales; nunca compares con \texttt{==}.
 \end{itemize}
