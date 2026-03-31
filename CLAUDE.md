@@ -78,6 +78,116 @@ Los alumnos son estudiantes universitarios de ingeniería.
 
 ---
 
+## Cuadernos Jupyter (xeus-cling, C++17)
+
+Referencia: `sesiones/sesion16_apuntadores_referencias_arreglos.ipynb`.
+
+### Encabezado
+
+Primera celda markdown con:
+```
+# Título del tema
+
+**Curso:** Programación Avanzada
+**Kernel:** xeus-cling (C++17)
+
+---
+
+<párrafo introductorio: qué vamos a explorar y por qué importa>
+
+- **Concepto A**: definición en una línea
+- **Concepto B**: definición en una línea
+- ...
+
+La idea central que une los temas: <frase corta y memorable>.
+
+---
+
+## Requisitos previos
+
+Antes de comenzar, ejecuta esta celda para cargar las librerías...
+```
+
+Inmediatamente después, celda de código con los `#include` y `using namespace std;` necesarios.
+
+### Estructura del cuerpo
+
+- Dividido en **Partes numeradas** (`## Parte 1 — Nombre`) con
+  **subsecciones numeradas** (`### 1.1 Subtema`).
+- Patrón de cada subsección:
+  1. Celda markdown: explica el concepto, con diagrama ASCII si aplica.
+  2. Celda de código: demuestra el concepto, con salida ya ejecutada.
+  3. Celda markdown (opcional): explica la salida con una pregunta en
+     negrita seguida de la respuesta. Ejemplo:
+     `**¿Por qué X aparece como Y?**  \n Porque...`
+
+### Diagramas ASCII
+
+Usar diagramas de celdas de memoria cuando se habla de direcciones,
+apuntadores o arreglos. Estilo:
+
+```
+  Variable normal:          Apuntador:
+  ┌─────────┐               ┌──────────────┐
+  │   16    │  ← int x      │  0x61ff08    │  ← int* p
+  └─────────┘               └──────┬───────┘
+  dir: 0x61ff08                     │
+                                    ▼
+                             ┌─────────┐
+                             │   16    │
+                             └─────────┘
+```
+
+Usar `┌ ┐ └ ┘ │ ─ ┬ ┴ ├ ┤ ┼` para las cajas y `←` `→` `↑` `↓` para
+las anotaciones.
+
+### Celdas de código
+
+- Cada ejemplo va envuelto en `{}` para limitar el scope (xeus-cling
+  acumula declaraciones entre celdas).
+- Comentarios en español, alineados para facilitar la lectura.
+- Los `cout` se alinean con espacios para que las etiquetas y valores
+  queden en columnas.
+- La salida del bloque se muestra como output de la celda (ya ejecutada).
+
+### Notas y advertencias en markdown
+
+- Usar `> blockquote` para notas importantes del tipo "¿por qué C++ no
+  hace X automáticamente?" — son el equivalente al entorno `advertencia`
+  de los PDF.
+- Usar tablas markdown para comparaciones (apuntador vs referencia, etc.).
+
+### Sección de ejercicios
+
+Al final, antes del resumen:
+```markdown
+---
+## Ejercicios
+
+### Ejercicio 1
+<enunciado concreto con los datos iniciales ya dados>
+```
+Seguido de una celda de código vacía con `// Tu solución aquí`.
+Mínimo 3 ejercicios; uno por concepto principal de la sesión.
+
+### Celda de cierre
+
+Tabla markdown de resumen con columnas: Concepto | Símbolo/sintaxis | Qué hace.
+Termina con `---` y la línea:
+```
+*Programación Avanzada — Universidad Panamericana*
+```
+
+### Tono en el cuaderno
+
+El mismo tono de las notas de alumno: directo, tutear al lector,
+motivar antes de formalizar. Las explicaciones después del código
+responden "¿por qué?" en primera persona del plural o con pregunta
+retórica. Evitar frases como "cabe destacar que" o "es importante
+mencionar".
+
+---
+
 ## Compilación LaTeX
 
 ```
