@@ -43,5 +43,7 @@ Sesiones registradas
 |--------|-----------------------------------------|--------------------------------------------------|
 | 01     | Presentación del curso                  | (sin cuaderno — sesión teórica)                          |
 | 02     | Introducción a C++                      | sesiones/sesion02_introduccion_cpp.ipynb                 |
+| 05     | Manipulación de bits                    | sesiones/sesion05_bit_manipulation.ipynb                 |
+| 06     | Práctica de bits                        | sesiones/sesion06_practica_bits.ipynb                    |
 | 16     | Apuntadores, referencias y arreglos     | sesiones/sesion16_apuntadores_referencias_arreglos.ipynb |
 | 17     | Paso por referencia                     | sesiones/sesion17_paso_por_referencia.ipynb              |

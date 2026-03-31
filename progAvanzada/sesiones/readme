@@ -20,6 +20,15 @@ Cuadernos disponibles
       AND (&), OR (|) y XOR (^) bit a bit con tablas de verdad y ejemplos,
       y combinación de operadores con ejemplo paso a paso.
 
+  sesion06_practica_bits.ipynb
+      Práctica de manipulación de bits en C++.
+      Cubre: ejercicios de calentamiento con los operadores vistos en sesión 05,
+      técnicas fundamentales (activar, desactivar, consultar y alternar bits),
+      máscara de los k bits inferiores, y problemas de programación competitiva:
+      potencia de 2, popcount, elemento único con XOR, swap sin temporal,
+      distancia de Hamming, bit activo de menor peso, paridad e iteración de
+      subconjuntos con bitmask.
+
   sesion02_introduccion_cpp.ipynb
       Introducción al lenguaje C++: historia y características, documentación
       (cppreference, cplusplus, isocpp, learncpp), compiladores (g++, clang++, cling),
