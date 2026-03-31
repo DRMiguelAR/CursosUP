@@ -1,0 +1,222 @@
+% =============================================================================
+%  Notas del Profesor — Sesión 04: Representaciones Binarias
+%  Programación Avanzada — Universidad Panamericana
+%  Compilar: pdflatex sesion04_representaciones_binarias_profesor.tex
+% =============================================================================
+\documentclass[12pt, oneside]{article}
+\usepackage[profesor]{progavanzada}
+
+\begin{document}
+
+\portada{Sesión 04}{Representaciones Binarias}{2026}
+
+\tableofcontents
+\newpage
+
+% =============================================================================
+\section{Objetivos de la sesión}
+% =============================================================================
+
+Al finalizar la sesión el alumno será capaz de:
+
+\begin{enumerate}
+  \item Calcular el rango de valores representables con $n$ bits, con y sin signo.
+  \item Obtener la representación en complemento a 2 de un entero negativo
+        y verificarla.
+  \item Interpretar una secuencia de bytes como texto ASCII y viceversa.
+  \item Distinguir mayúsculas de minúsculas a nivel de bit en ASCII.
+  \item Describir la estructura de un número flotante IEEE 754 y explicar
+        por qué ocurren errores de redondeo.
+\end{enumerate}
+
+\begin{notaprofesor}[Duración estimada]
+  50 minutos. Sugerido: 10 min corrección ejercicios sesión 03 +
+  15 min complemento a 2 + 10 min ASCII + 10 min IEEE 754 + 5 min cierre.
+\end{notaprofesor}
+
+% =============================================================================
+\section{Secuencia de clase}
+% =============================================================================
+
+\subsection{Apertura — Corrección de ejercicios (10 min)}
+
+Dedica los primeros minutos a cerrar la sesión anterior.
+Los ejercicios 5 y 6 son los que más trabajo dan; revísalos en el pizarrón
+mostrando el camino vía binario.
+
+\begin{notaprofesor}[Solución del problema de Carina]
+  Los dígitos disponibles son $\{0,1,3,4,5,6,8,9\}$ (8 símbolos = base 8).
+  Renombrando $0\to0, 1\to1, 3\to2, 4\to3, 5\to4, 6\to5, 8\to6, 9\to7$,
+  Carina cuenta en base 8. El milésimo número:
+  \[
+    1000_{10} = 1750_8 \;\xrightarrow{\text{remap}}\; \mathbf{1960}
+  \]
+  Verificación: $1\times512 + 7\times64 + 5\times8 + 0 = 512+448+40 = 1000$. \checkmark\\[4pt]
+  Si algún alumno llegó a base 8 por sí solo, aprovecha para reconocerlo:
+  es la parte más creativa del problema.
+\end{notaprofesor}
+
+\subsection{Complemento a 2 (15 min)}
+
+Antes de explicar el método, lanza la pregunta:
+
+\begin{notaprofesor}[Pregunta de arranque]
+  \textit{``Si tengo 8 bits y quiero guardar números negativos,
+  ¿cómo lo haría? ¿Cuál bit usaría para el signo?''}\\[4pt]
+  La respuesta intuitiva del grupo suele ser ``el bit más a la izquierda
+  como signo, el resto como magnitud'' (signo-magnitud). Acepta esa
+  respuesta y luego muestra el problema: con signo-magnitud existirían
+  \textbf{dos ceros} (\texttt{00000000} y \texttt{10000000}), lo que
+  complica la aritmética del procesador. El complemento a 2 elimina ese
+  problema y simplifica los circuitos de suma.
+\end{notaprofesor}
+
+Desarrolla los tres puntos en pizarrón:
+\begin{enumerate}
+  \item La tabla de patrones de 8 bits con su valor.
+        Énfasis en \texttt{10000000}=$-128$, \texttt{11111111}=$-1$.
+  \item El algoritmo invertir+1 con un ejemplo ($-6$, $-50$).
+  \item El rango general $-2^{n-1}$ a $+2^{n-1}-1$ y por qué es asimétrico.
+\end{enumerate}
+
+\begin{notaprofesor}[Demostración intuitiva del rango asimétrico]
+  Pregunta: \textit{``Si niego $-128$, ¿qué obtengo?''}
+  Invertir \texttt{10000000} = \texttt{01111111}, sumar 1 = \texttt{10000000}.
+  Se regresa a $-128$. Este es el único número que no tiene par positivo.
+  Los alumnos suelen encontrar esto perturbador — aprovéchalos: es un
+  bug real en software que asume simetría de rango.
+\end{notaprofesor}
+
+\subsection{ASCII (10 min)}
+
+Conecta directo con lo anterior:
+
+\begin{notaprofesor}[Puente con complemento a 2]
+  \textit{``Ya vimos cómo los números enteros viven en la memoria.
+  ¿Cómo vive el texto?''} La respuesta es sencilla: también como números.
+  Un carácter = un byte = un entero de 8 bits. ASCII es el acuerdo de
+  qué número corresponde a qué carácter.
+\end{notaprofesor}
+
+Muestra la tabla A–Z en el pizarrón o proyector. Puntos clave:
+
+\begin{enumerate}
+  \item Rango mayúsculas: 65 (A) a 90 (Z), es decir \texttt{0x41}–\texttt{0x5A}.
+  \item Rango minúsculas: 97 (a) a 122 (z), es decir \texttt{0x61}–\texttt{0x7A}.
+  \item Diferencia exacta de 32 = bit 5 activado.
+  \item Ejemplo en vivo: escribe tu nombre en hex. El ejemplo de clase fue ``MAR''
+        → \texttt{4D 41 52}.
+\end{enumerate}
+
+\begin{notaprofesor}[Actividad rápida de 2 minutos]
+  Pide a un voluntario que diga sus iniciales. Calcula con el grupo el hex
+  de cada letra. Es inmediato con la tabla y hace el concepto muy concreto.
+  También funciona el ejercicio inverso: proyecta una secuencia de bytes
+  y pregunta qué dice.
+\end{notaprofesor}
+
+\subsection{IEEE 754 (10 min)}
+
+\begin{notaprofesor}[Por qué incluir IEEE 754 aquí]
+  Los alumnos declararán \texttt{float} y \texttt{double} desde la
+  sesión siguiente. Si no saben que los flotantes tienen errores de
+  redondeo inherentes, los bugs que aparecerán en comparaciones y en
+  acumulación de errores serán completamente opacos para ellos.
+  No es necesario que comprendan la codificación completa; basta con que
+  entiendan \textbf{por qué} \texttt{0.1 + 0.2 != 0.3}.
+\end{notaprofesor}
+
+Secuencia sugerida:
+\begin{enumerate}
+  \item Pregunta: \textit{``¿Cómo escribirías 0.1 en binario?''}
+        Muestra que $0.1_{10} = 0.0\overline{0011}_2$ (periódico).
+        Conecta con $\frac{1}{3} = 0.\overline{3}$ en decimal: no es raro,
+        depende de la base.
+  \item Muestra la estructura: signo (1 bit), exponente (8 bits),
+        mantisa (23 bits) para \texttt{float}.
+  \item Regla práctica: \textbf{nunca} comparar flotantes con \texttt{==}.
+        Usa \texttt{|a-b| < epsilon}.
+\end{enumerate}
+
+\begin{notaprofesor}[Demostración en vivo opcional]
+  Si tienes el cuaderno Jupyter abierto, ejecuta:
+\begin{verbatim}
+#include <iostream>
+int main(){
+    double a = 0.1 + 0.2;
+    std::cout << (a == 0.3) << "\n";   // imprime 0
+    std::cout << a << "\n";            // 0.3
+    std::cout.precision(17);
+    std::cout << a << "\n";            // 0.30000000000000004
+}
+\end{verbatim}
+  El resultado de precisión 17 produce el efecto ``wow'' que fija el
+  concepto mejor que cualquier explicación.
+\end{notaprofesor}
+
+% =============================================================================
+\section{Preguntas frecuentes}
+% =============================================================================
+
+\begin{notaprofesor}[FAQ]
+
+\textbf{``¿Por qué el rango de \texttt{char} en C++ va de $-128$ a $127$
+y no de $-127$ a $127$?''}\\
+Porque \texttt{char} es un entero de 8 bits en complemento a 2.
+El patrón \texttt{10000000} se asigna a $-128$ (no existe $-0$).
+Nota adicional: en C++ \texttt{char} puede ser \texttt{signed} o
+\texttt{unsigned} según la implementación; usa \texttt{int8\_t} /
+\texttt{uint8\_t} si necesitas garantías.
+
+\vspace{0.6em}
+\textbf{``¿Qué pasa con los acentos y la ñ en ASCII?''}\\
+No existen en ASCII estándar (7 bits). El ASCII ``extendido'' de 8 bits
+tiene varias codificaciones incompatibles (ISO-8859-1, Windows-1252, etc.).
+La solución moderna es \textbf{UTF-8}, que representa los primeros 128
+caracteres igual que ASCII y usa 2–4 bytes para los demás.
+
+\vspace{0.6em}
+\textbf{``¿Cuándo uso \texttt{float} y cuándo \texttt{double}?''}\\
+Por defecto usa \texttt{double}: tiene más precisión (52 bits de mantisa
+vs.\ 23) y en CPUs de 64 bits no es más lento. \texttt{float} se usa
+en gráficos, audio y aprendizaje automático donde el volumen de datos
+hace que el ahorro de memoria importe.
+
+\vspace{0.6em}
+\textbf{``¿Existe un estándar para enteros negativos alternativo al
+complemento a 2?''}\\
+Históricamente sí: signo-magnitud y complemento a 1. Desde C++20
+el estándar exige oficialmente complemento a 2 para todos los
+enteros con signo. En la práctica, todas las CPUs modernas ya lo usaban.
+
+\end{notaprofesor}
+
+% =============================================================================
+\section{Material de la sesión}
+% =============================================================================
+
+\begin{itemize}
+  \item \textbf{Notas manuscritas originales}: \texttt{materialInicial/sesion04/}
+  \item \textbf{Notas alumno}: \texttt{notas\_alumno/pdf/sesion04\_representaciones\_binarias.pdf}
+\end{itemize}
+
+% =============================================================================
+\section{Rúbrica}
+% =============================================================================
+
+\begin{center}
+\begin{tabular}{lcc}
+  \toprule
+  \textbf{Criterio} & \textbf{Puntos} & \textbf{Evidencia} \\
+  \midrule
+  Convertir entero negativo a complemento a 2 (proceso) & 3 & pasos visibles \\
+  Convertir complemento a 2 a decimal (leer negativo)   & 2 & resultado correcto \\
+  Decodificar 3 caracteres ASCII desde hex               & 2 & tabla usada correctamente \\
+  Codificar nombre/iniciales en hex ASCII                & 2 & coincide con tabla \\
+  Identificar campo signo/exponente/mantisa en \texttt{float} & 1 & estructura correcta \\
+  \bottomrule
+  \textbf{Total} & 10 & \\
+\end{tabular}
+\end{center}
+
+\end{document}
