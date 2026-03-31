@@ -25,6 +25,16 @@ materialInicial/
     organizados por subtema. No son cuadernos interactivos; sirven
     como referencia o para compilar y ejecutar por separado.
 
+Notas disponibles
+------------------
+
+| Sesión | Tema                                | Notas alumno                                              | Notas profesor                                                     |
+|--------|-------------------------------------|-----------------------------------------------------------|--------------------------------------------------------------------|
+| 01     | Presentación del curso              | notas_alumno/pdf/sesion01_presentacion.pdf                | notas_profesor/pdf/sesion01_presentacion_profesor.pdf              |
+| 02     | Introducción a C++                  | notas_alumno/pdf/sesion02_introduccion_cpp.pdf            | notas_profesor/pdf/sesion02_introduccion_cpp_profesor.pdf          |
+| 03     | Sistemas de numeración              | notas_alumno/pdf/sesion03_sistemas_numeracion.pdf              | notas_profesor/pdf/sesion03_sistemas_numeracion_profesor.pdf              |
+| 16     | Apuntadores, referencias y arreglos | notas_alumno/pdf/sesion16_apuntadores_referencias_arreglos.pdf | notas_profesor/pdf/sesion16_apuntadores_referencias_arreglos_profesor.pdf |
+
 Sesiones registradas
 ---------------------
 

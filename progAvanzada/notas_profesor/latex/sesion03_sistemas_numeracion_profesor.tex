@@ -1,0 +1,285 @@
+% =============================================================================
+%  Notas del Profesor — Sesión 03: Sistemas de Numeración
+%  Programación Avanzada — Universidad Panamericana
+%  Compilar: pdflatex sesion03_sistemas_numeracion_profesor.tex
+% =============================================================================
+\documentclass[12pt, oneside]{article}
+\usepackage[profesor]{progavanzada}   % versión profesor (portada azul UP)
+
+\begin{document}
+
+\portada{Sesión 03}{Sistemas de Numeración}{2026}
+
+\tableofcontents
+\newpage
+
+% =============================================================================
+\section{Objetivos de la sesión}
+% =============================================================================
+
+Al finalizar la sesión el alumno será capaz de:
+
+\begin{enumerate}
+  \item Explicar por qué distintas culturas adoptaron distintas bases de
+        numeración, con al menos tres ejemplos históricos.
+  \item Convertir números entre base 2, 8, 10 y 16 usando los métodos
+        de suma de pesos y divisiones sucesivas.
+  \item Justificar por qué las computadoras operan en base 2 y por qué
+        el hexadecimal facilita la lectura del binario.
+  \item Resolver ejercicios de conversión directa entre binario, octal
+        y hexadecimal sin pasar por decimal.
+\end{enumerate}
+
+\begin{notaprofesor}[Duración estimada]
+  50 minutos. Sugerido: 15 min de apertura histórica (conversación
+  + preguntas) + 25 min de desarrollo técnico en cuaderno + 10 min de
+  práctica guiada con los ejercicios.
+\end{notaprofesor}
+
+% =============================================================================
+\section{Secuencia de clase}
+% =============================================================================
+
+\subsection{Apertura — El por qué de los sistemas de numeración (15 min)}
+
+Abrir \textbf{sin escribir nada} en el pizarrón. Lanzar la pregunta al grupo:
+
+\begin{notaprofesor}[Pregunta de arranque]
+  \textit{``¿Por qué usamos exactamente diez dígitos y no nueve o doce?''}\\[4pt]
+  Deja que la conversación fluya. La respuesta que buscas es ``por los dedos'',
+  pero no la des tú primero. Si el grupo no llega, guíalos: ``¿qué tienen
+  en común todos los humanos que aprendieron a contar hace miles de años?''
+\end{notaprofesor}
+
+Una vez establecido el origen anatómico de la base 10, introduce los tres
+ejemplos históricos en orden cronológico:
+
+\begin{enumerate}
+  \item \textbf{Mayas — base 20.}
+        Pregunta: ``¿qué contaban los mayas que los humanos modernos no
+        cuentan?'' (dedos de los pies). Menciona el cero maya: fue una de
+        las primeras civilizaciones en usarlo como valor posicional, siglos
+        antes que Europa.
+
+  \item \textbf{Babilonios — base 60.}
+        Conecta inmediatamente con algo que los alumnos ya conocen: reloj,
+        minutos, segundos, grados en un círculo. La pregunta retórica que
+        funciona muy bien: ``¿alguien sabe por qué un minuto tiene 60 segundos
+        y no 100?''. La respuesta es que lo heredamos de los babilonios, y
+        ellos lo eligieron porque 60 tiene 12 divisores enteros.
+
+  \item \textbf{Propuesta de base 12.}
+        Menciona que durante la Revolución Francesa, mientras se diseñaba el
+        sistema métrico, varios matemáticos argumentaron en favor de base 12
+        por su divisibilidad. Ganar el argumento de ``más fracciones exactas''
+        es fácil con la tabla de divisores.
+        La Dozenal Society (\url{https://www.dozenalsociety.org.uk}) sigue
+        activa hoy en día.
+        Pregunta de cierre: ``¿Con qué ya contamos en docenas en el día a día?''
+        (meses, horas, huevos).
+\end{enumerate}
+
+\begin{notaprofesor}[Tono de esta parte]
+  El objetivo no es que memoricen fechas: es que entiendan que la base
+  no es algo ``natural'' ni único, sino una \textbf{elección conveniente}.
+  Eso abre la puerta a explicar por qué las computadoras eligieron base 2,
+  que es la pregunta que deberían hacerse solos antes de que tú la respondas.
+\end{notaprofesor}
+
+\subsection{Transición — ¿Qué elegiría una computadora? (5 min)}
+
+Antes de explicar el binario, lanza la pregunta:
+
+\begin{notaprofesor}[Pregunta de transición]
+  \textit{``Si una computadora contara en base 10 igual que nosotros,
+  ¿cómo distinguiría el número 3 del número 4 usando electricidad?''}\\[4pt]
+  Respuesta que buscas: necesitaría diez niveles de voltaje distintos
+  (0V, 1V, \ldots, 9V), lo cual es muy propenso a errores por ruido
+  eléctrico. Con solo dos niveles (bajo / alto), la distinción es robusta.
+  De ahí el binario.
+\end{notaprofesor}
+
+\subsection{Desarrollo técnico — Binario, octal y hexadecimal (25 min)}
+
+Trabaja sobre el cuaderno o en el pizarrón. El orden recomendado:
+
+\begin{enumerate}
+  \item Sistema posicional genérico: peso de cada posición como
+        $d_i \times b^i$. Un ejemplo en base 10 primero para anclar
+        el concepto.
+  \item \textbf{Binario → decimal}: sumas de potencias de 2.
+        Haz uno junto con el grupo; deja que ellos hagan el siguiente.
+  \item \textbf{Decimal → binario}: divisiones sucesivas.
+        Muestra el proceso completo con $25_{10}$ o $1521_{10}$.
+  \item \textbf{Octal}: igual que binario pero con base 8. Énfasis en la
+        conversión directa octal ↔ binario por grupos de 3 bits.
+  \item \textbf{Hexadecimal}: introduce los símbolos A–F. Énfasis en la
+        conversión directa hex ↔ binario por grupos de 4 bits.
+\end{enumerate}
+
+\begin{notaprofesor}[Por qué octal antes que hexadecimal]
+  Octal es más fácil de interiorizar (los dígitos son 0–7, sin letras).
+  Sirve como puente: ya que los alumnos entienden la conversión directa
+  con grupos de 3 bits, la de hex con grupos de 4 bits es inmediata.
+\end{notaprofesor}
+
+\subsection{Ejercicios (10 min)}
+
+Los seis ejercicios de conversión al final de las notas del alumno están
+ordenados de menor a mayor dificultad.
+
+\begin{enumerate}
+  \item Decimal → binario (el algoritmo de divisiones).
+  \item Binario → decimal (suma de pesos, número largo).
+  \item Binario → hex (agrupación por 4 bits).
+  \item Hex → binario (sustitución directa).
+  \item Octal → hex (vía binario).
+  \item Base 4 → hex (vía binario).
+\end{enumerate}
+
+Deja el problema de concurso (Carina y la calculadora) como tarea o para
+los alumnos que terminen rápido. Es un problema de Olimpiada que requiere
+darse cuenta de que contar sin 2 ni 7 equivale a contar en base 8.
+
+\begin{notaprofesor}[Solución del problema de Carina]
+  Los dígitos disponibles son $\{0, 1, 3, 4, 5, 6, 8, 9\}$: exactamente 8
+  símbolos. Si los renombramos $\{0,1,2,3,4,5,6,7\}$, Carina en realidad
+  está contando en base 8. El milésimo número en base 8 es $1750_8$,
+  que en los dígitos de Carina es \textbf{1, 9, 5, 0} $\to$ \textbf{1950}.
+  (Verificar: $1\times 8^3 + 7\times 8^2 + 5\times 8 + 0 = 512+448+40 = 1000$.)
+\end{notaprofesor}
+
+% =============================================================================
+\section{Contexto histórico — Notas adicionales}
+% =============================================================================
+
+Esta sección amplía los datos históricos para responder preguntas del grupo
+o enriquecer la explicación.
+
+\subsection{Mayas}
+
+El sistema maya era \textbf{vigesimal y posicional}, con una modificación:
+en el conteo del calendario, la segunda posición valía 18 × 20 = 360 (para
+aproximar el año solar) en lugar de $20^2 = 400$. Esto lo hace un sistema
+mixto en el contexto calendárico, aunque en el contexto aritmético puro
+era base 20 consistente.
+
+El símbolo del cero maya (una concha o caracol) data aproximadamente del
+siglo \textsc{iv} d.C.\ en los registros escritos conocidos, aunque podría
+ser más antiguo en la tradición oral.
+
+\begin{notaprofesor}[Referencia]
+  Ifrah, G. \textit{Historia Universal de las Cifras}. Espasa Calpe, 1994.
+  Caps. 22–23 (numeración maya). Disponible en varias bibliotecas
+  universitarias; es el texto de referencia estándar en historia de las
+  matemáticas.
+\end{notaprofesor}
+
+\subsection{Babilonios}
+
+Los sumerios (c.\ 3000 a.C.) desarrollaron escritura cuneiforme y, con ella,
+un sistema de conteo en base 60. Existen tablillas de arcilla con tablas de
+multiplicación en base 60 de hace más de 4\,000 años.
+
+Una teoría complementaria sobre la elección de 60: los sumerios pueden haber
+combinado un sistema de base 5 (dedos de una mano) con uno de base 12
+(contando con el pulgar las 3 falanges de cada uno de los otros 4 dedos:
+$4 \times 3 = 12$). $5 \times 12 = 60$.
+
+\begin{notaprofesor}[Referencia]
+  Neugebauer, O. \textit{The Exact Sciences in Antiquity}, 2.ª ed.
+  Dover, 1969. Es el texto clásico sobre astronomía y matemáticas del
+  antiguo Oriente Próximo. Cap.\ 1 cubre el sistema sexagesimal.
+\end{notaprofesor}
+
+\subsection{Base 12 — Historia y argumentos}
+
+La divisibilidad de 12 ha atraído a matemáticos durante siglos.
+El escritor y matemático inglés Thomas Digges (siglo \textsc{xvi}) mencionó
+ventajas del duodecimal. En el siglo \textsc{xviii}, durante el debate sobre
+el sistema métrico en Francia, matemáticos como Jean-Charles de Borda
+(quien promovió la división del círculo en 400 grados centesimales) y otros
+reformadores discutieron activamente distintas bases.
+
+La \textit{Dozenal Society of Great Britain} se fundó en 1959; su homóloga
+americana, la \textit{Dozenal Society of America}, en 1944.
+Sus publicaciones argumentan que la educación matemática temprana sería más
+intuitiva en base 12, ya que los niños aprenderían fracciones sin que
+aparezcan decimales infinitos para algo tan natural como ``un tercio''.
+
+\begin{notaprofesor}[Para la discusión en clase]
+  Una pregunta que genera debate productivo: \textit{``¿Cambiarías el sistema
+  de numeración si pudieras? ¿Qué perderías?''}
+  Respuestas interesantes: perderíamos compatibilidad con todo el software
+  y hardware existente; ganaríamos fracciones más limpias. Es un buen
+  momento para hablar de costos de migración en sistemas reales.
+\end{notaprofesor}
+
+% =============================================================================
+\section{Preguntas frecuentes}
+% =============================================================================
+
+\begin{notaprofesor}[FAQ]
+
+\textbf{``¿Por qué en C++ los literales hex llevan \texttt{0x}?''}\\
+Es una convención del lenguaje C (1972) para distinguir hex de decimal sin
+ambigüedad: \texttt{255} es decimal, \texttt{0xFF} es hex, \texttt{0377}
+es octal. El compilador necesita saber la base para generar el valor
+correcto en memoria.
+
+\vspace{0.6em}
+\textbf{``¿Qué tan grande puede ser un número en binario con $n$ bits?''}\\
+Con $n$ bits puedes representar $2^n$ valores distintos: de 0 a $2^n - 1$.
+Con 8 bits (1 byte): 0 a 255. Con 32 bits: 0 a $4{,}294{,}967{,}295$.
+Con 64 bits: 0 a aproximadamente $1.8 \times 10^{19}$.
+
+\vspace{0.6em}
+\textbf{``¿Por qué se usa hexadecimal y no octal en los sistemas modernos?''}\\
+Porque los procesadores modernos operan en múltiplos de 8 bits (bytes).
+$8 = 2 \times 4$ bits, no $2 \times 3$ bits, así que 2 dígitos hex
+representan exactamente 1 byte, mientras que octal no encaja limpiamente.
+Octal era más común en los años 60–70 cuando había máquinas de 12 o 36 bits.
+
+\vspace{0.6em}
+\textbf{``¿Los negativos cómo se representan?''}\\
+Eso es tema de otra sesión (complemento a dos), pero si alguien lo pregunta:
+el bit más significativo se usa como signo; con $n$ bits se representan
+valores de $-2^{n-1}$ a $2^{n-1}-1$.
+\end{notaprofesor}
+
+% =============================================================================
+\section{Material de la sesión}
+% =============================================================================
+
+\begin{itemize}
+  \item \textbf{Notas manuscritas originales}: \texttt{materialInicial/sesion03/}
+  \item \textbf{Notas alumno}: \texttt{notas\_alumno/pdf/sesion03\_sistemas\_numeracion.pdf}
+\end{itemize}
+
+% =============================================================================
+\section{Rúbrica de ejercicios}
+% =============================================================================
+
+\begin{center}
+\begin{tabular}{lcc}
+  \toprule
+  \textbf{Criterio} & \textbf{Puntos} & \textbf{Evidencia} \\
+  \midrule
+  Ejercicios 1–4 correctos (1 punto c/u)          & 4 & resultado correcto \\
+  Ejercicio 5 (octal → hex vía binario)            & 2 & proceso visible \\
+  Ejercicio 6 (base 4 → hex vía binario)           & 2 & proceso visible \\
+  Conversión directa sin pasar por decimal (5 y 6) & 2 & método binario intermedio \\
+  \bottomrule
+  \textbf{Total} & 10 & \\
+\end{tabular}
+\end{center}
+
+\begin{notaprofesor}
+  El bono de 2 puntos por conversión directa incentiva que el alumno
+  interiorice la relación estructural entre las bases, en lugar de hacer
+  dos conversiones separadas pasando por decimal.
+  Si alguien llega al resultado correcto por decimal, es válido pero no
+  obtiene esos 2 puntos.
+\end{notaprofesor}
+
+\end{document}
