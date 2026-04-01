@@ -1,0 +1,339 @@
+% =============================================================================
+%  Notas de clase — Sesión 12: Torres de Hanoi en Arte ASCII
+%  Programación Avanzada — Universidad Panamericana
+%  Compilar: pdflatex sesion12_hanoi_ascii.tex
+% =============================================================================
+\documentclass[12pt, oneside]{article}
+\usepackage{progavanzada}
+
+\begin{document}
+
+\portada{Sesión 12}{Torres de Hanoi en Arte ASCII}{2026}
+
+\tableofcontents
+\newpage
+
+% =============================================================================
+\section{La leyenda y el problema}
+% =============================================================================
+
+En 1883, el matemático francés \textbf{Édouard Lucas} lanzó al mercado un
+juguete llamado \textit{La Tour d'Hanoï} — un rompecabezas de ocho discos
+de madera de distinto tamaño apilados en una de tres estacas.
+Para justificar el precio, lo acompañó con una leyenda apócrifa:
+
+\begin{quote}
+\textit{En un templo de Benarés, en la India, los sacerdotes del dios Brahma
+mueven en silencio 64 discos de oro puro entre tres agujas de diamante,
+una y otra vez, sin descanso.  Cuando terminen de moverlos todos a la
+tercera aguja, el mundo llegará a su fin.}
+\end{quote}
+
+Lucas la inventó él mismo para darle misterio al juguete, pero la pregunta
+matemática que esconde es completamente real:
+\textbf{¿cuántos movimientos mínimos se necesitan para mover $n$ discos?}
+
+\begin{tecnico}[¿Cuándo termina el mundo?]
+  Para $n = 64$ discos, el mínimo de movimientos es $2^{64} - 1
+  \approx 1.8 \times 10^{19}$.
+  Si los sacerdotes movieran un disco por segundo, sin parar, tardarían
+  aproximadamente \textbf{585 mil millones de años} — unas 42 veces la edad
+  actual del universo.  El mundo, al parecer, tiene tiempo.\\
+  \textit{Referencia:} Lucas, É. \textit{Récréations Mathématiques}.
+  Gauthier-Villars, 1883.
+\end{tecnico}
+
+% =============================================================================
+\section{Las reglas del juego}
+% =============================================================================
+
+El problema tiene exactamente \textbf{tres reglas}:
+
+\begin{enumerate}
+  \item Solo puedes mover \textbf{un disco a la vez}.
+  \item Solo puedes mover el disco que está en el \textbf{tope} de una torre.
+  \item \textbf{Nunca} puedes colocar un disco sobre uno más pequeño.
+\end{enumerate}
+
+El objetivo es trasladar todos los discos de la torre \textbf{A} a la torre
+\textbf{C}, usando la torre \textbf{B} como auxiliar, respetando las tres
+reglas en todo momento.
+
+\begin{verbatim}
+Estado inicial:        Estado final:
+
+    |      |      |        |      |      |
+   ===     |      |        |      |     ===
+  =====    |      |        |      |    =====
+ =======   |      |        |      |   =======
+=========  |      |        |      |  =========
+    A      B      C            A      B      C
+\end{verbatim}
+
+% =============================================================================
+\section{¿Cuántos movimientos se necesitan?}
+% =============================================================================
+
+Antes de programar nada, vale la pena entender cuánto trabajo implica el
+problema.  Para $n$ discos, el \textbf{mínimo de movimientos} es:
+
+\[
+  M(n) = 2^n - 1
+\]
+
+\subsection{¿De dónde viene esa fórmula?}
+
+Piensa recursivamente:
+
+\begin{itemize}
+  \item Para mover el disco más grande (el $n$) de A a C, necesitas
+        que los $n-1$ discos que están encima \textbf{ya estén en B}.
+  \item Mover esos $n-1$ discos de A a B cuesta $M(n-1)$ movimientos.
+  \item Mover el disco $n$ de A a C cuesta \textbf{1} movimiento.
+  \item Mover los $n-1$ discos de B a C cuesta $M(n-1)$ movimientos.
+\end{itemize}
+
+La recurrencia es:
+\[
+  M(1) = 1 \qquad M(n) = 2\,M(n-1) + 1
+\]
+
+Resolviendo:
+\[
+  M(n) = 2^n - 1
+\]
+
+\begin{center}
+\begin{tabular}{ccr}
+  \toprule
+  \textbf{Discos} & \textbf{$2^n - 1$} & \textbf{Movimientos} \\
+  \midrule
+  1 & $2^1 - 1$ & 1 \\
+  2 & $2^2 - 1$ & 3 \\
+  3 & $2^3 - 1$ & 7 \\
+  4 & $2^4 - 1$ & 15 \\
+  8 & $2^8 - 1$ & 255 \\
+  64 & $2^{64} - 1$ & $\approx 1.8 \times 10^{19}$ \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\begin{recuerda}
+  La recurrencia $M(n) = 2\,M(n-1) + 1$ \textbf{es} la descripción del
+  algoritmo recursivo que implementarás en la sesión 13.
+  Hoy no lo programas: tu equipo mueve los discos a mano (el usuario
+  escribe los movimientos).  En la sesión 13 harás que la computadora
+  los calcule sola.
+\end{recuerda}
+
+\begin{tecnico}[La conexión con el código binario]
+  Hay una propiedad fascinante: en la secuencia óptima de movimientos,
+  el disco que se mueve en el paso $k$ es el mismo que el bit menos
+  significativo diferente de cero en la representación binaria de $k$.
+
+  Para $n=3$, los primeros movimientos son:
+  \begin{center}
+  \begin{tabular}{ccc}
+    \toprule
+    \textbf{Paso $k$} & \textbf{$k$ en binario} & \textbf{Disco} \\
+    \midrule
+    1 & \texttt{001} & disco 1 (bit 0) \\
+    2 & \texttt{010} & disco 2 (bit 1) \\
+    3 & \texttt{011} & disco 1 (bit 0) \\
+    4 & \texttt{100} & disco 3 (bit 2) \\
+    5 & \texttt{101} & disco 1 (bit 0) \\
+    6 & \texttt{110} & disco 2 (bit 1) \\
+    7 & \texttt{111} & disco 1 (bit 0) \\
+    \bottomrule
+  \end{tabular}
+  \end{center}
+  Esta propiedad conecta el problema con el \textit{código Gray}
+  (código binario reflejado), usado en electrónica para evitar glitches
+  al incrementar contadores.  El espacio de estados de Hanoi también
+  tiene la forma del \textbf{triángulo de Sierpiński} — uno de los
+  fractales más famosos de las matemáticas.\\
+  \textit{Referencia:} Gardner, M. \textit{Mathematical Games}.
+  Scientific American, 1958.
+\end{tecnico}
+
+% =============================================================================
+\section{Arte ASCII como interfaz}
+% =============================================================================
+
+El programa que van a construir hoy no usa ventanas ni botones:
+toda su interfaz vive en la terminal, hecha de caracteres.
+Eso es \textbf{arte ASCII aplicado} a la programación.
+
+\subsection{¿Por qué importa el diseño visual del programa?}
+
+Un programa que funciona pero es difícil de leer es un programa incompleto.
+La claridad visual de la salida es parte de la calidad del código.
+Cuando la interfaz de una herramienta de terminal es buena, el usuario
+sabe inmediatamente qué está pasando sin leer manual.
+
+Aquí está la diferencia entre un estado impreso de forma mínima y
+uno bien diseñado:
+
+\begin{verbatim}
+Sin diseño:              Con diseño:
+A: [4,3]                     |          |          |
+B: [2]                      ===         |          |
+C: [1]                    =====         |          |
+                          =======      ===         |
+                          =========   =====       ===
+                          =========  =========  =========
+                               A          B          C
+\end{verbatim}
+
+Ambos contienen la misma información, pero el segundo la hace
+inmediatamente comprensible.
+
+\subsection{Algunos caracteres útiles para diseño en terminal}
+
+\begin{center}
+\begin{tabular}{llp{6cm}}
+  \toprule
+  \textbf{Categoría} & \textbf{Caracteres} & \textbf{Uso típico} \\
+  \midrule
+  Líneas simples    & \texttt{| - =}              & Postes y bases básicas \\
+  Bloques de sombra & \texttt{U+2591..2588} & Discos rellenos con gradiente \\
+  Líneas dobles     & \texttt{U+2550..256C} & Marcos y bordes elegantes \\
+  Flechas           & \texttt{U+2192..21D0} (\texttt{->}, \texttt{<-}) & Indicadores de movimiento \\
+  Figuras geométricas & \texttt{U+25B2,25BC..} (\texttt{\^{} v *}) & Decoración de discos \\
+  Relleno alternativo & \texttt{\# * \textasciitilde{} \^{}}    & Diseños personalizados \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\begin{consejo}
+  Los caracteres Unicode de bloques (\texttt{U+2591..2588},
+  \texttt{U+2550..256C}, etc.) funcionan en la mayoría de terminales
+  modernas (macOS, Linux y Windows Terminal).
+  Si tu terminal no los muestra bien, usa los caracteres ASCII básicos
+  (\texttt{= | \#}).
+  Antes de diseñar, comprueba que tu terminal soporte lo que quieres usar.
+\end{consejo}
+
+% =============================================================================
+\section{La actividad de hoy}
+% =============================================================================
+
+Trabajan en \textbf{equipos de tres personas}.
+El objetivo es construir un programa que muestre las Torres de Hanoi
+en arte ASCII y permita al usuario jugar.
+
+\subsection{Lo que deben implementar}
+
+\begin{enumerate}
+  \item \textbf{Función de dibujo.}
+        Dado el estado de las tres torres (qué discos tiene cada una),
+        imprimir la representación visual en la consola.
+
+  \item \textbf{Función de movimiento.}
+        Recibir una torre de origen y una de destino, validar que el
+        movimiento sea legal y ejecutarlo.
+
+  \item \textbf{Interfaz de consola.}
+        Un ciclo donde el usuario escribe el origen y destino de cada
+        movimiento, el programa dibuja el estado actualizado y detecta
+        cuando el jugador ganó.
+\end{enumerate}
+
+\subsection{Lo que deben entregar en Canvas}
+
+\begin{itemize}
+  \item El \textbf{código fuente} (archivo \texttt{.cpp}) con los
+        tres integrantes del equipo en un comentario al inicio.
+  \item \textbf{Capturas de pantalla o fotos} mostrando las torres en
+        al menos \textbf{4 estados distintos}:
+        \begin{enumerate}
+          \item Estado inicial (todos los discos en la torre A).
+          \item Un estado intermedio con los discos distribuidos.
+          \item Un estado casi final.
+          \item Estado final (todos los discos en la torre C).
+        \end{enumerate}
+\end{itemize}
+
+\begin{advertencia}
+  \textbf{No implementen el algoritmo que resuelve Hanoi automáticamente.}
+  Eso es el tema de la sesión 13.  Hoy, los movimientos los elige el
+  usuario escribiendo origen y destino.  Si el programa se resuelve solo,
+  no cumple con el objetivo de la actividad.
+\end{advertencia}
+
+\subsection{Criterios de evaluación}
+
+\begin{center}
+\begin{tabular}{lp{7cm}c}
+  \toprule
+  \textbf{Criterio} & \textbf{Descripción} & \textbf{Peso} \\
+  \midrule
+  Funcionalidad      & El programa dibuja las torres correctamente y
+                       las actualiza tras cada movimiento & 40\% \\
+  Validación         & Rechaza movimientos ilegales con un mensaje claro & 20\% \\
+  Condición de victoria & Detecta cuando todos los discos están en C & 10\% \\
+  Diseño visual      & Las torres son claras, el arte es consistente
+                       y estéticamente agradable & 20\% \\
+  Legibilidad del código & Nombres de funciones y variables descriptivos,
+                           estructura clara & 10\% \\
+  \bottomrule
+  & \textbf{Total} & 100\% \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\begin{consejo}
+  El \textbf{código ganador del concurso de la sesión 13} se usará como
+  base para implementar el algoritmo recursivo.  Eso significa que vale
+  la pena que el código esté bien estructurado desde hoy — no solo bonito
+  visualmente.  Un diseño elegante con código ininteligible no será fácil
+  de extender en la siguiente sesión.
+\end{consejo}
+
+% =============================================================================
+\section{Análisis previo: ejercicios a mano}
+% =============================================================================
+
+Antes de ponerte a programar, resuelve estos ejercicios con lápiz y papel.
+Te ayudarán a entender el problema desde adentro.
+
+\begin{enumerate}
+  \item Dibuja en papel el estado de las torres después de cada uno de los
+        7 movimientos óptimos para mover 3 discos de A a C.
+        Numera cada estado del 0 (inicial) al 7 (final).
+
+  \item Verifica con la fórmula que $M(3) = 7$.
+        Luego aplica la recurrencia para calcular $M(4)$ y $M(5)$.
+
+  \item Indica cuántos frames se apilarían en el call stack cuando el
+        algoritmo recursivo calcule la solución para $n = 4$.
+        \textit{(Pista: la profundidad del árbol de recursión es $n$.)}
+
+  \item ¿Cuál es el disco que siempre se mueve en el paso $k$
+        si $k$ es potencia de 2?  Justifica con la tabla de la sección 3.
+
+  \item \textbf{Desafío:}
+        Con 4 agujas en lugar de 3, ¿necesitarías más o menos movimientos
+        para mover $n$ discos?  Razona sin calcular.
+\end{enumerate}
+
+% =============================================================================
+\section{Resumen}
+% =============================================================================
+
+\begin{recuerda}
+\begin{itemize}
+  \item Las Torres de Hanoi fueron inventadas por Édouard Lucas en 1883
+        como juguete comercial; la leyenda del templo es apócrifa.
+  \item Tres reglas: un disco a la vez, solo el tope, nunca un disco
+        grande sobre uno pequeño.
+  \item Mínimo de movimientos: $M(n) = 2^n - 1$.
+        Recurrencia: $M(n) = 2\,M(n-1) + 1$.
+  \item La secuencia óptima está relacionada con el código binario y
+        el triángulo de Sierpiński.
+  \item Hoy implementas la interfaz visual y los movimientos del usuario.
+        La sesión 13 agrega el algoritmo recursivo que lo resuelve solo.
+\end{itemize}
+\end{recuerda}
+
+\end{document}
