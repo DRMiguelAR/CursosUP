@@ -1,0 +1,622 @@
+% =============================================================================
+%  Notas de clase — Sesión 09: Examen Parcial 01
+%  Programación Avanzada — Universidad Panamericana
+%  Compilar: pdflatex sesion09_examen.tex
+% =============================================================================
+\documentclass[12pt, oneside]{article}
+\usepackage{progavanzada}
+
+\begin{document}
+
+\portada{Sesión 09}{Examen Parcial 01}{2026}
+
+\tableofcontents
+\newpage
+
+% =============================================================================
+\section{¿Qué se evalúa?}
+% =============================================================================
+
+Esta sesión es el primer examen parcial del curso.
+Los temas cubiertos son todo lo visto en las sesiones 01–08.
+El examen se resuelve \textbf{a mano, en papel}, sin computadora ni código.
+
+\begin{center}
+\begin{tabular}{cl}
+  \toprule
+  \textbf{Sesión(es)} & \textbf{Tema} \\
+  \midrule
+  01    & La computadora y el modelo de memoria \\
+  02    & C++ y los jueces en línea \\
+  03    & Sistemas de numeración y conversiones \\
+  04    & Representaciones binarias (complemento a 2, ASCII, IEEE 754) \\
+  05    & Operadores de bits \\
+  06--08 & Técnicas de bit manipulation \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\begin{recuerda}
+  El examen \textbf{no incluye escribir ni leer código fuente}.
+  Es teórico y matemático: conversiones, operaciones a mano, razonamiento
+  sobre patrones de bits, y preguntas conceptuales.
+\end{recuerda}
+
+\newpage
+
+% =============================================================================
+\section{El modelo de la computadora}
+% =============================================================================
+
+\begin{center}
+\begin{tabular}{lll}
+  \toprule
+  \textbf{Componente} & \textbf{Analogía} & \textbf{Rol} \\
+  \midrule
+  CPU             & Usuario sentado       & Ejecuta instrucciones, una por una \\
+  RAM             & Escritorio            & Lo que está en uso \textit{ahora}; se borra al apagar \\
+  Almacenamiento  & Cajones               & Permanente pero lento \\
+  Bus de datos    & Manos del usuario     & Transporta datos entre componentes \\
+  Sistema operativo & Reglas de la oficina & Administra el acceso a los recursos \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Velocidades relativas}
+
+Si 1 instrucción de CPU tarda 1 segundo en escala humana:
+
+\begin{center}
+\begin{tabular}{lrr}
+  \toprule
+  \textbf{Operación} & \textbf{Tiempo real} & \textbf{Escala humana} \\
+  \midrule
+  CPU (caché L1)       & $\sim$0.3 ns   & 1 segundo  \\
+  Acceso a RAM         & $\sim$100 ns   & $\sim$6 minutos \\
+  Lectura en SSD       & $\sim$100 \textmu s & $\sim$4 días \\
+  Disco duro mecánico  & $\sim$10 ms    & $\sim$1 año \\
+  Red (mismo país)     & $\sim$50 ms    & $\sim$5 años \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\begin{recuerda}
+  En C++, \textbf{tú} decides qué entra y cuándo sale de la RAM
+  (\texttt{new} y \texttt{delete}).  En Python y Java un recolector de basura
+  lo hace automáticamente.  Ese control es la fuente de la velocidad de C++,
+  y también de sus bugs más comunes.
+\end{recuerda}
+
+\newpage
+
+% =============================================================================
+\section{Sistemas de numeración y conversiones}
+% =============================================================================
+
+\subsection{Las cuatro bases del curso}
+
+\begin{center}
+\begin{tabular}{lccl}
+  \toprule
+  \textbf{Sistema} & \textbf{Base} & \textbf{Dígitos} & \textbf{Prefijo en C++} \\
+  \midrule
+  Binario       & 2  & 0, 1                        & \texttt{0b} (C++14) \\
+  Octal         & 8  & 0–7                          & \texttt{0} (cero inicial) \\
+  Decimal       & 10 & 0–9                          & (ninguno) \\
+  Hexadecimal   & 16 & 0–9, A=10, B=11 \ldots F=15  & \texttt{0x} \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Tabla de conversión rápida (hex $\leftrightarrow$ binario)}
+
+\begin{center}
+\begin{tabular}{cc|cc|cc|cc}
+  \toprule
+  Hex & Bin  & Hex & Bin  & Hex & Bin  & Hex & Bin \\
+  \midrule
+  0 & 0000 & 4 & 0100 & 8 & 1000 & C & 1100 \\
+  1 & 0001 & 5 & 0101 & 9 & 1001 & D & 1101 \\
+  2 & 0010 & 6 & 0110 & A & 1010 & E & 1110 \\
+  3 & 0011 & 7 & 0111 & B & 1011 & F & 1111 \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Potencias de 2 que debes memorizar}
+
+\begin{center}
+\begin{tabular}{cc|cc|cc}
+  \toprule
+  $n$ & $2^n$ & $n$ & $2^n$ & $n$ & $2^n$ \\
+  \midrule
+  0 & 1     & 5  & 32     & 10 & 1\,024  \\
+  1 & 2     & 6  & 64     & 16 & 65\,536 \\
+  2 & 4     & 7  & 128    & 31 & $\approx 2.1 \times 10^9$ \\
+  3 & 8     & 8  & 256    & 32 & $\approx 4.3 \times 10^9$ \\
+  4 & 16    & 9  & 512    & 64 & $\approx 1.8 \times 10^{19}$ \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Métodos de conversión}
+
+\begin{center}
+\begin{tabular}{lp{8cm}}
+  \toprule
+  \textbf{Conversión} & \textbf{Método} \\
+  \midrule
+  Cualquier base $\to$ decimal &
+    Suma los dígitos multiplicados por su peso posicional:
+    $d_n \cdot b^n + \cdots + d_1 \cdot b^1 + d_0 \cdot b^0$ \\[6pt]
+  Decimal $\to$ base $b$ &
+    Divide repetidamente entre $b$; anota los restos.
+    Lee de \textbf{abajo hacia arriba}. \\[6pt]
+  Binario $\leftrightarrow$ Octal &
+    Agrupa en bloques de \textbf{3 bits} (de derecha a izquierda).
+    Reemplaza directamente. \\[6pt]
+  Binario $\leftrightarrow$ Hex &
+    Agrupa en bloques de \textbf{4 bits} (de derecha a izquierda).
+    Reemplaza directamente. \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\begin{ejemplo}[Conversión cruzada octal $\to$ hexadecimal]
+$6037_8 \;\xrightarrow{\text{3 bits}}\; 110\,000\,011\,111_2
+\;\xrightarrow{\text{4 bits}}\; \underbrace{0001}_{1}\underbrace{1000}_{8}\underbrace{0011}_{3}\underbrace{1111}_{F}
+= \mathtt{183F}_{16}$
+\end{ejemplo}
+
+\begin{consejo}
+  Para convertir entre octal y hexadecimal \textbf{siempre pasa por binario
+  como puente}. Es directo y evita errores de aritmética.
+\end{consejo}
+
+\newpage
+
+% =============================================================================
+\section{Representaciones binarias}
+% =============================================================================
+
+% -----------------------------------------------------------------------------
+\subsection{Rango de valores con $n$ bits}
+% -----------------------------------------------------------------------------
+
+\begin{center}
+\begin{tabular}{lccc}
+  \toprule
+  \textbf{Tipo} & \textbf{Rango} & \textbf{8 bits} & \textbf{16 bits} \\
+  \midrule
+  Sin signo (\textit{unsigned}) &
+    $0$ \; a \; $2^n - 1$ & 0–255 & 0–65\,535 \\
+  Con signo (complemento a 2) &
+    $-2^{n-1}$ \; a \; $2^{n-1}-1$ & $-128$–$+127$ & $-32\,768$–$+32\,767$ \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+% -----------------------------------------------------------------------------
+\subsection{Complemento a 2}
+% -----------------------------------------------------------------------------
+
+Es la representación de negativos que usa \textbf{toda la computación moderna}.
+El bit más significativo es el bit de signo: 0 = positivo, 1 = negativo.
+
+\textbf{Para negar un número} ($x \to -x$ y viceversa):
+\begin{enumerate}
+  \item \textbf{Invierte} todos los bits.
+  \item \textbf{Suma 1} al resultado.
+\end{enumerate}
+
+\begin{ejemplo}[Representar $-27$ en 8 bits]
+\begin{center}
+\begin{tabular}{ll}
+  $27_{10}$       & \texttt{0001 1011} \\
+  Invertir bits   & \texttt{1110 0100} \\
+  Sumar 1         & \texttt{1110 0101} \\
+\end{tabular}
+\end{center}
+Verificación: $2^8 - 27 = 229 = \texttt{1110 0101}_2$.\ \checkmark
+\end{ejemplo}
+
+\begin{recuerda}
+  En complemento a 2 con $n$ bits:
+  \begin{itemize}
+    \item \texttt{1111\ldots1} (todo unos) $= -1$
+    \item \texttt{1000\ldots0} (solo el bit de signo) $= -2^{n-1}$ (el más negativo)
+    \item \texttt{0111\ldots1} (signo 0, resto unos) $= 2^{n-1} - 1$ (el más positivo)
+    \item El operador bitwise NOT satisface: $\texttt{\textasciitilde{}x} = -(x+1)$ siempre.
+  \end{itemize}
+\end{recuerda}
+
+\begin{advertencia}
+  Con 8 bits existe $-128$ pero \textbf{no} $+128$.
+  El rango no es simétrico porque el cero ocupa un patrón del lado positivo.
+  Intentar negar $-128$ produce $-128$ de nuevo (desbordamiento).
+\end{advertencia}
+
+% -----------------------------------------------------------------------------
+\subsection{ASCII — texto como números}
+% -----------------------------------------------------------------------------
+
+Cada carácter es un byte.  Los rangos clave:
+
+\begin{center}
+\begin{tabular}{lcc}
+  \toprule
+  \textbf{Caracteres} & \textbf{Decimal} & \textbf{Hex} \\
+  \midrule
+  \texttt{'0'–'9'} & 48–57  & \texttt{0x30}–\texttt{0x39} \\
+  \texttt{'A'–'Z'} & 65–90  & \texttt{0x41}–\texttt{0x5A} \\
+  \texttt{'a'–'z'} & 97–122 & \texttt{0x61}–\texttt{0x7A} \\
+  \texttt{'\textbackslash n'} (nueva línea) & 10 & \texttt{0x0A} \\
+  \texttt{' '} (espacio) & 32 & \texttt{0x20} \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{Mayúsculas $\leftrightarrow$ minúsculas:} la única diferencia es el
+\textbf{bit 5} (peso $32 = 2^5$).
+Minúscula = Mayúscula $+\, 32$.
+
+\begin{consejo}
+  Para pasar de un carácter dígito \texttt{'0'–'9'} a su valor entero: resta
+  \texttt{'0'} (o aplica AND con \texttt{0x0F}):
+  \texttt{'7' - '0' = 7}, \quad \texttt{'7' \& 0x0F = 7}.
+\end{consejo}
+
+% -----------------------------------------------------------------------------
+\subsection{Fracciones en binario}
+% -----------------------------------------------------------------------------
+
+Una fracción $\frac{1}{n}$ tiene representación \textbf{exacta} en base $b$
+solo si $n$ no tiene factores primos distintos de los factores de $b$.
+
+\begin{center}
+\begin{tabular}{llll}
+  \toprule
+  \textbf{Fracción} & \textbf{¿Exacta en base 10?} & \textbf{¿Exacta en base 2?} & \textbf{Razón} \\
+  \midrule
+  $1/2$  & Sí (0.5)            & Sí (0.1)           & Solo factor primo 2 \\
+  $1/4$  & Sí (0.25)           & Sí (0.01)          & Solo factor primo 2 \\
+  $1/5$  & Sí (0.2)            & No ($0.\overline{0011}$) & Factor primo 5 ajeno a base 2 \\
+  $1/3$  & No ($0.\overline{3}$) & No ($0.\overline{01}$) & Factor primo 3 \\
+  $1/10$ & Sí (0.1)            & No ($0.0\overline{0011}$) & Factor primo 5 \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{Algoritmo: parte fraccionaria a binario} (multiplica por 2):
+\begin{enumerate}
+  \item Multiplica la parte fraccionaria por 2.
+  \item Escribe el dígito entero del resultado (0 ó 1).
+  \item Repite con la parte fraccionaria restante.
+        Si llegas a 0, terminaste. Si el estado se repite, es periódico.
+\end{enumerate}
+
+\begin{ejemplo}[Convertir $0.625$ a binario]
+\begin{center}
+\begin{tabular}{r@{$\;\times 2 =\;$}ll}
+  $0.625$ & $1.25$ & $\to$ bit \textbf{1}, resto 0.25 \\
+  $0.25$  & $0.50$ & $\to$ bit \textbf{0} \\
+  $0.50$  & $1.00$ & $\to$ bit \textbf{1}, resto 0 \\
+\end{tabular}
+\end{center}
+$0.625_{10} = 0.101_2$.  Exacta (denominador $= 8 = 2^3$).\ \checkmark
+\end{ejemplo}
+
+% -----------------------------------------------------------------------------
+\subsection{IEEE 754 — punto flotante}
+% -----------------------------------------------------------------------------
+
+\begin{center}
+\begin{tabular}{lcccc}
+  \toprule
+  \textbf{Tipo} & \textbf{Total} & \textbf{Signo} & \textbf{Exponente} & \textbf{Mantisa} \\
+  \midrule
+  \texttt{float}  & 32 bits & 1 & 8  (bias 127)  & 23 \\
+  \texttt{double} & 64 bits & 1 & 11 (bias 1023) & 52 \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+El número almacenado es $(-1)^s \times 1.mantisa_2 \times 2^{e - bias}$.
+
+\begin{advertencia}
+  \texttt{0.1 + 0.2 $\neq$ 0.3} en casi cualquier lenguaje porque $0.1_{10}$
+  es periódico en binario.  Al truncar la secuencia infinita en 23 (o 52) bits
+  se introduce un error de redondeo.  \textbf{Nunca compares flotantes con ==};
+  usa una tolerancia: $|a - b| < \varepsilon$.
+\end{advertencia}
+
+\newpage
+
+% =============================================================================
+\section{Operadores de bits}
+% =============================================================================
+
+\subsection{Tabla resumen}
+
+\begin{center}
+\begin{tabular}{lllp{5.5cm}}
+  \toprule
+  \textbf{Nombre} & \textbf{Op.} & \textbf{Efecto aritmético} & \textbf{Descripción} \\
+  \midrule
+  Desp.\ izquierda & \texttt{<<} & $x \times 2^k$               & Mueve bits izq.; rellena con 0 a la derecha \\
+  Desp.\ derecha   & \texttt{>>} & $\lfloor x / 2^k \rfloor$    & Mueve bits der.; rellena con 0 a la izquierda \\
+  NOT bit a bit    & \texttt{\textasciitilde} & $-(x+1)$         & Invierte cada bit \\
+  AND bit a bit    & \texttt{\&} & —                             & 1 solo si \textbf{ambos} bits son 1 \\
+  OR bit a bit     & \texttt{|}  & —                             & 1 si \textbf{al menos uno} es 1 \\
+  XOR bit a bit    & \texttt{\textasciicircum} & —               & 1 si los bits son \textbf{distintos} \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Tablas de verdad}
+
+\begin{center}
+\begin{tabular}{cc|c|c|c}
+  \toprule
+  \texttt{a} & \texttt{b} & \texttt{a \& b} & \texttt{a | b} & \texttt{a \textasciicircum{} b} \\
+  \midrule
+  0 & 0 & 0 & 0 & 0 \\
+  0 & 1 & 0 & 1 & 1 \\
+  1 & 0 & 0 & 1 & 1 \\
+  1 & 1 & 1 & 1 & 0 \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Patrones especiales}
+
+\begin{itemize}
+  \item \textbf{Todo apagado:} \texttt{x = 0}
+  \item \textbf{Todo encendido:} \texttt{x = -1}
+        (en complemento a 2, $-1 = 2^n - 1 = $ todo 1s)
+  \item \textbf{Solo el bit $k$:} \texttt{1 << k} \;$= 2^k$
+\end{itemize}
+
+\subsection{Precedencia (mayor a menor)}
+
+\[
+  \texttt{\textasciitilde}
+  \;>\;
+  \texttt{<<},\;\texttt{>>}
+  \;>\;
+  \texttt{\&}
+  \;>\;
+  \texttt{\textasciicircum}
+  \;>\;
+  \texttt{|}
+\]
+
+\begin{consejo}
+  Cuando combinas varios operadores en una expresión, usa
+  \textbf{paréntesis}. La precedencia entre \texttt{\&} y \texttt{|}
+  es la fuente de errores más frecuente.
+\end{consejo}
+
+\newpage
+
+% =============================================================================
+\section{Técnicas de bit manipulation}
+% =============================================================================
+
+\subsection{Las cuatro operaciones fundamentales sobre el bit $k$}
+
+\begin{center}
+\begin{tabular}{lll}
+  \toprule
+  \textbf{Operación} & \textbf{Expresión} & \textbf{Por qué funciona} \\
+  \midrule
+  Leer bit $k$     & \texttt{(x >> k) \& 1}
+    & Desplaza el bit $k$ al lugar 0; AND filtra el resto \\[4pt]
+  Encender bit $k$ & \texttt{x | (1 << k)}
+    & OR con 1 siempre da 1; no toca los demás bits \\[4pt]
+  Apagar bit $k$   & \texttt{x \& \textasciitilde(1 << k)}
+    & AND con 0 siempre da 0; \textasciitilde{} invierte la máscara \\[4pt]
+  Invertir bit $k$ & \texttt{x \textasciicircum{} (1 << k)}
+    & XOR con 1 invierte; XOR con 0 deja igual \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Otras técnicas clave}
+
+\begin{center}
+\begin{tabular}{lll}
+  \toprule
+  \textbf{Técnica} & \textbf{Expresión} & \textbf{Ejemplo} \\
+  \midrule
+  Máscara de $k$ bits bajos      & \texttt{(1 << k) - 1}   & $k=4$: \texttt{0000 1111} = 15 \\
+  Apagar el bit encendido más bajo & \texttt{n \& (n - 1)}  & $n=12$ (\texttt{1100}): result \texttt{1000}=8 \\
+  Aislar el bit encendido más bajo & \texttt{n \& -n}       & $n=12$ (\texttt{1100}): result \texttt{0100}=4 \\
+  ¿Es potencia de 2?             & \texttt{n > 0 \&\& !(n \& (n-1))} & $n=8$ \checkmark, $n=7$ \texttimes \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Propiedades del XOR}
+
+\begin{itemize}
+  \item \texttt{x \textasciicircum{} x = 0} \quad(cualquier valor XOR consigo mismo da 0)
+  \item \texttt{x \textasciicircum{} 0 = x} \quad(XOR con cero deja el valor intacto)
+  \item \texttt{(x \textasciicircum{} k) \textasciicircum{} k = x} \quad
+        (aplicar XOR dos veces con la misma clave regresa al original)
+\end{itemize}
+
+\begin{recuerda}
+  XOR sirve para:
+  \begin{itemize}
+    \item \textbf{Invertir} bits seleccionados.
+    \item \textbf{Intercambiar} dos variables sin variable temporal
+          (\texttt{a \textasciicircum{}= b; b \textasciicircum{}= a; a \textasciicircum{}= b}).
+    \item \textbf{Encontrar el elemento único} en un arreglo donde todos
+          los demás aparecen dos veces (XOR de todo el arreglo).
+    \item Calcular la \textbf{distancia de Hamming} ($a$ \textasciicircum{} $b$,
+          luego contar los 1s del resultado).
+  \end{itemize}
+\end{recuerda}
+
+\subsection{Las máscaras de posición par e impar}
+
+\begin{center}
+\begin{tabular}{ll}
+  \toprule
+  \textbf{Constante} & \textbf{Bits encendidos} \\
+  \midrule
+  \texttt{0x55555555} = \texttt{0101 0101 \ldots} & Posiciones \textbf{pares} (0, 2, 4, \ldots) \\
+  \texttt{0xAAAAAAAA} = \texttt{1010 1010 \ldots} & Posiciones \textbf{impares} (1, 3, 5, \ldots) \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\begin{ejemplo}[Contador binario — Chasquidos Mágicos]
+  $n$ enchufes en serie forman un \textbf{contador binario}: después de $c$
+  chasquidos, el enchufe $i$ (contando desde 1) tiene el mismo estado que el
+  bit $i-1$ de $c$.  La lámpara en posición $n$ está prendida si y solo si:
+  \[
+    (\,c \;\texttt{>>}\; (n-1)\,) \;\texttt{\&}\; 1 \;=\; 1
+  \]
+\end{ejemplo}
+
+\newpage
+
+% =============================================================================
+\section{Ejercicios de repaso}
+% =============================================================================
+
+Los siguientes ejercicios son del mismo tipo y dificultad que los del examen.
+Resuélvelos \textbf{a mano, en papel}.
+
+\subsection{Conversión de bases}
+
+\begin{enumerate}
+  \item Convierte a binario: \quad a) $173_{10}$ \quad b) $\mathtt{B4}_{16}$ \quad c) $357_8$
+  \item Convierte $0011\,1010\,1100\,0110_2$ a hexadecimal.
+  \item Convierte $\mathtt{3F8A}_{16}$ a octal. \textit{(Pista: pasa por binario.)}
+  \item En base 4, escribe el número $\mathtt{FAD}_{16}$.
+\end{enumerate}
+
+\subsection{Complemento a 2}
+
+\begin{enumerate}[resume]
+  \item Representa en \textbf{8 bits complemento a 2}: \quad a) $-43$ \quad b) $-1$ \quad c) $-128$
+  \item ¿Qué valor decimal tiene \texttt{1111 0001} interpretado como
+        entero con signo de 8 bits? Muestra cómo lo determines.
+  \item ¿Cuál es el rango de valores representables con 12 bits en complemento a 2?
+\end{enumerate}
+
+\subsection{ASCII}
+
+\begin{enumerate}[resume]
+  \item Decodifica el mensaje: \texttt{50 52 4F 47 52 41 4D 41} (hex).
+  \item El byte \texttt{0x74} es una letra minúscula.  Sin consultar la tabla,
+        determina la mayúscula correspondiente y su valor hexadecimal.
+        Explica el procedimiento con operaciones de bits.
+  \item ¿Cuántos bytes ocupa la cadena \texttt{"HOLA"} en memoria?
+        ¿Es la misma cantidad que \texttt{"hola"}? Justifica.
+\end{enumerate}
+
+\subsection{Fracciones e IEEE 754}
+
+\begin{enumerate}[resume]
+  \item Convierte a binario las siguientes fracciones; indica si el resultado
+        es exacto o periódico y, si es periódico, cuál es el patrón:
+        \begin{enumerate}
+          \item $\dfrac{3}{4}$ \qquad b) $\dfrac{1}{6}$ \qquad c) $\dfrac{7}{8}$
+        \end{enumerate}
+  \item Sin hacer la conversión, determina cuáles son exactas en binario.
+        Justifica con los factores primos.
+        \[
+          \frac{1}{32}, \quad \frac{1}{12}, \quad \frac{5}{16}, \quad \frac{1}{7}
+        \]
+  \item Un \texttt{float} de 32 bits tiene el patrón:
+        \[
+          \underbrace{1}_{signo}\;
+          \underbrace{10000000}_{exp}\;
+          \underbrace{10000000000000000000000}_{mantisa}
+        \]
+        \begin{enumerate}
+          \item ¿Es positivo o negativo?
+          \item El exponente real es $e - 127$. ¿Cuánto vale aquí?
+          \item La mantisa representa $1.1_2 = 1.5_{10}$. ¿Qué número decimal es?
+        \end{enumerate}
+\end{enumerate}
+
+\subsection{Operadores y técnicas de bits}
+
+\begin{enumerate}[resume]
+  \item Calcula a mano.  Muestra los 8 bits en cada paso.
+        \begin{enumerate}
+          \item \texttt{23 \& 29}
+          \item \texttt{23 | 29}
+          \item \texttt{23 \textasciicircum{} 29}
+          \item \texttt{\textasciitilde{} 23} (expresa en decimal)
+          \item \texttt{23 << 2}
+          \item \texttt{100 >> 3}
+        \end{enumerate}
+  \item Evalúa paso a paso: \texttt{(\textasciitilde(18 >> 1)) \& 55}
+  \item Dado $n = 44$ (\texttt{00101100}):
+        \begin{enumerate}
+          \item ¿Cuánto vale \texttt{n \& (n-1)}? ¿Qué bit se apagó?
+          \item ¿Cuánto vale \texttt{n \& -n}? ¿Qué representa?
+          \item ¿Es $n$ una potencia de 2? Justifica usando la expresión anterior.
+        \end{enumerate}
+  \item Explica con palabras y un ejemplo concreto por qué XOR de todos los
+        elementos del arreglo \{3, 7, 3, 9, 7\} da el elemento único.
+\end{enumerate}
+
+\subsection{Preguntas conceptuales}
+
+\begin{enumerate}[resume]
+  \item ¿Por qué las computadoras usan base 2 y no base 10?
+        Explica en términos del hardware.
+  \item El estándar IEEE 754 utiliza un \textit{bias} en el exponente.
+        ¿Qué problema resuelve eso?
+  \item ¿Por qué el rango de complemento a 2 no es simétrico alrededor
+        del cero? ¿Cuántos valores positivos hay y cuántos negativos?
+  \item ¿Qué efecto tiene \texttt{x \textasciicircum{} 0xFF} sobre los
+        8 bits bajos de \texttt{x}?  ¿Y \texttt{x \& 0xFF}?
+\end{enumerate}
+
+% =============================================================================
+\section{Resumen exprés}
+% =============================================================================
+
+\begin{recuerda}
+\textbf{Conversiones:}
+\begin{itemize}
+  \item Cualquier base $\to$ decimal: suma pesos posicionales.
+  \item Decimal $\to$ base $b$: divisiones sucesivas, leer restos de abajo arriba.
+  \item Bin $\leftrightarrow$ Oct: grupos de 3 bits. \quad Bin $\leftrightarrow$ Hex: grupos de 4 bits.
+\end{itemize}
+
+\textbf{Complemento a 2 en $n$ bits:}
+\begin{itemize}
+  \item Para negar: invertir + sumar 1.
+  \item Rango: $-2^{n-1}$ a $+2^{n-1}-1$. \quad $\texttt{\textasciitilde{}x} = -(x+1)$.
+\end{itemize}
+
+\textbf{ASCII clave:} \texttt{'A'}=65, \texttt{'a'}=97, \texttt{'0'}=48. Mayús $\leftrightarrow$ minús: $\pm 32$.
+
+\textbf{Exactas en binario:} solo fracciones cuyo denominador es potencia de 2.
+
+\textbf{Operadores de bits:}
+\begin{itemize}
+  \item \texttt{<<}\,$k$: $\times 2^k$. \quad \texttt{>>}\,$k$: $\lfloor \div 2^k \rfloor$.
+  \item AND apaga, OR enciende, XOR invierte bits seleccionados.
+  \item \texttt{x \textasciicircum{} x = 0}, \quad \texttt{x \textasciicircum{} 0 = x}.
+\end{itemize}
+
+\textbf{Técnicas:}
+\begin{itemize}
+  \item Leer bit $k$: \texttt{(x>>k)\&1}. \quad Encender: \texttt{x|(1<<k)}.
+        Apagar: \texttt{x\&\textasciitilde(1<<k)}. \quad Invertir: \texttt{x\textasciicircum(1<<k)}.
+  \item Potencia de 2: \texttt{n>0 \&\& !(n\&(n-1))}.
+  \item Bit más bajo: \texttt{n\&-n}. \quad Apagar bit más bajo: \texttt{n\&(n-1)}.
+\end{itemize}
+\end{recuerda}
+
+\end{document}

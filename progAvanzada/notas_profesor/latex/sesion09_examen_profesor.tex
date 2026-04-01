@@ -1,0 +1,615 @@
+% =============================================================================
+%  Notas del profesor — Sesión 09: Examen Parcial 01
+%  Programación Avanzada — Universidad Panamericana
+%  Compilar: pdflatex sesion09_examen_profesor.tex
+% =============================================================================
+\documentclass[12pt, oneside]{article}
+\usepackage[profesor]{progavanzada}
+
+\begin{document}
+
+\portada{Sesión 09}{Examen Parcial 01}{2026}
+
+\tableofcontents
+\newpage
+
+% =============================================================================
+\section{Resumen de la sesión}
+% =============================================================================
+
+Esta sesión es el primer examen parcial.  Cubre sesiones 01–08.
+El examen se resuelve \textbf{a mano, en papel, sin computadora}.
+No incluye escribir ni interpretar código fuente; el enfoque es
+\textbf{teórico y matemático}.
+
+\begin{notaprofesor}[Logística]
+  \begin{itemize}
+    \item \textbf{Duración:} 80 minutos (duración estándar de una sesión).
+    \item \textbf{Material permitido:} pluma o lápiz.  Sin calculadora.
+    \item \textbf{No permitido:} celular, calculadora, apuntes.
+    \item \textbf{Entregar:} hojas con nombre completo, matrícula y fecha.
+  \end{itemize}
+\end{notaprofesor}
+
+% =============================================================================
+\section{Distribución temática recomendada}
+% =============================================================================
+
+El examen está diseñado para 40 puntos totales.
+La distribución refleja el tiempo de clase dedicado a cada unidad y la
+dificultad conceptual de cada tema.
+
+\begin{center}
+\begin{tabular}{clcc}
+  \toprule
+  \textbf{Sesión(es)} & \textbf{Tema} & \textbf{Puntos} & \textbf{\%} \\
+  \midrule
+  01–02 & Computadora, C++ y jueces en línea (conceptual) & 4  & 10\% \\
+  03    & Sistemas de numeración y conversiones            & 10 & 25\% \\
+  04    & Complemento a 2, ASCII, fracciones e IEEE 754   & 12 & 30\% \\
+  05    & Operadores de bits: tablas de verdad y evaluación & 8 & 20\% \\
+  06–08 & Técnicas de bit manipulation (conceptual y aplicada) & 6 & 15\% \\
+  \bottomrule
+  & \textbf{Total} & \textbf{40} & \textbf{100\%} \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\begin{notaprofesor}[Criterio de diseño]
+  Las conversiones y el complemento a 2 son los temas con mayor peso porque:
+  (1) son la base de todo lo demás, (2) se pueden evaluar con preguntas
+  graduadas en dificultad, y (3) el proceso a mano es comprobable paso a paso.
+  Los temas conceptuales (sesiones 01–02) tienen peso menor porque no tienen
+  componente matemática rica, pero sirven para diferenciar a quienes leyeron
+  y quienes no.
+\end{notaprofesor}
+
+\newpage
+
+% =============================================================================
+\section{Tipos de preguntas recomendadas}
+% =============================================================================
+
+Dado que el examen es \textbf{a mano, sin código}, los formatos más efectivos
+son los siguientes:
+
+% -----------------------------------------------------------------------------
+\subsection{Conversión de bases (10–25 puntos sugeridos)}
+% -----------------------------------------------------------------------------
+
+Son las preguntas más objetivas y fáciles de calificar.
+Recomendación: pide \textbf{al menos una conversión cruzada} (e.g., octal → hex)
+para verificar que el alumno domina el binario como lenguaje puente, no solo
+las conversiones directas.
+
+\begin{notaprofesor}[Tipos de conversión recomendados]
+  \begin{itemize}
+    \item Decimal $\to$ binario (divisiones sucesivas).
+    \item Binario $\to$ decimal (suma de pesos).
+    \item Hexadecimal $\to$ binario (grupos de 4 bits) — muy rápida, evalúa si
+          memorizaron la tabla.
+    \item Binario $\to$ hexadecimal (grupos de 4 bits desde la derecha).
+    \item Octal $\to$ hexadecimal \textbf{vía binario} — evalúa comprensión del método.
+    \item Base arbitraria (base 4, base 5) $\to$ decimal — evalúa comprensión general
+          del sistema posicional.
+  \end{itemize}
+  Evita pedir decimal $\to$ octal directo (tedioso y sin valor pedagógico extra).
+\end{notaprofesor}
+
+% -----------------------------------------------------------------------------
+\subsection{Complemento a 2 (8–12 puntos sugeridos)}
+% -----------------------------------------------------------------------------
+
+\begin{notaprofesor}[Preguntas de alto valor diagnóstico]
+  \begin{enumerate}
+    \item \textbf{Representar un negativo en $n$ bits} (mostrar el proceso).
+          Detecta si el alumno aplica el algoritmo o solo memoriza el resultado.
+    \item \textbf{Interpretar un patrón de bits con signo}.
+          El bit más significativo es 1 → el alumno debe negar el patrón para
+          encontrar el valor.  Error común: tratar el patrón como entero sin signo.
+    \item \textbf{Calcular el rango} de un tipo de $n$ bits con y sin signo.
+    \item \textbf{Pregunta trampa}: ``¿Cuánto vale \texttt{\textasciitilde(-128)}
+          en 8 bits?''  Respuesta: $127$.  Verifica si entienden que $\texttt{\textasciitilde x} = -(x+1)$.
+  \end{enumerate}
+\end{notaprofesor}
+
+% -----------------------------------------------------------------------------
+\subsection{ASCII (4–6 puntos sugeridos)}
+% -----------------------------------------------------------------------------
+
+\begin{notaprofesor}[Formatos útiles]
+  \begin{itemize}
+    \item \textbf{Decodificar un mensaje en hex}: secuencia de 4–8 bytes.
+          Elegir palabras en mayúsculas o con dígitos para que el alumno use
+          la tabla, no solo memorice.
+    \item \textbf{Conversión mayúscula $\leftrightarrow$ minúscula sin tabla}:
+          pedir que expliquen qué bit cambia y cuál es la operación de bits
+          equivalente (\texttt{c | 0x20} para pasar a minúscula,
+          \texttt{c \& 0xDF} para pasar a mayúscula).
+    \item \textbf{Carácter dígito $\to$ entero}: \texttt{'7' - '0' = 7} o
+          \texttt{'7' \& 0x0F = 7}.  Evalúa si entienden la estructura del
+          nibble en los dígitos ASCII.
+  \end{itemize}
+\end{notaprofesor}
+
+% -----------------------------------------------------------------------------
+\subsection{Fracciones binarias e IEEE 754 (6–8 puntos sugeridos)}
+% -----------------------------------------------------------------------------
+
+\begin{notaprofesor}[Preguntas de diferenciación]
+  \begin{enumerate}
+    \item \textbf{Convertir una fracción a binario} mostrando la tabla de
+          multiplicaciones por 2.  Elegir una exacta y una periódica.
+          Fracciones útiles: $3/8$ (exacta), $1/6$ (periódica), $5/16$ (exacta),
+          $1/3$ (periódica clásica).
+    \item \textbf{Sin hacer la conversión, determinar si una fracción es exacta en
+          binario} por análisis de factores primos del denominador.
+          Evalúa comprensión profunda vs.\ memorización.
+    \item \textbf{Analizar un patrón IEEE 754}: dado el patrón de 32 bits,
+          identificar signo, calcular el exponente real ($e - 127$) y
+          reconstruir el valor.  No hay que conocer todos los detalles del
+          estándar — basta entender la estructura.
+    \item \textbf{Pregunta conceptual}: ``¿Por qué \texttt{0.1 + 0.2 $\neq$ 0.3}?''
+          Una respuesta correcta menciona: (a) $0.1_{10}$ es periódico en binario,
+          (b) se trunca al almacenarlo, (c) los errores se acumulan.
+  \end{enumerate}
+\end{notaprofesor}
+
+% -----------------------------------------------------------------------------
+\subsection{Operadores de bits (8–10 puntos sugeridos)}
+% -----------------------------------------------------------------------------
+
+\begin{notaprofesor}[Diseño de preguntas]
+  \begin{itemize}
+    \item \textbf{Evaluar expresión paso a paso} mostrando los 8 bits en cada
+          etapa.  Incluir al menos: un desplazamiento, un NOT, y un AND o XOR.
+          Ejemplo: \texttt{(\textasciitilde(n >> k)) \& m}.
+    \item \textbf{Completar tabla}: dar \texttt{a} y \texttt{b} en binario,
+          pedir \texttt{a \& b}, \texttt{a | b}, \texttt{a \textasciicircum{} b}.
+    \item \textbf{Identificar qué hace una expresión}: mostrar la expresión y
+          pedir describir en palabras qué hace.  Ejemplos:
+          \texttt{n \& (n-1)}, \texttt{n \& -n}, \texttt{x | (1 << k)}.
+    \item \textbf{Verificar la precedencia}: dar \texttt{a \& b | c} vs.\
+          \texttt{a \& (b | c)} y pedir calcular ambos con valores concretos.
+          Evidencia si los alumnos usan paréntesis o confían en la precedencia
+          de memoria.
+  \end{itemize}
+\end{notaprofesor}
+
+% -----------------------------------------------------------------------------
+\subsection{Técnicas de bit manipulation (4–6 puntos sugeridos)}
+% -----------------------------------------------------------------------------
+
+\begin{notaprofesor}[Enfoque conceptual — sin código]
+  Dado que el examen no incluye código, las técnicas se evalúan de dos formas:
+  \begin{enumerate}
+    \item \textbf{Aplicar la técnica a un número concreto} y mostrar el resultado
+          con representación binaria.  Ejemplo: dado \texttt{x = 0b10110100},
+          apagar el bit 5 y mostrar el resultado.
+    \item \textbf{Explicar con palabras} qué hace la expresión y por qué.
+          Ejemplo: ``¿Qué hace \texttt{n \& (n-1)} a los bits de \texttt{n}?
+          Demuéstralo con $n = 24$.''
+  \end{enumerate}
+  Los problemas de la sesión 07 (Chasquidos Mágicos, separación de bits)
+  pueden usarse como preguntas de razonamiento: ``dado $n=4$ y $c=47$,
+  ¿cuál es el estado de la lámpara? Justifica sin calcular $47$ en binario
+  desde cero --- razona sobre el bit $n-1$''.
+\end{notaprofesor}
+
+\newpage
+
+% =============================================================================
+\section{Preguntas de ejemplo con respuestas}
+% =============================================================================
+
+Las siguientes preguntas son representativas de lo que puede ir en el examen.
+Se incluyen respuestas completas y criterios de calificación parcial.
+
+% -----------------------------------------------------------------------------
+\subsection{Conversiones}
+% -----------------------------------------------------------------------------
+
+\textbf{P1.} Convierte $219_{10}$ a binario.
+
+\begin{notaprofesor}[Respuesta P1 — 2 pts]
+  Divisiones sucesivas:
+  \begin{center}
+  \begin{tabular}{r@{$\;\div 2 =\;$}l@{\quad}l}
+    219 & 109 & resto \textbf{1} \\
+    109 & 54  & resto \textbf{1} \\
+    54  & 27  & resto \textbf{0} \\
+    27  & 13  & resto \textbf{1} \\
+    13  & 6   & resto \textbf{1} \\
+    6   & 3   & resto \textbf{0} \\
+    3   & 1   & resto \textbf{1} \\
+    1   & 0   & resto \textbf{1} \\
+  \end{tabular}
+  \end{center}
+  Resultado: $219_{10} = 1101\,1011_2$.
+  Verificación: $128+64+16+8+2+1 = 219$. \checkmark
+
+  \textbf{Calificación parcial:} 1 pt si el proceso es correcto pero hay
+  un error aritmético en una división.  0 pts si solo escribe la respuesta
+  sin proceso.
+\end{notaprofesor}
+
+\medskip
+\textbf{P2.} Convierte $\mathtt{6C3}_{16}$ a octal.
+
+\begin{notaprofesor}[Respuesta P2 — 3 pts (1 por etapa)]
+  Paso 1 — Hex $\to$ Binario:
+  \[
+    6 = 0110, \quad C = 1100, \quad 3 = 0011
+    \;\;\Rightarrow\;\; 0110\,1100\,0011_2
+  \]
+  Paso 2 — Binario $\to$ Octal (grupos de 3 desde la derecha):
+  \[
+    \underbrace{011}_{3}\;
+    \underbrace{011}_{3}\;
+    \underbrace{000}_{0}\;
+    \underbrace{011}_{3}
+    \;\;\Rightarrow\;\; 3303_8
+  \]
+  Verificación: $3\cdot512 + 3\cdot64 + 0\cdot8 + 3 = 1536+192+3 = 1731$.
+  $6\cdot256 + 12\cdot16 + 3 = 1536+192+3 = 1731$.\ \checkmark
+
+  \textbf{Error frecuente:} intentar dividir \texttt{0x6C3} entre 8
+  directamente — tedioso y propenso a errores.  Si el alumno llega al
+  resultado correcto por ese camino, vale los puntos completos.
+\end{notaprofesor}
+
+% -----------------------------------------------------------------------------
+\subsection{Complemento a 2}
+% -----------------------------------------------------------------------------
+
+\textbf{P3.} Representa $-53$ en \textbf{8 bits complemento a 2}.
+Muestra el proceso.
+
+\begin{notaprofesor}[Respuesta P3 — 3 pts]
+  \begin{center}
+  \begin{tabular}{ll}
+    $53_{10}$ en binario  & \texttt{0011 0101} \\
+    Invertir bits          & \texttt{1100 1010} \\
+    Sumar 1                & \texttt{1100 1011} \\
+  \end{tabular}
+  \end{center}
+  $-53_{10} = \texttt{1100\,1011}_2$.
+  Verificación: $2^8 - 53 = 203 = 128+64+8+2+1 = \texttt{1100\,1011}$. \checkmark
+
+  \textbf{Calificación:} 1 pt proceso (inversión correcta), 1 pt suma 1,
+  1 pt resultado final.  Error en la conversión de 53 a binario descuenta 1 pt
+  del primer paso pero puede haber crédito en los siguientes si el proceso
+  es correcto.
+\end{notaprofesor}
+
+\medskip
+\textbf{P4.} ¿Qué valor decimal tiene \texttt{1010\,0011} interpretado
+como entero con signo de 8 bits?
+
+\begin{notaprofesor}[Respuesta P4 — 3 pts]
+  El bit más significativo es 1: es \textbf{negativo}.
+  Aplicar el algoritmo para obtener el valor absoluto:
+  \begin{center}
+  \begin{tabular}{ll}
+    \texttt{1010 0011} & (valor dado) \\
+    Invertir           & \texttt{0101 1100} \\
+    Sumar 1            & \texttt{0101 1101} = $64+16+8+4+1 = 93$ \\
+  \end{tabular}
+  \end{center}
+  El valor es $-93$.
+
+  \textbf{Calificación:} 1 pt por identificar que es negativo, 1 pt por
+  aplicar el proceso, 1 pt por el resultado.
+
+  \textbf{Error frecuente:} calcular $128+32+2+1 = 163$ y reportar $+163$.
+  Esto indica que el alumno no sabe distinguir con/sin signo.  0 pts.
+\end{notaprofesor}
+
+% -----------------------------------------------------------------------------
+\subsection{ASCII}
+% -----------------------------------------------------------------------------
+
+\textbf{P5.} Decodifica: \texttt{44 45 43 49 4D 41 4C}
+
+\begin{notaprofesor}[Respuesta P5 — 2 pts (0.5 por cada carácter correcto con proceso)]
+  Usando la tabla ASCII (rango mayúsculas 0x41–0x5A):
+  \begin{center}
+  \begin{tabular}{ccc}
+    \toprule
+    Hex & Dec & Carácter \\
+    \midrule
+    44 & 68 & D \\
+    45 & 69 & E \\
+    43 & 67 & C \\
+    49 & 73 & I \\
+    4D & 77 & M \\
+    41 & 65 & A \\
+    4C & 76 & L \\
+    \bottomrule
+  \end{tabular}
+  \end{center}
+  Resultado: \textbf{DECIMAL}.
+\end{notaprofesor}
+
+\medskip
+\textbf{P6.} \texttt{0x6D} es una letra minúscula.  Sin consultar la tabla
+ASCII, determina la mayúscula y su código hexadecimal.  Explica con
+operaciones de bits.
+
+\begin{notaprofesor}[Respuesta P6 — 3 pts]
+  La diferencia entre mayúscula y minúscula es el \textbf{bit 5} (valor 32 = 0x20).
+  Las minúsculas tienen bit 5 encendido (\texttt{011xxxxx}); las mayúsculas,
+  apagado (\texttt{010xxxxx}).
+
+  Para pasar de minúscula a mayúscula: \textbf{apagar el bit 5}:
+  \[
+    \texttt{0x6D \& \textasciitilde 0x20}
+    = \texttt{0x6D \& 0xDF}
+    = \texttt{0110\,1101} \;\&\; \texttt{1101\,1111}
+    = \texttt{0100\,1101}
+    = \texttt{0x4D}
+  \]
+  \texttt{0x4D} corresponde a la letra \textbf{M}.
+  Verificación: \texttt{0x6D} es \texttt{'m'} y \texttt{0x4D} es \texttt{'M'}.
+  \checkmark
+
+  \textbf{Calificación:} 1 pt por identificar el bit 5, 1 pt por la operación,
+  1 pt por el resultado correcto.
+\end{notaprofesor}
+
+% -----------------------------------------------------------------------------
+\subsection{Fracciones binarias}
+% -----------------------------------------------------------------------------
+
+\textbf{P7.} Convierte $\dfrac{1}{6}$ a binario.  ¿Es exacta o periódica?
+
+\begin{notaprofesor}[Respuesta P7 — 3 pts]
+  $1/6 \approx 0.1\overline{6}$.  Multiplicaciones por 2:
+  \begin{center}
+  \begin{tabular}{r@{$\;\times 2 =\;$}ll}
+    $0.1\overline{6}$ & $0.\overline{3}$  & bit \textbf{0} \\
+    $0.\overline{3}$  & $0.\overline{6}$  & bit \textbf{0} \\
+    $0.\overline{6}$  & $1.\overline{3}$  & bit \textbf{1}, resto $0.\overline{3}$ \\
+    $0.\overline{3}$  & $0.\overline{6}$  & bit \textbf{0} \quad (estado repetido) \\
+    $\vdots$          & $\vdots$          & $\vdots$ \\
+  \end{tabular}
+  \end{center}
+  El patrón que se repite es \texttt{01} (a partir del tercer bit):
+  $\dfrac{1}{6} = 0.00\overline{10}_2$.
+
+  Es \textbf{periódica}.  La razón: $6 = 2 \times 3$ y el factor 3 no es
+  potencia de 2, por lo tanto no tiene representación exacta en base 2.
+
+  \textbf{Calificación:} 1 pt tabla de multiplicaciones, 1 pt identificar patrón
+  periódico, 1 pt justificación por factores primos.
+\end{notaprofesor}
+
+\medskip
+\textbf{P8.} Sin hacer la conversión, determina si $\dfrac{7}{16}$ y
+$\dfrac{3}{14}$ son exactas en binario.  Justifica.
+
+\begin{notaprofesor}[Respuesta P8 — 2 pts]
+  \begin{itemize}
+    \item $\dfrac{7}{16}$: denominador $16 = 2^4$. Solo factor primo 2.
+          \textbf{Exacta en binario.}
+    \item $\dfrac{3}{14}$: denominador $14 = 2 \times 7$.
+          El factor 7 no es potencia de 2.
+          \textbf{No exacta — periódica.}
+  \end{itemize}
+\end{notaprofesor}
+
+% -----------------------------------------------------------------------------
+\subsection{Operadores de bits}
+% -----------------------------------------------------------------------------
+
+\textbf{P9.} Evalúa \texttt{(\textasciitilde(30 >> 3)) \& 19}.
+Muestra los 8 bits en cada paso.
+
+\begin{notaprofesor}[Respuesta P9 — 4 pts]
+  \begin{center}
+  \begin{tabular}{lll}
+    \toprule
+    Paso & Expresión & Resultado \\
+    \midrule
+    1 & $30$ & \texttt{0001 1110} \\
+    2 & $30 \;\texttt{>>}\; 3$ & \texttt{0000 0011} = 3 \\
+    3 & \texttt{\textasciitilde{}(30 >> 3)} & \texttt{1111 1100} = $-4$ \\
+    4 & $19$ & \texttt{0001 0011} \\
+    5 & \texttt{(paso 3) \& 19} & \texttt{0001 0000} = \textbf{16} \\
+    \bottomrule
+  \end{tabular}
+  \end{center}
+  Resultado: \textbf{16}.
+
+  \textbf{Calificación:} 1 pt por paso (desplazamiento, NOT, valor 19, AND final).
+  El NOT es el más difícil; aceptar resultado correcto aunque el alumno omita
+  mostrar todos los bits si escribe $\texttt{\textasciitilde 3} = -4 = \texttt{1111\,1100}$.
+\end{notaprofesor}
+
+\medskip
+\textbf{P10.} Dado $n = 52$:
+\begin{enumerate}
+  \item ¿Cuánto vale \texttt{n \& (n-1)}?
+  \item ¿Cuánto vale \texttt{n \& -n}?
+  \item ¿Es $n$ una potencia de 2?
+\end{enumerate}
+
+\begin{notaprofesor}[Respuesta P10 — 3 pts]
+  $52_{10} = \texttt{0011 0100}_2$.
+  \begin{enumerate}
+    \item \texttt{n - 1} = 51 = \texttt{0011 0011}.\\
+          \texttt{0011 0100 \& 0011 0011 = 0011 0000} = $48$.\\
+          Interpretación: se apagó el bit encendido de menor peso (bit 2, valor 4).
+    \item $-52$ en 8 bits (complemento a 2): $256 - 52 = 204 = \texttt{1100 1100}$.\\
+          \texttt{0011 0100 \& 1100 1100 = 0000 0100} = $4$.\\
+          Confirmación: $4 = 2^2$, que es el bit encendido más bajo de 52.
+    \item $n$ \textbf{no es potencia de 2} porque \texttt{n \& (n-1)} $\neq 0$
+          (resultado fue 48, no 0).  Una potencia de 2 tiene exactamente un bit
+          encendido; $52 = 32 + 16 + 4$ tiene tres.
+  \end{enumerate}
+\end{notaprofesor}
+
+% -----------------------------------------------------------------------------
+\subsection{Preguntas conceptuales}
+% -----------------------------------------------------------------------------
+
+\textbf{P11.} Explica con tus palabras por qué
+\texttt{0.1 + 0.2 == 0.3} devuelve \texttt{false} en C++.
+
+\begin{notaprofesor}[Respuesta P11 — 3 pts]
+  Respuesta completa (3 pts):
+  \begin{enumerate}
+    \item $0.1_{10}$ es periódico en binario: $0.1_{10} = 0.0\overline{0011}_2$.
+          No puede representarse exactamente con un número finito de bits.
+    \item Al almacenarlo en un \texttt{float}/\texttt{double} (23 o 52 bits de mantisa),
+          la cadena infinita se trunca, introduciendo un pequeño error de redondeo.
+    \item $0.1 + 0.2$ produce la suma de \textit{dos} valores truncados.
+          El resultado difiere de la representación truncada de $0.3_{10}$,
+          que también es periódico y fue truncado de forma independiente.
+  \end{enumerate}
+
+  Respuesta aceptable (2 pts): menciona que el problema es que 0.1 no puede
+  representarse exactamente en binario y que se acumula error de redondeo.
+
+  Respuesta insuficiente (1 pt): solo dice ``error de redondeo'' sin explicar
+  por qué existe ese error.
+\end{notaprofesor}
+
+\medskip
+\textbf{P12.} ¿Por qué el rango del complemento a 2 no es simétrico?
+
+\begin{notaprofesor}[Respuesta P12 — 2 pts]
+  Con $n$ bits hay $2^n$ patrones posibles.
+  El cero ocupa uno de los patrones del lado positivo
+  (\texttt{0000\ldots0}).  Así, del total de $2^n$ patrones,
+  $2^{n-1}$ tienen el bit de signo en 0 (cubre 0 a $+2^{n-1}-1$)
+  y $2^{n-1}$ tienen el bit de signo en 1 (cubre $-2^{n-1}$ a $-1$).
+  El lado negativo tiene un valor ``extra'' precisamente porque el cero
+  no le ``roba'' ningún patrón.
+
+  Consecuencia: con 8 bits existen $-128$ pero no $+128$;
+  hay 128 valores negativos y solo 127 positivos (más el cero).
+\end{notaprofesor}
+
+\newpage
+
+% =============================================================================
+\section{Tiempos estimados por bloque}
+% =============================================================================
+
+\begin{center}
+\begin{tabular}{lcc}
+  \toprule
+  \textbf{Bloque} & \textbf{Preguntas típicas} & \textbf{Tiempo estimado} \\
+  \midrule
+  Conversiones de bases       & 3–4 conversiones escalonadas & 18–22 min \\
+  Complemento a 2             & 2–3 preguntas                & 12–15 min \\
+  ASCII                       & 1–2 preguntas                &  8–10 min \\
+  Fracciones e IEEE 754       & 2–3 preguntas                & 12–15 min \\
+  Operadores de bits          & 2 expresiones paso a paso    & 10–12 min \\
+  Técnicas y conceptual       & 2–3 preguntas                &  8–10 min \\
+  \midrule
+  \textbf{Total}              &                              & \textbf{68–84 min} \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\begin{notaprofesor}[Gestión del tiempo]
+  El examen está calibrado para terminarse en 80 minutos por un alumno
+  que preparó bien el material.  Deja al menos 5 minutos de colchón.
+  Si ves que el grupo se atrasa sistemáticamente en las conversiones,
+  considera reducir el número de pasos a mostrar (e.g., solo pedir el resultado
+  del bloque intermedio en hex$\to$bin, no todos los detalles).
+\end{notaprofesor}
+
+% =============================================================================
+\section{Errores frecuentes y cómo abordarlos}
+% =============================================================================
+
+\begin{notaprofesor}[Los 5 errores más comunes]
+  \begin{enumerate}
+    \item \textbf{Complemento a 2: tratar el bit de signo como un peso positivo.}
+          Un alumno ve \texttt{1000 0000} y calcula $128$ en lugar de $-128$.
+          Remedio al calificar: si el proceso (invertir + sumar 1) está bien pero el signo
+          final está equivocado, da crédito parcial.
+
+    \item \textbf{Agrupación de bits desde la izquierda en lugar de la derecha.}
+          En la conversión binario $\to$ hexadecimal, el grupo de la izquierda
+          puede ser de menos de 4 bits si el número no es múltiplo de 4.
+          Rellena con ceros por la izquierda, no por la derecha.
+
+    \item \textbf{NOT bit a bit vs.\ NOT lógico.}
+          Confunden \texttt{\textasciitilde{} 0} (que es $-1$, todos los bits a 1)
+          con \texttt{!0} (que es \texttt{true} = 1).
+
+    \item \textbf{Fracciones: copiar de memoria sin entender la regla.}
+          Dicen ``$1/3$ no es exacta en binario'' sin poder justificarlo con
+          los factores primos.  Si hay una fracción no estándar como $7/14$,
+          fracasan.  Evalúa siempre con al menos una fracción que requiera
+          simplificar primero ($7/14 = 1/2$ — exacta).
+
+    \item \textbf{Precedencia entre \texttt{\&} y \texttt{|}.}
+          Calculan \texttt{a \& b | c} como \texttt{a \& (b | c)} en lugar
+          de \texttt{(a \& b) | c}.  Incluir al menos una pregunta donde esto
+          haga diferencia numérica visible.
+  \end{enumerate}
+\end{notaprofesor}
+
+% =============================================================================
+\section{Criterios de calificación parcial}
+% =============================================================================
+
+\begin{notaprofesor}[Política general]
+  \begin{itemize}
+    \item \textbf{Proceso visible}: si el proceso es correcto pero hay un error
+          aritmético puntual, otorga crédito parcial (típicamente 50--70\% de
+          los puntos del ejercicio).
+    \item \textbf{Solo respuesta}: si el alumno solo escribe el resultado sin
+          mostrar proceso, no otorgas crédito aunque sea correcto (en preguntas
+          que explícitamente pidan ``muestra el proceso'').  Anúncialo al inicio.
+    \item \textbf{Respuestas conceptuales}: evalúa por ideas clave.  Una respuesta
+          que menciona las ideas correctas aunque esté mal redactada vale más que
+          una que copia la frase exacta de las notas pero no la comprende.
+    \item \textbf{Verificación}: si el alumno hace una verificación y confirma
+          un resultado correcto, suma puntos de proceso aunque los pasos
+          intermedios sean menos detallados de lo esperado.
+  \end{itemize}
+\end{notaprofesor}
+
+% =============================================================================
+\section{Resumen del examen propuesto}
+% =============================================================================
+
+\begin{center}
+\begin{tabular}{clcl}
+  \toprule
+  \textbf{\#} & \textbf{Pregunta} & \textbf{Pts} & \textbf{Tema} \\
+  \midrule
+   1 & Convierte 219 a binario                           & 2  & Conversiones \\
+   2 & Convierte \texttt{6C3}$_{16}$ a octal             & 3  & Conversiones \\
+   3 & Representa $-53$ en 8 bits complemento a 2        & 3  & Compl.\ a 2 \\
+   4 & Interpreta \texttt{1010 0011} con signo            & 3  & Compl.\ a 2 \\
+   5 & Decodifica \texttt{44 45 43 49 4D 41 4C} en ASCII  & 2  & ASCII \\
+   6 & Mayúscula de \texttt{0x6D} con operaciones de bits & 3  & ASCII / bits \\
+   7 & Convierte $\frac{1}{6}$ a binario                 & 3  & Fracciones \\
+   8 & ¿Exactas en binario? $\frac{7}{16}$ y $\frac{3}{14}$ & 2 & Fracciones \\
+   9 & Evalúa \texttt{(\textasciitilde(30>>3))\&19}       & 4  & Operadores \\
+  10 & $n=52$: \texttt{n\&(n-1)}, \texttt{n\&-n}, ¿potencia de 2? & 3 & Técnicas \\
+  11 & ¿Por qué \texttt{0.1+0.2 != 0.3}?                 & 3  & IEEE 754 \\
+  12 & ¿Por qué el rango de compl.\ a 2 no es simétrico? & 2  & Conceptual \\
+  \midrule
+     & \textbf{Total}                                    & \textbf{33} & \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\begin{notaprofesor}[Ajuste de puntuación]
+  El total suma 33 puntos.  Puedes escalar a la calificación de tu
+  institución (e.g., sobre 10: dividir entre 3.3).  También puedes
+  agregar puntos extra con una pregunta de conversión adicional o un
+  ejercicio de bit manipulation sobre los problemas de la sesión 07
+  (e.g., verificar el estado de los enchufes para valores concretos
+  de $n$ y $c$) para llegar a 40 puntos y tener mayor granularidad.
+\end{notaprofesor}
+
+\end{document}
