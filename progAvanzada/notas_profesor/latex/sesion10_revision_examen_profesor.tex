@@ -1,0 +1,109 @@
+% =============================================================================
+%  Notas del profesor — Sesión 10: Revisión del Examen Parcial 01
+%  Programación Avanzada — Universidad Panamericana
+%  Compilar: pdflatex sesion10_revision_examen_profesor.tex
+% =============================================================================
+\documentclass[12pt, oneside]{article}
+\usepackage[profesor]{progavanzada}
+
+\begin{document}
+
+\portada{Sesión 10}{Revisión del Examen Parcial 01}{2026}
+
+\tableofcontents
+\newpage
+
+% =============================================================================
+\section{Objetivo de la sesión}
+% =============================================================================
+
+Regresar los exámenes calificados y revisar cada pregunta en el pizarrón.
+No hay contenido nuevo.  El valor pedagógico está en la
+\textbf{retroalimentación inmediata}: el alumno recibe el examen mientras
+el material aún está fresco y puede cerrar sus huecos antes de que el curso
+avance.
+
+\begin{notaprofesor}[Por qué esta sesión importa]
+  En cursos de ciencias exactas, los errores en los fundamentos se acumulan.
+  Un alumno que no entiende el complemento a 2 hoy tendrá problemas con
+  apuntadores, aritmética de memoria y tipos de datos más adelante.
+  Esta pausa es la oportunidad de nivelar al grupo \textit{antes} de entrar
+  a los temas de memoria y apuntadores (sesiones 11 en adelante).
+\end{notaprofesor}
+
+% =============================================================================
+\section{Estructura sugerida de la sesión}
+% =============================================================================
+
+\begin{center}
+\begin{tabular}{clc}
+  \toprule
+  \textbf{Tiempo} & \textbf{Actividad} & \textbf{Notas} \\
+  \midrule
+  10 min & Entregar exámenes y dar tiempo de lectura personal
+         & Silencio; que cada quien lea su resultado \\
+  50 min & Revisión pregunta por pregunta en el pizarrón
+         & Ver sección~\ref{sec:revision} \\
+  10 min & Preguntas abiertas y cierre
+         & Aclarar dudas individuales \\
+  \midrule
+  10 min & (Opcional) Anticipo de la sesión 11
+         & Solo si el tiempo lo permite \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+% =============================================================================
+\section{Cómo conducir la revisión}
+\label{sec:revision}
+% =============================================================================
+
+\begin{notaprofesor}[Orden recomendado]
+  Revisa las preguntas de \textbf{menor a mayor dificultad}, no en el
+  orden del examen.  Esto permite que los alumnos recuperen confianza
+  con las correcciones fáciles antes de enfrentar las que más dolieron.
+
+  Para cada pregunta:
+  \begin{enumerate}
+    \item Muestra la solución completa en el pizarrón, con el proceso.
+    \item Pregunta al grupo: ``¿alguien lo resolvió diferente y llegó al
+          mismo resultado?''  Valida métodos alternativos correctos.
+    \item Señala el \textbf{error más frecuente} que viste al calificar
+          y explica exactamente dónde está la confusión.
+    \item No dediques más de 5--7 minutos por pregunta.
+          Si una pregunta genera mucha discusión, agenda una sesión de
+          asesoría fuera de clase.
+  \end{enumerate}
+\end{notaprofesor}
+
+\begin{notaprofesor}[Errores que suelen generar más preguntas]
+  Con base en el diseño del examen de la sesión 09, los temas que
+  históricamente producen más dudas en la revisión son:
+  \begin{itemize}
+    \item \textbf{Complemento a 2}: confusión entre interpretar un patrón
+          con signo vs.\ sin signo.
+    \item \textbf{Fracciones binarias}: no saber determinar si una fracción
+          es exacta sin hacer la conversión.
+    \item \textbf{NOT bit a bit}: confundir \texttt{\textasciitilde x}
+          con \texttt{-x} en lugar de \texttt{-(x+1)}.
+    \item \textbf{Conversiones cruzadas} (e.g., hex $\to$ octal): no pasar
+          por binario como puente y tratar de hacer la conversión directa.
+  \end{itemize}
+\end{notaprofesor}
+
+% =============================================================================
+\section{Después de la revisión}
+% =============================================================================
+
+\begin{notaprofesor}[Seguimiento]
+  \begin{itemize}
+    \item Si más de un tercio del grupo reprobó algún bloque temático,
+          considera agregar un ejercicio corto de repaso al inicio de la
+          sesión 11 antes de avanzar al nuevo tema.
+    \item Los alumnos que quieran discutir su calificación individualmente
+          deben hacerlo en asesoría, no durante la clase.
+          Establece ese límite al inicio de la sesión.
+  \end{itemize}
+\end{notaprofesor}
+
+\end{document}
