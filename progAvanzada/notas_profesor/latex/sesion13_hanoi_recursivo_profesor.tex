@@ -1,0 +1,363 @@
+% =============================================================================
+%  Notas del profesor — Sesión 13: Torres de Hanoi — Solución Recursiva
+%  Programación Avanzada — Universidad Panamericana
+%  Compilar: pdflatex sesion13_hanoi_recursivo_profesor.tex
+% =============================================================================
+\documentclass[12pt, oneside]{article}
+\usepackage[profesor]{progavanzada}
+
+\begin{document}
+
+\portada{Sesión 13}{Torres de Hanoi: Solución Recursiva}{2026}
+
+\tableofcontents
+\newpage
+
+% =============================================================================
+\section{Estructura de la sesión}
+% =============================================================================
+
+\begin{center}
+\begin{tabular}{clc}
+  \toprule
+  \textbf{Tiempo} & \textbf{Bloque} & \textbf{Tipo} \\
+  \midrule
+  15 min & Concurso de diseño: presentaciones + votación & Grupal \\
+   5 min & Proyectar el código ganador; análisis rápido & Exposición \\
+  10 min & Presentación del algoritmo recursivo & Pizarrón \\
+  45 min & Actividad individual: integrar la función recursiva & Trabajo \\
+   5 min & Cierre: ejecutar el programa, contar movimientos & Demo \\
+  \midrule
+  \textbf{80 min} & & \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\begin{notaprofesor}[Objetivo pedagógico de la sesión]
+  El impacto de esta sesión depende del contraste con la sesión 12.
+  Los alumnos pasaron 50 minutos moviendo discos a mano; hoy verán que
+  \textbf{seis líneas de código} hacen exactamente lo mismo.  Ese
+  contraste entre esfuerzo humano y elegancia del algoritmo recursivo
+  es el momento de la sesión.  No lo adelantes: espera a que el código
+  esté en pantalla y la sala vea la ejecución en vivo.
+\end{notaprofesor}
+
+% =============================================================================
+\section{Cómo conducir el concurso de votación}
+% =============================================================================
+
+\subsection{Logística}
+
+\begin{enumerate}
+  \item Antes de que lleguen los alumnos, asegúrate de tener acceso a los
+        archivos \texttt{.cpp} subidos a Canvas.  Si algún equipo no subió,
+        acepta una foto del código en pantalla como evidencia suficiente.
+
+  \item Cada equipo tiene \textbf{30--60 segundos} para mostrar su programa
+        en pantalla (o en proyector).  No hace falta que expliquen el código;
+        solo que demuestren que funciona en al menos dos estados distintos.
+
+  \item Votación: cada persona escribe en un papel tres números de equipo
+        (el suyo propio no cuenta).  Recoger los papeles o usar una votación
+        de mano alzada por ronda.
+
+  \item En caso de empate, el desempate es: el equipo cuyo código sea
+        \textit{más fácil de entender en 30 segundos}.  Tú decides.
+\end{enumerate}
+
+\begin{notaprofesor}[Si el código ganador es difícil de extender]
+  El código ganador puede tener el estado de las torres en variables
+  globales, en un struct, con arreglos en lugar de vectores, o con
+  cualquier otra estructura.  No importa: el objetivo es que el equipo
+  ganador \textit{explique} su diseño al grupo en 2--3 minutos, y luego
+  entre todos integren la función recursiva.
+
+  Si el código tiene un problema estructural que haría imposible integrar
+  la función recursiva (e.g., no hay forma de saber qué disco está en el
+  tope de cada torre), tómalo como oportunidad didáctica: habla con el
+  grupo de por qué la estructura de datos importa para la extensibilidad.
+  Luego usa el segundo lugar o el código base del cuaderno de la sesión 12.
+\end{notaprofesor}
+
+% =============================================================================
+\section{Presentación del algoritmo recursivo}
+% =============================================================================
+
+\subsection{Cómo presentarlo en el pizarrón}
+
+\textbf{No des el código de inmediato.}  Primero haz las tres preguntas
+siguientes y escribe las respuestas en el pizarrón:
+
+\begin{notaprofesor}[Preguntas de arranque]
+  \begin{enumerate}
+    \item \textbf{``Para mover $n$ discos de A a C, ¿cuál es el último
+          disco que debes mover y cuándo?''}\\
+          \textit{Respuesta:} el disco $n$ (el más grande), de A a C,
+          y \textit{solo puedes moverlo cuando los otros $n-1$ ya están en B}.
+
+    \item \textbf{``Para poner los $n-1$ discos en B antes de mover el
+          grande, ¿qué problema tienes que resolver?''}\\
+          \textit{Respuesta:} mover $n-1$ discos de A a B usando C como
+          auxiliar.  Mismo problema, $n-1$ discos.
+
+    \item \textbf{``¿Y después de mover el disco grande?''}\\
+          \textit{Respuesta:} mover $n-1$ discos de B a C usando A
+          como auxiliar.  De nuevo el mismo problema.
+  \end{enumerate}
+
+  Cuando los alumnos lleguen solos a ``el mismo problema con $n-1$'',
+  escribe el código en el pizarrón y deja que el silencio haga su trabajo.
+\end{notaprofesor}
+
+\subsection{El algoritmo}
+
+La función completa:
+
+\begin{verbatim}
+void hanoi(int n, char origen, char destino, char aux,
+           vector<int>& torA, vector<int>& torB, vector<int>& torC) {
+    if (n == 0) return;
+    hanoi(n-1, origen, aux, destino, torA, torB, torC);
+    moverDisco(origen, destino, torA, torB, torC);
+    hanoi(n-1, aux, destino, origen, torA, torB, torC);
+}
+\end{verbatim}
+
+Si el código base usa nombres distintos de funciones o estructuras
+de datos diferentes, el esquema es el mismo: el caso base devuelve
+inmediatamente, y el caso general son dos sub-llamadas con el origen
+y destino permutados.
+
+\begin{notaprofesor}[Variante sin referencias a las torres]
+  Si prefieres mostrar primero la versión mínima (solo imprime movimientos)
+  y luego migrar al código base:
+
+\begin{verbatim}
+void hanoi(int n, char origen, char destino, char aux) {
+    if (n == 0) return;
+    hanoi(n-1, origen, aux, destino);
+    cout << "Mueve disco de " << origen << " a " << destino << endl;
+    hanoi(n-1, aux, destino, origen);
+}
+\end{verbatim}
+
+  Esta versión es útil para demostrar el algoritmo en el pizarrón sin
+  depender del código base del concurso.  Después los alumnos reemplazan
+  el \texttt{cout} por la llamada a \texttt{moverDisco} con las torres reales.
+\end{notaprofesor}
+
+% =============================================================================
+\section{El árbol de recursión — cómo explicarlo}
+% =============================================================================
+
+Dibujar el árbol en el pizarrón es más efectivo que explicarlo de palabra.
+Hazlo para $n = 2$ primero (3 movimientos, árbol pequeño):
+
+\begin{verbatim}
+         hanoi(2, A, C, B)
+         /       |       \
+  hanoi(1,A,B,C) A→C  hanoi(1,B,C,A)
+   /    |    \             /    |    \
+h(0) A→B   h(0)         h(0) B→C   h(0)
+\end{verbatim}
+
+Señalar:
+\begin{itemize}
+  \item Cada hoja es un caso base (\texttt{n=0}, no hace nada).
+  \item Cada nodo intermedio hace un movimiento (\texttt{moverDisco}).
+  \item Para $n=2$: 3 nodos intermedios = 3 movimientos = $2^2 - 1$.
+\end{itemize}
+
+Luego preguntar: ``¿cuántos nodos intermedios hay para $n=3$?''
+Los alumnos deben llegar a $2 \times 3 + 1 = 7 = 2^3 - 1$.
+
+\begin{notaprofesor}[Conexión con la sesión 11]
+  Esta es la recurrencia exacta que vieron en la sesión 12:
+  $M(n) = 2\,M(n-1) + 1$.  Hoy la ven en el árbol de llamadas: cada
+  nodo de nivel $k$ genera dos nodos de nivel $k+1$ más un movimiento.
+  Es la misma ecuación.  Subrayarlo: el código y la matemática dicen
+  exactamente lo mismo.
+\end{notaprofesor}
+
+% =============================================================================
+\section{FAQs de los alumnos}
+% =============================================================================
+
+\begin{notaprofesor}[FAQ 1 — ¿Cómo sé qué \texttt{aux} usar en cada llamada?]
+  \textbf{Pregunta:} Me confundo con qué torre poner como auxiliar en cada
+  sub-llamada.\\
+  \textbf{Respuesta:} Hay un truco para no confundirse.  Si quieres mover
+  $n-1$ discos de \textit{origen} a \textit{aux}, entonces \textit{destino}
+  queda libre y se convierte en el nuevo auxiliar.  Y viceversa.
+  Resumido: lo que era \texttt{destino} pasa a ser \texttt{aux} en la primera
+  sub-llamada; lo que era \texttt{origen} pasa a ser \texttt{aux} en la
+  segunda.  El patrón es:
+  \begin{center}
+  \begin{tabular}{lll}
+    \toprule
+    & \textbf{origen} & \textbf{destino} \\
+    \midrule
+    Primera sub-llamada  & \texttt{origen} & \texttt{aux} \\
+    Movimiento principal & \texttt{origen} & \texttt{destino} \\
+    Segunda sub-llamada  & \texttt{aux}    & \texttt{destino} \\
+    \bottomrule
+  \end{tabular}
+  \end{center}
+\end{notaprofesor}
+
+\begin{notaprofesor}[FAQ 2 — ¿Por qué el caso base es $n=0$ y no $n=1$?]
+  \textbf{Pregunta:} ¿No sería más natural detenerse cuando queda 1 disco?\\
+  \textbf{Respuesta:} Ambas versiones funcionan.  Con $n=0$ el código es
+  más simétrico: cuando ya no hay discos que mover, simplemente regresa.
+  Con $n=1$ como caso base, habría que escribir el movimiento de ese disco
+  explícitamente.  La versión con $n=0$ deja que el caso recursivo maneje
+  incluso el disco unitario, lo que hace el código más corto.
+  En la práctica, muchos textos usan $n=1$; ninguna es incorrecta.
+\end{notaprofesor}
+
+\begin{notaprofesor}[FAQ 3 — ¿Cuántas llamadas hay en total?]
+  \textbf{Pregunta:} Si el árbol tiene $2^n - 1$ nodos internos, ¿cuántos
+  nodos totales tiene (incluyendo hojas)?\\
+  \textbf{Respuesta:} Un árbol binario completo de profundidad $n$ tiene
+  $2^n$ hojas y $2^n - 1$ nodos internos, en total $2^{n+1} - 1$ nodos.
+  Para $n=3$: $2^4 - 1 = 15$ llamadas totales (8 de ellas con $n=0$,
+  que regresan inmediatamente).
+\end{notaprofesor}
+
+\begin{notaprofesor}[FAQ 4 — ¿Se puede resolver Hanoi sin recursión?]
+  \textbf{Pregunta:} ¿Existe una versión iterativa de Hanoi?\\
+  \textbf{Respuesta:} Sí, pero no es trivial.  Hay dos enfoques:
+  \begin{enumerate}
+    \item \textbf{Simulación de stack:} usar un \texttt{stack} explícito
+          que imite lo que el call stack haría de forma automática.
+          Técnicamente es iterativo, pero conceptualmente es recursión disfrazada.
+    \item \textbf{Regla del bit menos significativo:} en el paso $k$, mover
+          el disco cuyo número corresponde al bit menos significativo de $k$
+          en binario.  Esta regla (de la tabla de la sesión 12) genera la
+          solución óptima sin recursión ni stack.  Es elegante pero no intuitiva.
+  \end{enumerate}
+  Para esta sesión no es necesario implementarlo.
+\end{notaprofesor}
+
+\begin{notaprofesor}[FAQ 5 — La función es muy lenta para $n$ grande]
+  \textbf{Pregunta:} Con $n = 25$ el programa tarda mucho.  ¿Es normal?\\
+  \textbf{Respuesta:} Completamente normal.  $2^{25} - 1 \approx 33$ millones
+  de movimientos.  Si además dibujas las torres en cada paso, la salida en
+  terminal se convierte en el cuello de botella.  La solución es no dibujar
+  para $n$ grande: solo contar los movimientos.  La complejidad es $O(2^n)$
+  y no hay forma de mejorarlo para el problema estándar de tres agujas.
+\end{notaprofesor}
+
+% =============================================================================
+\section{Soluciones a los ejercicios}
+% =============================================================================
+
+\begin{notaprofesor}[Ejercicio 1 — Árbol de recursión para $n=2$]
+  \texttt{hanoi(2, A, C, B)} genera:
+  \begin{enumerate}
+    \item \texttt{hanoi(1, A, B, C)} → mueve disco 1: A → B
+    \item \texttt{moverDisco(A, C)} → mueve disco 2: A → C
+    \item \texttt{hanoi(1, B, C, A)} → mueve disco 1: B → C
+  \end{enumerate}
+  Orden de movimientos: disco 1 (A→B), disco 2 (A→C), disco 1 (B→C).
+  Total: 3 movimientos = $2^2 - 1$.
+\end{notaprofesor}
+
+\begin{notaprofesor}[Ejercicio 2 — Llamadas totales para $n=4$]
+  Nodos internos: $2^4 - 1 = 15$ (movimientos reales).
+  Hojas (\texttt{n=0}): $2^4 = 16$.
+  Total: $15 + 16 = 31 = 2^5 - 1$ llamadas a la función.
+  En general para $n$ discos: $2^{n+1} - 1$ llamadas totales.
+\end{notaprofesor}
+
+\begin{notaprofesor}[Ejercicio 3 — \texttt{hanoi} con indentación]
+  Versión con traza similar a \texttt{sumaTraza} de la sesión 11:
+\begin{verbatim}
+void hanoi(int n, char origen, char destino, char aux,
+           vector<int>& torA, vector<int>& torB, vector<int>& torC,
+           int nivel = 0) {
+    if (n == 0) return;
+    string indent(nivel * 2, ' ');
+    cout << indent << "▶ mover " << n << " discos de "
+         << origen << " a " << destino << endl;
+    hanoi(n-1, origen, aux, destino, torA, torB, torC, nivel + 1);
+    moverDisco(origen, destino, torA, torB, torC);
+    cout << indent << "  [disco movido: " << origen
+         << " → " << destino << "]" << endl;
+    hanoi(n-1, aux, destino, origen, torA, torB, torC, nivel + 1);
+}
+\end{verbatim}
+\end{notaprofesor}
+
+\begin{notaprofesor}[Ejercicio 4 — ¿Es posible Hanoi iterativo?]
+  Sí (ver FAQ 4 de esta sección).  Una respuesta completa menciona:
+  la versión con stack explícito existe y es correcta; la versión basada
+  en el bit menos significativo es $O(2^n)$ en tiempo pero $O(1)$ en
+  espacio adicional.  Ambas son válidas.
+\end{notaprofesor}
+
+\begin{notaprofesor}[Ejercicio 5 — Parámetro $n$ con límite de visualización]
+  Ejemplo de lógica en \texttt{main}:
+\begin{verbatim}
+int n;
+cout << "¿Cuántos discos? ";
+cin >> n;
+if (n < 1 || n > 30) {
+    cout << "Número de discos fuera de rango (1-30)." << endl;
+    return 1;
+}
+// inicializar torres con n discos en A
+// ...
+bool mostrar = (n <= 20);
+hanoi(n, 'A', 'C', 'B', torA, torB, torC, mostrar);
+cout << "Movimientos: " << movimientos
+     << " (esperado: " << (1LL << n) - 1 << ")" << endl;
+\end{verbatim}
+  El parámetro \texttt{mostrar} se pasa a la función y controla si
+  llama a \texttt{dibujarTorres} después de cada movimiento.
+\end{notaprofesor}
+
+% =============================================================================
+\section{Cierre del arco de tres sesiones}
+% =============================================================================
+
+Al final de la sesión, vale la pena hacer una síntesis breve en pizarrón:
+
+\begin{center}
+\begin{tabular}{cll}
+  \toprule
+  \textbf{Sesión} & \textbf{Tema} & \textbf{Qué aprendieron} \\
+  \midrule
+  11 & Funciones recursivas   & Caso base, caso recursivo, call stack \\
+  12 & Hanoi a mano + diseño  & El problema ``se siente'' antes de resolverse \\
+  13 & Algoritmo recursivo    & 6 líneas hacen lo que tomó 50 min a mano \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\begin{notaprofesor}[Frase de cierre sugerida]
+  ``La recursión no es un truco del programador: es la forma natural de
+  describir un problema que se repite a menor escala.  Hanoi lo hace
+  evidente porque la solución recursiva \textit{es} la definición del
+  problema, escrita en C++.''
+\end{notaprofesor}
+
+% =============================================================================
+\section{Resumen para el profesor}
+% =============================================================================
+
+\begin{recuerda}
+\begin{itemize}
+  \item El concurso toma 15 minutos; tenerlo preparado antes de que lleguen
+        los alumnos acelera el proceso.
+  \item No dar el código antes de las tres preguntas de arranque.
+  \item La actividad individual dura 45 minutos; circular para verificar que
+        todos hayan integrado \texttt{moverDisco} (no solo impriman movimientos).
+  \item Cerrar con la ejecución en vivo y el conteo de movimientos.
+  \item Al final del arco de tres sesiones, conectar con el siguiente tema:
+        las funciones recursivas son la base de algoritmos de ordenamiento
+        (mergesort, quicksort) que verán más adelante.
+\end{itemize}
+\end{recuerda}
+
+\end{document}

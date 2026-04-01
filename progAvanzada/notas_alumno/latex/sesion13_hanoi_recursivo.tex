@@ -1,0 +1,267 @@
+% =============================================================================
+%  Notas de clase — Sesión 13: Torres de Hanoi — Solución Recursiva
+%  Programación Avanzada — Universidad Panamericana
+%  Compilar: pdflatex sesion13_hanoi_recursivo.tex
+% =============================================================================
+\documentclass[12pt, oneside]{article}
+\usepackage{progavanzada}
+
+\begin{document}
+
+\portada{Sesión 13}{Torres de Hanoi: Solución Recursiva}{2026}
+
+\tableofcontents
+\newpage
+
+% =============================================================================
+\section{El concurso de diseño}
+% =============================================================================
+
+Antes de ver el algoritmo de hoy, el grupo elige el mejor diseño de la
+sesión 12.  Las reglas del concurso son simples:
+
+\begin{itemize}
+  \item Cada persona vota por \textbf{exactamente tres} equipos.
+  \item Los criterios son: diseño visual atractivo \textbf{y} código legible.
+        Los dos cuentan.  Un diseño bonito con código ilegible no gana.
+  \item El equipo con más votos comparte su código en pantalla.
+  \item Ese código se usará como punto de partida para la actividad de hoy.
+\end{itemize}
+
+\begin{consejo}
+  Cuando estés votando, pregúntate: ¿entiendo lo que hace cada función con
+  solo leer el nombre? ¿Las torres se ven bien en todos los estados?
+  Un voto bien razonado pesa más que uno al azar.
+\end{consejo}
+
+% =============================================================================
+\section{¿Se puede resolver Hanoi en seis líneas?}
+% =============================================================================
+
+La sesión 12 te tomó 50 minutos de trabajo en equipo para mover los discos
+a mano.  Hoy verás que \textbf{la solución recursiva tiene seis líneas de código}.
+
+¿Cómo es posible?  Porque la descripción recursiva del problema \textit{ya es}
+el algoritmo.  Recuerda la lógica de la sesión 12:
+
+\begin{quote}
+  Para mover $n$ discos de A a C usando B como auxiliar:\\
+  1. Mueve los $n-1$ discos superiores de A a B (usando C como auxiliar).\\
+  2. Mueve el disco $n$ (el más grande) de A a C.\\
+  3. Mueve los $n-1$ discos de B a C (usando A como auxiliar).
+\end{quote}
+
+Eso en C++ se escribe exactamente así:
+
+\begin{cpp}
+void hanoi(int n, char origen, char destino, char aux,
+           vector<int>& torA, vector<int>& torB, vector<int>& torC) {
+    if (n == 0) return;
+    hanoi(n-1, origen, aux, destino, torA, torB, torC);
+    moverDisco(origen, destino, torA, torB, torC);
+    hanoi(n-1, aux, destino, origen, torA, torB, torC);
+}
+\end{cpp}
+
+El caso base es $n = 0$: no hay nada que mover, se regresa de inmediato.
+Todo lo demás es consecuencia de los tres pasos descritos arriba.
+
+\begin{recuerda}
+  La recursión no es magia: es la misma lógica que aplicaste a mano en la
+  sesión 12, traducida directamente a código.  La computadora simplemente
+  la ejecuta $2^n - 1$ veces sin cansarse.
+\end{recuerda}
+
+% =============================================================================
+\section{El árbol de llamadas}
+% =============================================================================
+
+Cada llamada a \texttt{hanoi(n, ...)} genera \textbf{dos llamadas}
+a \texttt{hanoi(n-1, ...)}.  El árbol de recursión para $n = 3$ tiene
+esta forma:
+
+\begin{verbatim}
+                     hanoi(3, A, C, B)
+                    /                 \
+         hanoi(2, A, B, C)        hanoi(2, B, C, A)
+          /          \              /          \
+  hanoi(1,A,C,B) hanoi(1,C,B,A)  hanoi(1,B,A,C) hanoi(1,A,C,B)
+    /    \          /    \          /    \          /    \
+  h(0)  h(0)    h(0)  h(0)      h(0)  h(0)      h(0)  h(0)
+\end{verbatim}
+
+Las hojas (\texttt{h(0)}) son los casos base.  Los nodos internos son las
+llamadas que hacen trabajo real (\texttt{moverDisco}).
+
+Contando los nodos internos del árbol:
+
+\begin{center}
+\begin{tabular}{cccc}
+  \toprule
+  \textbf{$n$} & \textbf{Hojas} & \textbf{Nodos internos} & \textbf{Movimientos} \\
+  \midrule
+  1 & 2  & 1   & 1 \\
+  2 & 4  & 3   & 3 \\
+  3 & 8  & 7   & 7 \\
+  4 & 16 & 15  & 15 \\
+  $n$ & $2^n$ & $2^n - 1$ & $2^n - 1$ \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+Cada nodo interno corresponde exactamente a un movimiento.
+Por eso $M(n) = 2^n - 1$: es el número de nodos internos de un árbol
+binario completo de profundidad $n$.
+
+% =============================================================================
+\section{El call stack durante la ejecución}
+% =============================================================================
+
+La profundidad del call stack en cualquier momento es \textbf{como máximo $n$},
+porque cada llamada espera a que su primera sub-llamada ($n-1$) termine antes
+de continuar.  Nunca hay más de $n$ frames activos simultáneamente:
+
+\begin{verbatim}
+Momento en que se mueve el disco 3 (paso 4 de 7):
+
+  hanoi(3, A→C, B)   ← frame más antiguo, esperando
+    hanoi(2, A→B, C) ← ya terminó
+    [moverDisco A→C] ← ← línea activa aquí
+    hanoi(2, B→C, A) ← aún no llamada
+\end{verbatim}
+
+La profundidad máxima es $n$, no $2^n$.
+Para $n = 64$ el stack tendría solo 64 frames; lo que explota es el
+\textit{tiempo}, no la memoria.
+
+\begin{tecnico}[Complejidad temporal y espacial]
+  La función \texttt{hanoi} tiene:
+  \begin{itemize}
+    \item \textbf{Complejidad temporal:} $O(2^n)$ — el número de llamadas totales
+          crece exponencialmente con $n$.
+    \item \textbf{Complejidad espacial:} $O(n)$ — la profundidad máxima del
+          call stack en cualquier momento es $n$.
+  \end{itemize}
+  Muchos algoritmos recursivos tienen complejidad espacial proporcional a la
+  \textit{profundidad del árbol}, no al número total de llamadas.
+\end{tecnico}
+
+% =============================================================================
+\section{Verificación: contando movimientos}
+% =============================================================================
+
+Una forma de verificar que el algoritmo es correcto es contar cuántas veces
+se llama \texttt{moverDisco}.  Si el programa mueve $n$ discos, el contador
+debe ser exactamente $2^n - 1$.
+
+\begin{cpp}
+int movimientos = 0;
+
+void hanoi(int n, char origen, char destino, char aux,
+           vector<int>& torA, vector<int>& torB, vector<int>& torC) {
+    if (n == 0) return;
+    hanoi(n-1, origen, aux, destino, torA, torB, torC);
+    moverDisco(origen, destino, torA, torB, torC);
+    movimientos++;
+    hanoi(n-1, aux, destino, origen, torA, torB, torC);
+}
+\end{cpp}
+
+Al terminar, \texttt{movimientos == pow(2, n) - 1}.
+
+% =============================================================================
+\section{La actividad de hoy}
+% =============================================================================
+
+Trabajas con el código ganador del concurso como base.
+
+\subsection{Lo que debes implementar}
+
+\begin{enumerate}
+  \item \textbf{La función \texttt{hanoi}} que resuelve el problema automáticamente,
+        usando \texttt{moverDisco} del código base para actualizar el estado
+        de las torres.
+
+  \item \textbf{Imprimir las torres después de cada movimiento} para que se
+        pueda seguir la solución visualmente.
+
+  \item \textbf{Contar y mostrar} el número de movimientos al final y
+        verificar que sea $2^n - 1$.
+\end{enumerate}
+
+\subsection{Criterios de evaluación}
+
+\begin{center}
+\begin{tabular}{lp{7cm}c}
+  \toprule
+  \textbf{Criterio} & \textbf{Descripción} & \textbf{Peso} \\
+  \midrule
+  Corrección      & El programa mueve todos los discos de A a C
+                    respetando las reglas en cada paso & 40\% \\
+  Conteo          & Al terminar, imprime el número de movimientos
+                    y verifica que sea $2^n - 1$ & 20\% \\
+  Visualización   & Las torres se muestran (o pueden mostrarse)
+                    después de cada movimiento & 20\% \\
+  Integración     & La función recursiva usa \texttt{moverDisco}
+                    del código base sin reescribirla & 20\% \\
+  \bottomrule
+  & \textbf{Total} & 100\% \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\begin{advertencia}
+  Muchas soluciones de Hanoi en internet imprimen directamente los movimientos
+  (\texttt{cout << "Mueve de " << A << " a " << C}).
+  Eso no es lo que se pide: el objetivo es que la función use
+  \texttt{moverDisco} para actualizar el \texttt{vector}, de modo que las
+  torres se puedan dibujar con el diseño elegante de la sesión 12.
+\end{advertencia}
+
+% =============================================================================
+\section{Ejercicios}
+% =============================================================================
+
+\begin{enumerate}
+  \item Traza a mano el árbol de recursión de \texttt{hanoi(2, A, C, B)}.
+        Indica en qué orden se hacen los movimientos y qué disco se mueve
+        en cada uno.
+
+  \item ¿Cuántas veces se llama \texttt{hanoi} en total (incluyendo las
+        llamadas con $n=0$) cuando se invoca \texttt{hanoi(4, ...)}?
+        \textit{(No olvides las hojas del árbol.)}
+
+  \item Modifica \texttt{hanoi} para que reciba un parámetro
+        \texttt{int nivel} (inicialmente 0) y muestre una indentación
+        proporcional al nivel antes de cada movimiento, igual que
+        hiciste con \texttt{sumaTraza} en la sesión 11.
+
+  \item ¿Es posible implementar Hanoi de forma iterativa (sin recursión)?
+        Si crees que sí, describe en palabras cómo sería la lógica.
+        Si crees que no, justifica por qué.
+
+  \item \textbf{Desafío:}
+        Modifica el programa para que el usuario pueda elegir
+        el número de discos $n$ al inicio.
+        Añade un límite: si $n > 20$, muestra solo el conteo de movimientos
+        sin dibujar las torres (para no inundar la terminal).
+\end{enumerate}
+
+% =============================================================================
+\section{Resumen}
+% =============================================================================
+
+\begin{recuerda}
+\begin{itemize}
+  \item La solución recursiva de Hanoi sigue exactamente los mismos tres pasos
+        que aplicaste a mano en la sesión 12.
+  \item El código tiene \textbf{una} condición base ($n = 0$) y
+        \textbf{tres} líneas de trabajo: sub-llamada, mover, sub-llamada.
+  \item El árbol de recursión tiene $2^n - 1$ nodos internos, uno por movimiento.
+  \item La profundidad del call stack es $O(n)$; el tiempo es $O(2^n)$.
+  \item El número de movimientos se puede verificar: siempre debe ser
+        exactamente $2^n - 1$.
+\end{itemize}
+\end{recuerda}
+
+\end{document}
