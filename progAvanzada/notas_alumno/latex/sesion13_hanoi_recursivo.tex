@@ -248,6 +248,62 @@ Trabajas con el código ganador del concurso como base.
 \end{enumerate}
 
 % =============================================================================
+\section*{Reto extra — Fibonacci y la razón áurea}
+% =============================================================================
+
+¿Terminaste antes que todos?  Este reto conecta la recursión con uno de los
+números más famosos de las matemáticas.
+
+La \textbf{sucesión de Fibonacci} se define recursivamente:
+\[
+  F(0) = 0, \quad F(1) = 1, \quad F(n) = F(n-1) + F(n-2) \quad (n \geq 2).
+\]
+
+Al dividir términos consecutivos ocurre algo sorprendente:
+\[
+  \frac{F(n)}{F(n-1)} \;\xrightarrow{n \to \infty}\;
+  \varphi = \frac{1 + \sqrt{5}}{2} \approx 1.6180339\ldots
+\]
+
+Este número, $\varphi$, se llama la \textbf{razón áurea} (\textit{golden ratio}).
+Aparece en arquitectura, arte, biología y, resulta que también, en la recursión.
+
+\textbf{Lo que debes hacer:}
+
+\begin{enumerate}
+  \item Implementa \texttt{fib(n)} de forma recursiva.
+
+  \item Imprime la siguiente tabla para $n$ de 2 a 20, usando
+        \texttt{double} para la razón:
+
+\begin{codigo}
+ n     F(n)     F(n)/F(n-1)
+ 2        1     1.000000
+ 3        2     2.000000
+ 4        3     1.500000
+ 5        5     1.666667
+...
+20     6765     1.618034
+\end{codigo}
+
+  ¿A qué valor converge la razón?
+
+  \item Dibuja el árbol de llamadas de \texttt{fib(5)} y compáralo con
+        el de \texttt{hanoi(3)}.  ¿Qué diferencia importante notas?\\
+        \textit{Pista: ¿algún subproblema aparece más de una vez?}
+\end{enumerate}
+
+\begin{tecnico}[Complejidad de Fibonacci recursivo]
+  La versión recursiva ingenua de \texttt{fib} repite subproblemas:
+  \texttt{fib(3)} se calcula múltiples veces dentro de \texttt{fib(5)}.
+  Esto la hace $O(\varphi^n)$ en tiempo, \textit{más lenta} que Hanoi para
+  el mismo $n$, aunque Hanoi tiene $O(2^n)$ movimientos reales.
+  La diferencia es que Hanoi no repite subproblemas: cada llamada hace
+  trabajo único.  Esa ineficiencia de Fibonacci tiene solución —se llama
+  \textbf{memoización}— y la verás en sesiones posteriores.
+\end{tecnico}
+
+% =============================================================================
 \section{Resumen}
 % =============================================================================
 

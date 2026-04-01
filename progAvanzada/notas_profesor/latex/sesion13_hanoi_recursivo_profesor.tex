@@ -25,8 +25,9 @@
   15 min & Concurso de diseño: presentaciones + votación & Grupal \\
    5 min & Proyectar el código ganador; análisis rápido & Exposición \\
   10 min & Presentación del algoritmo recursivo & Pizarrón \\
-  45 min & Actividad individual: integrar la función recursiva & Trabajo \\
+  40 min & Actividad individual: integrar la función recursiva & Trabajo \\
    5 min & Cierre: ejecutar el programa, contar movimientos & Demo \\
+   5 min & Reto extra (Fibonacci / razón áurea) para quien termina antes & Opcional \\
   \midrule
   \textbf{80 min} & & \\
   \bottomrule
@@ -278,7 +279,7 @@ void hanoi(int n, char origen, char destino, char aux,
            int nivel = 0) {
     if (n == 0) return;
     string indent(nivel * 2, ' ');
-    cout << indent << "▶ mover " << n << " discos de "
+    cout << indent << ">> mover " << n << " discos de "
          << origen << " a " << destino << endl;
     hanoi(n-1, origen, aux, destino, torA, torB, torC, nivel + 1);
     moverDisco(origen, destino, torA, torB, torC);
@@ -315,6 +316,79 @@ cout << "Movimientos: " << movimientos
 \end{verbatim}
   El parámetro \texttt{mostrar} se pasa a la función y controla si
   llama a \texttt{dibujarTorres} después de cada movimiento.
+\end{notaprofesor}
+
+% =============================================================================
+\section{Solución al reto extra — Fibonacci y la razón áurea}
+% =============================================================================
+
+\begin{notaprofesor}[Reto — Parte 1 y 2: implementación y tabla]
+  Implementación mínima correcta:
+
+\begin{verbatim}
+long long fib(int n) {
+    if (n <= 1) return n;
+    return fib(n - 1) + fib(n - 2);
+}
+
+int main() {
+    cout << fixed << setprecision(6);
+    cout << " n     F(n)     F(n)/F(n-1)\n";
+    for (int n = 2; n <= 20; n++) {
+        long long fn  = fib(n);
+        long long fn1 = fib(n - 1);
+        cout << setw(2) << n
+             << setw(9) << fn
+             << "     " << (double)fn / fn1 << "\n";
+    }
+}
+\end{verbatim}
+
+  La razón converge a $\varphi = (1+\sqrt{5})/2 \approx 1.618034$.
+  Para $n = 20$ ya tiene 6 cifras correctas.
+\end{notaprofesor}
+
+\begin{notaprofesor}[Reto — Parte 3: comparación de árboles]
+  El árbol de \texttt{fib(5)}:
+
+\begin{verbatim}
+                    fib(5)
+                   /      \
+              fib(4)       fib(3)
+             /     \       /    \
+         fib(3)  fib(2) fib(2) fib(1)
+         /   \   /   \  /   \
+      fib(2) f(1) f(1) f(0) f(1) f(0)
+      /   \
+   fib(1) fib(0)
+\end{verbatim}
+
+  \textbf{Diferencia clave:} \texttt{fib(3)} aparece \textit{dos veces},
+  \texttt{fib(2)} aparece \textit{tres veces}.  Hanoi, en cambio, no
+  repite ningún subproblema: cada par (n, origen, destino) es único.
+
+  Esta distinción (subproblemas superpuestos vs.\ subproblemas disjuntos)
+  es el criterio que separa los problemas que se benefician de memoización
+  o programación dinámica de los que no.  Es un buen gancho para el tema
+  siguiente si el programa lo cubre.
+
+  \textbf{Número de llamadas a \texttt{fib(n)}:}
+  $2\,F(n+1) - 1$ en la versión recursiva ingenua.
+  Para $n = 20$: $2 \times 10946 - 1 = 21891$ llamadas,
+  versus solo $2^{21} - 1 = 2097151$ para Hanoi — aquí Hanoi
+  es \textit{más lento}, lo que sorprende a los alumnos porque
+  Fibonacci ``se ve más difícil''.  Usar ese contraste en la discusión.
+\end{notaprofesor}
+
+\begin{notaprofesor}[Cómo presentar el reto en clase]
+  No explicar el reto al grupo: entregarlo impreso o proyectarlo y dejarlo
+  trabajar en silencio.  Quien termina la actividad principal con tiempo
+  de sobra avanza solo.
+
+  Si al final hay tiempo de discusión, la pregunta que más reacción genera
+  es: ``¿Cuántas veces se llama \texttt{fib(20)}?''  La mayoría esperará
+  un número cercano a 20; la respuesta correcta ($21\,891$) los sorprende
+  y abre la conversación sobre memoización.
 \end{notaprofesor}
 
 % =============================================================================
