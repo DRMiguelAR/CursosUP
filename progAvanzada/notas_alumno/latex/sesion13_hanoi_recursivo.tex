@@ -53,7 +53,7 @@ el algoritmo.  Recuerda la lógica de la sesión 12:
 
 Eso en C++ se escribe exactamente así:
 
-\begin{cpp}
+\begin{codigo}
 void hanoi(int n, char origen, char destino, char aux,
            vector<int>& torA, vector<int>& torB, vector<int>& torC) {
     if (n == 0) return;
@@ -61,7 +61,7 @@ void hanoi(int n, char origen, char destino, char aux,
     moverDisco(origen, destino, torA, torB, torC);
     hanoi(n-1, aux, destino, origen, torA, torB, torC);
 }
-\end{cpp}
+\end{codigo}
 
 El caso base es $n = 0$: no hay nada que mover, se regresa de inmediato.
 Todo lo demás es consecuencia de los tres pasos descritos arriba.
@@ -154,7 +154,7 @@ Una forma de verificar que el algoritmo es correcto es contar cuántas veces
 se llama \texttt{moverDisco}.  Si el programa mueve $n$ discos, el contador
 debe ser exactamente $2^n - 1$.
 
-\begin{cpp}
+\begin{codigo}
 int movimientos = 0;
 
 void hanoi(int n, char origen, char destino, char aux,
@@ -165,7 +165,7 @@ void hanoi(int n, char origen, char destino, char aux,
     movimientos++;
     hanoi(n-1, aux, destino, origen, torA, torB, torC);
 }
-\end{cpp}
+\end{codigo}
 
 Al terminar, \texttt{movimientos == pow(2, n) - 1}.
 
