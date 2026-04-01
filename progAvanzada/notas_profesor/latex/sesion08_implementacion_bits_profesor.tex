@@ -1,0 +1,285 @@
+% =============================================================================
+%  Notas del profesor — Sesión 08: Implementación en OmegaUP
+%  Programación Avanzada — Universidad Panamericana
+%  Compilar: pdflatex sesion08_implementacion_bits_profesor.tex
+% =============================================================================
+\documentclass[12pt, oneside]{article}
+\usepackage[profesor]{progavanzada}
+\usepackage{array}
+
+\begin{document}
+
+\portada{Sesión 08}{Implementación en OmegaUP}{2026}
+
+\tableofcontents
+\newpage
+
+% =============================================================================
+\section{Panorama de la sesión}
+% =============================================================================
+
+\begin{notaprofesor}
+  \textbf{Dinámica:} equipos de 3, sesión de laboratorio frente a la
+  computadora.  El objetivo es someter los cuatro problemas de la sesión 07
+  a OmegaUP y obtener \texttt{AC} en todos.
+
+  \textbf{Flujo sugerido:}
+  \begin{enumerate}
+    \item[0--5 min]   Abrir el cuaderno de Jupyter y OmegaUP en paralelo.
+                      Recordar el flujo: implementar en el cuaderno,
+                      verificar casos, someter.
+    \item[5--45 min]  Trabajo en equipos.  Los problemas 1 y 3 son los más
+                      rápidos; sugerir empezar por ellos para acumular puntos.
+    \item[45--55 min] Plenaria exprés: ¿quién obtuvo AC en cada problema?
+                      ¿Qué error fue el más común?
+    \item[55--60 min] Cierre: mostrar la solución del problema más difícil
+                      (Algoritmo de Phil) si ningún equipo lo terminó.
+  \end{enumerate}
+
+  \textbf{Orden de dificultad de implementación:}
+  Sep.\ pares/imp.\ $<$ Chasquidos $<$ Sep.\ enum.\ 1s $<$ Alg.\ de Phil.
+\end{notaprofesor}
+
+\newpage
+
+% =============================================================================
+\section{Solución — Problema 1: Separación pares e impares}
+% =============================================================================
+
+\subsection{Solución de referencia}
+
+\begin{notaprofesor}[Solución completa]
+\begin{verbatim}
+#include <iostream>
+using namespace std;
+int main() {
+    int n;
+    while (cin >> n && n != 0) {
+        cout << (n & 0xAAAAAAAA) << " " << (n & 0x55555555) << "\n";
+    }
+}
+\end{verbatim}
+  Dos operaciones AND con máscaras fijas.  No hay bucle ni condicional.
+\end{notaprofesor}
+
+\subsection{Errores frecuentes}
+
+\begin{notaprofesor}[Errores frecuentes — Problema 1]
+  \begin{itemize}
+    \item \textbf{Máscaras invertidas:} imprimir \texttt{0x55} primero y
+          \texttt{0xAA} segundo.  El enunciado pide $a$ (posiciones impares =
+          \texttt{0xAA}) primero.
+    \item \textbf{Usar \texttt{int} con signo y $n$ grande:} no es problema
+          aquí porque $n < 2^{31}-1$, pero conviene usar \texttt{unsigned int}
+          o \texttt{long long} si hay dudas.
+    \item \textbf{Error en el ejemplo del enunciado:} el enunciado original de
+          OmegaUP muestra \texttt{5 2} para $n=7$, pero los archivos del juez
+          esperan \texttt{2 5}.  La solución con máscaras produce \texttt{2 5},
+          que es la correcta para obtener AC.
+  \end{itemize}
+\end{notaprofesor}
+
+\newpage
+
+% =============================================================================
+\section{Solución — Problema 2: Separación enumerando 1s}
+% =============================================================================
+
+\subsection{Solución de referencia}
+
+\begin{notaprofesor}[Solución completa]
+\begin{verbatim}
+#include <iostream>
+using namespace std;
+int main() {
+    int n;
+    while (cin >> n && n != 0) {
+        int a = 0, b = 0, conteo = 0;
+        for (int bit = 0; bit < 31; bit++) {
+            if ((n >> bit) & 1) {
+                conteo++;
+                if (conteo % 2 == 1) a |= (1 << bit);
+                else                 b |= (1 << bit);
+            }
+        }
+        cout << a << " " << b << "\n";
+    }
+}
+\end{verbatim}
+  El bucle recorre los 31 bits inferiores de izquierda a derecha.
+  Cada vez que encuentra un 1 incrementa el contador y lo asigna según paridad.
+\end{notaprofesor}
+
+\subsection{Discrepancia enunciado vs.\ juez}
+
+\begin{notaprofesor}[Advertencia sobre el enunciado]
+  El enunciado del OmegaUP describe el algoritmo de enumerar 1s, pero los
+  archivos de casos del juez corresponden en realidad a la máscara
+  \texttt{0x55}/\texttt{0xAA} (el complemento del problema 1).
+
+  \textbf{Qué hacer en clase:}
+  \begin{enumerate}
+    \item Pedir a los equipos que implementen el bucle de enumeración
+          (como dice el enunciado) y sometan.
+    \item Si obtienen \texttt{WA}, pedirles que comparen sus respuestas con
+          las del juez usando los casos de ejemplo.
+    \item Discutir la discrepancia: ¿el juez o el enunciado tiene la razón?
+          El juez siempre gana — sus archivos de salida son la fuente de verdad.
+    \item Si el bucle da \texttt{WA}, probar con
+          \texttt{a = n \& 0x55555555; b = n \& 0xAAAAAAAA}.
+  \end{enumerate}
+
+  Esta situación es una lección práctica valiosa: en competencia, si tu
+  lógica parece correcta pero el juez dice \texttt{WA}, buscas el caso que
+  rompe tu solución — y a veces el enunciado tiene un error.
+\end{notaprofesor}
+
+\newpage
+
+% =============================================================================
+\section{Solución — Problema 3: Chasquidos Mágicos}
+% =============================================================================
+
+\subsection{Solución de referencia}
+
+\begin{notaprofesor}[Solución completa]
+\begin{verbatim}
+#include <iostream>
+using namespace std;
+int main() {
+    long long n, c;
+    while (cin >> n >> c) {
+        cout << (((c >> (n-1)) & 1) ? "PRENDIDA" : "APAGADA") << "\n";
+    }
+}
+\end{verbatim}
+  Una sola expresión de bits.  El problema no especifica condición de
+  terminación, así que se lee hasta fin de archivo.
+\end{notaprofesor}
+
+\subsection{Errores frecuentes}
+
+\begin{notaprofesor}[Errores frecuentes — Problema 3]
+  \begin{itemize}
+    \item \textbf{\texttt{int} para $c$:} con $c$ hasta $10^8$ cabe en
+          \texttt{int} (máx.\ $\approx 2.1 \times 10^9$), pero el desplazamiento
+          \texttt{c >> (n-1)} con $n$ hasta 30 requiere que \texttt{c} sea al
+          menos de 32 bits.  Usar \texttt{long long} elimina cualquier duda.
+    \item \textbf{Simular con bucle:} algunos equipos intentan simular el
+          estado de cada enchufe en cada chasquido.  Con $c = 10^8$ eso es
+          TLE inmediato.  Guiarlos a la fórmula.
+    \item \textbf{Condición de terminación:} el enunciado da varios pares
+          de entrada sin indicar cuántos hay.  La lectura debe ser
+          \texttt{while (cin >> n >> c)}.
+  \end{itemize}
+\end{notaprofesor}
+
+\newpage
+
+% =============================================================================
+\section{Solución — Problema 4: Algoritmo de Phil}
+% =============================================================================
+
+\subsection{Solución de referencia}
+
+\begin{notaprofesor}[Solución completa]
+\begin{verbatim}
+#include <iostream>
+#include <string>
+using namespace std;
+
+long long algoritmoPbil(string A) {
+    const long long MOD = 1000000007LL;
+    long long S = 0;
+    while (!A.empty()) {
+        int n = A.size();
+        if (n % 2 == 1) {
+            int mid = n / 2;
+            S = (S * 2 + (A[mid] - '0')) % MOD;
+            A.erase(mid, 1);
+        } else {
+            int izq = n / 2 - 1, der = n / 2;
+            int b1 = A[der] - '0', b2 = A[izq] - '0'; // mayor, menor
+            if (b2 > b1) swap(b1, b2);
+            S = (S * 4 + b1 * 2 + b2) % MOD;
+            A.erase(der, 1);   // primero el de mayor índice
+            A.erase(izq, 1);
+        }
+    }
+    return S;
+}
+
+int main() {
+    int k; cin >> k;
+    for (int i = 1; i <= k; i++) {
+        string A; cin >> A;
+        cout << "Caso #" << i << ": " << algoritmoPbil(A) << "\n";
+    }
+}
+\end{verbatim}
+\end{notaprofesor}
+
+\subsection{Puntos clave de la implementación}
+
+\begin{notaprofesor}[Puntos clave]
+  \begin{itemize}
+    \item \textbf{Orden de erase:} en el caso par, borrar primero el índice
+          mayor (\texttt{der}) y luego el menor (\texttt{izq}).  Si se borra
+          \texttt{izq} primero, el índice \texttt{der} se desplaza y se borra
+          el carácter equivocado.
+    \item \textbf{Acumulación de $S$:} el caso impar multiplica por 2 (se
+          agrega un bit); el caso par multiplica por 4 (se agregan dos bits).
+          Aplicar módulo en cada paso evita desbordamiento.
+    \item \textbf{Mayor/menor:} en caso de empate, el orden no importa
+          (ambos bits son iguales), así que cualquier orden produce el mismo $S$.
+    \item \textbf{Complejidad:} \texttt{string::erase} es $O(n)$; el bucle
+          hace $O(\log n)$ iteraciones de longitud decreciente a la mitad.
+          Total: $O(n \log n)$ para cadenas de hasta 500 caracteres — sin problema.
+  \end{itemize}
+\end{notaprofesor}
+
+\subsection{Errores frecuentes}
+
+\begin{notaprofesor}[Errores frecuentes — Problema 4]
+  \begin{itemize}
+    \item \textbf{Acumular $S$ como cadena:} concatenar caracteres y convertir
+          al final desborda rápidamente.  La acumulación numérica con módulo
+          es la forma correcta.
+    \item \textbf{Olvidar el módulo:} con cadenas de 500 bits, $S$ puede
+          exceder $10^9+7$; aplicar módulo solo al final produce \texttt{WA}.
+    \item \textbf{Índices del centro:} confundir \texttt{n/2} (centro derecho)
+          con \texttt{n/2 - 1} (centro izquierdo) en el caso par.
+  \end{itemize}
+\end{notaprofesor}
+
+% =============================================================================
+\section{FAQs de la sesión}
+% =============================================================================
+
+\begin{notaprofesor}[¿Por qué \texttt{WA} si mi lógica parece correcta?]
+  Los tres culpables más comunes en esta sesión:
+  \begin{enumerate}
+    \item \textbf{Formato de salida:} un espacio extra, una línea en blanco
+          adicional o mayúsculas incorrectas (\texttt{prendida} en lugar de
+          \texttt{PRENDIDA}).
+    \item \textbf{Condición de terminación incorrecta:} algunos problemas
+          terminan con 0; otros, con fin de archivo.  Mezclarlos da \texttt{WA}
+          o cuelga el programa.
+    \item \textbf{Tipo de dato insuficiente:} usar \texttt{int} donde se
+          necesita \texttt{long long}.
+  \end{enumerate}
+\end{notaprofesor}
+
+\begin{notaprofesor}[¿Cómo depuro si el juez no me muestra el caso que falla?]
+  Estrategia estándar:
+  \begin{enumerate}
+    \item Prueba con los ejemplos del enunciado — deben dar exactamente la
+          salida esperada, carácter por carácter.
+    \item Prueba casos extremos: $n=0$, $n$ muy grande, todos los bits en 1,
+          todos en 0.
+    \item Si sospechas de un caso específico, pruébalo en el cuaderno de
+          Jupyter antes de someter de nuevo.
+  \end{enumerate}
+\end{notaprofesor}
+
+\end{document}

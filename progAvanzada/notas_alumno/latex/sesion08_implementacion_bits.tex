@@ -1,0 +1,288 @@
+% =============================================================================
+%  Notas de clase — Sesión 08: Implementación en OmegaUP
+%  Programación Avanzada — Universidad Panamericana
+%  Compilar: pdflatex sesion08_implementacion_bits.tex
+% =============================================================================
+\documentclass[12pt, oneside]{article}
+\usepackage{progavanzada}
+\usepackage{array}
+
+\begin{document}
+
+\portada{Sesión 08}{Implementación en OmegaUP}{2026}
+
+\tableofcontents
+\newpage
+
+% =============================================================================
+\section{El juez en línea — recordatorio rápido}
+% =============================================================================
+
+Ya viste esto a detalle en la sesión 02.  El resumen que necesitas hoy:
+
+Un \textbf{juez en línea} compila tu código, lo ejecuta contra casos de prueba
+ocultos y te devuelve un veredicto automático.  No hay revisor humano: o tu
+programa produce exactamente la salida correcta, o no.
+
+\begin{center}
+\begin{tabular}{llp{6cm}}
+  \toprule
+  \textbf{Veredicto} & \textbf{Qué pasó} & \textbf{Qué hacer} \\
+  \midrule
+  \texttt{AC} — Accepted           & Correcto en todos los casos   & Listo, pasa al siguiente \\[3pt]
+  \texttt{WA} — Wrong Answer       & Falla en algún caso           & Busca el caso que rompe tu lógica \\[3pt]
+  \texttt{CE} — Compilation Error  & No compila                    & Lee el error del compilador \\[3pt]
+  \texttt{TLE} — Time Limit        & Correcto pero lento           & Busca una solución con menos pasos \\[3pt]
+  \texttt{RE} — Runtime Error      & El programa se cae            & Revisa división por cero, acceso fuera de rango \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\begin{advertencia}
+  El juez es \textbf{literal}: un espacio de más, un salto de línea faltante o
+  una mayúscula incorrecta producen \texttt{WA}.  Lee la sección de salida del
+  enunciado con mucho cuidado antes de someter.
+\end{advertencia}
+
+\begin{consejo}
+  \textbf{Flujo de trabajo recomendado:}
+  \begin{enumerate}
+    \item Implementa la función en el cuaderno de Jupyter (sesión 08).
+    \item Verifica que todos los casos de la celda de prueba pasen.
+    \item Escribe el programa completo con \texttt{cin}/\texttt{cout} y pruébalo
+          con el ejemplo del enunciado.
+    \item Somete a OmegaUP.
+  \end{enumerate}
+\end{consejo}
+
+\newpage
+
+% =============================================================================
+\section{La sesión de hoy}
+% =============================================================================
+
+Trabajo en \textbf{equipo de tres}.  El objetivo es obtener \texttt{AC} en los
+cuatro problemas de la sesión anterior.  Cada problema vale puntos
+independientes: si no terminas uno, pasa al siguiente.
+
+\begin{recuerda}
+  \textbf{Patrón de entrada/salida en C++ para el juez:}
+  \begin{itemize}
+    \item Lee con \texttt{cin}, imprime con \texttt{cout}.
+    \item No imprimas mensajes extra como ``Ingresa un número:''.
+    \item El juez redirige \texttt{stdin}/\texttt{stdout}; no uses archivos.
+    \item Para leer hasta 0: \texttt{while (cin >> n \&\& n != 0)}.
+    \item Para leer hasta fin de archivo: \texttt{while (cin >> n)}.
+  \end{itemize}
+\end{recuerda}
+
+\newpage
+
+% =============================================================================
+\section{Problema 1 — Separación de bits: posiciones pares e impares}
+% =============================================================================
+
+\subsection{Enunciado resumido}
+
+Dado $n$, calcula:
+\begin{itemize}
+  \item $a$: los bits de $n$ en posición \textbf{impar} (bits 1, 3, 5, \ldots),
+        todos los demás en 0.
+  \item $b$: los bits de $n$ en posición \textbf{par} (bits 0, 2, 4, \ldots),
+        todos los demás en 0.
+\end{itemize}
+
+Leer enteros hasta recibir un 0.  Imprimir \texttt{a b} por cada número.
+
+\subsection{Ejemplo}
+
+\begin{center}
+\begin{tabular}{ccccc}
+  \toprule
+  $n$ & Binario & $a$ & $b$ & Salida \\
+  \midrule
+  13 & \texttt{1101} & 8 & 5 & \texttt{8 5} \\
+   6 & \texttt{0110} & 2 & 4 & \texttt{2 4} \\
+   7 & \texttt{0111} & 2 & 5 & \texttt{2 5} \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Clave}
+
+Usa una \textbf{máscara AND}.  La constante \texttt{0xAAAAAAAA} tiene encendidos
+exactamente los bits en posición impar; \texttt{0x55555555} tiene los de posición
+par.  La solución completa cabe en dos líneas.
+
+\begin{consejo}
+  Verifica tu solución con \texttt{n = 55}: el resultado correcto es
+  \texttt{34 21}.  Si obtienes otro valor, revisa qué máscara usas para $a$ y
+  cuál para $b$.
+\end{consejo}
+
+\newpage
+
+% =============================================================================
+\section{Problema 2 — Separación de bits: enumerar 1s}
+% =============================================================================
+
+\subsection{Enunciado resumido}
+
+Dado $n$, enumera sus bits encendidos de \textbf{derecha a izquierda} empezando
+en 1.  Los 1s con índice impar (1.°, 3.°, \ldots) forman $a$; los de índice par
+(2.°, 4.°, \ldots) forman $b$.  Cada bit conserva su posición original.
+
+Leer enteros hasta 0.  Imprimir \texttt{a b}.
+
+\subsection{Ejemplo}
+
+\begin{center}
+\begin{tabular}{p{0.6cm}p{1.4cm}p{5.5cm}cc}
+  \toprule
+  $n$ & Binario & Enumeración de 1s & $a$ & $b$ \\
+  \midrule
+  13 & \texttt{1101} & bit0=1 (1°), bit2=1 (2°), bit3=1 (3°) & 9 & 4 \\
+   6 & \texttt{0110} & bit1=1 (1°), bit2=1 (2°)              & 2 & 4 \\
+   7 & \texttt{0111} & bit0=1 (1°), bit1=1 (2°), bit2=1 (3°) & 5 & 2 \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Clave}
+
+Recorre los bits de $n$ de derecha a izquierda con un desplazamiento.  Lleva un
+contador que incrementa cada vez que encuentras un 1; si el contador es impar,
+ese bit va a $a$; si es par, a $b$.
+
+\begin{consejo}
+  Empieza con \texttt{int conteo = 0, a = 0, b = 0;} y un bucle que avanza
+  bit a bit.  Para cada bit encendido, incrementa \texttt{conteo} y decide con
+  \texttt{conteo \% 2}.
+\end{consejo}
+
+\newpage
+
+% =============================================================================
+\section{Problema 3 — Chasquidos Mágicos}
+% =============================================================================
+
+\subsection{Enunciado resumido}
+
+$n$ enchufes en serie, todos apagados.  Cada chasquido cambia el estado de los
+enchufes que tienen corriente.  ¿Está la lámpara (enchufe $n$) prendida después
+de $c$ chasquidos?
+
+Entrada: dos números $n$ y $c$ por línea ($1 \le n \le 30$, $0 \le c \le 10^8$).
+Salida: \texttt{PRENDIDA} o \texttt{APAGADA}.
+
+\subsection{Ejemplo}
+
+\begin{center}
+\begin{tabular}{ccl}
+  \toprule
+  $n$ & $c$ & Salida \\
+  \midrule
+  1 &  0 & \texttt{APAGADA} \\
+  1 &  1 & \texttt{PRENDIDA} \\
+  4 &  0 & \texttt{APAGADA} \\
+  4 & 47 & \texttt{PRENDIDA} \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Clave}
+
+La cadena de enchufes es un \textbf{contador binario}: después de $c$ chasquidos,
+el enchufe $i$ tiene el mismo estado que el bit $i-1$ de $c$.  La lámpara
+(enchufe $n$) está prendida si y solo si el bit $n-1$ de $c$ vale 1:
+
+\[
+  \texttt{(c >> (n-1)) \& 1}
+\]
+
+El programa completo cabe en una sola línea de \texttt{cout}.
+
+\begin{advertencia}
+  $c$ puede llegar a $10^8$.  Declara $c$ como \texttt{long long} o
+  \texttt{unsigned int} para evitar desbordamientos con el desplazamiento.
+\end{advertencia}
+
+\newpage
+
+% =============================================================================
+\section{Problema 4 — Los bits de la clase de programación}
+% =============================================================================
+
+\subsection{Enunciado resumido}
+
+Dado un mapa de bits $A$ (cadena de caracteres \texttt{'0'} y \texttt{'1'}),
+construir $S$ extrayendo bits del centro:
+
+\begin{itemize}
+  \item Long.\ impar: extrae el bit central, agrégalo al final de $S$.
+  \item Long.\ par: extrae los dos bits del centro; agrega el \textbf{mayor
+        primero}, luego el menor; ambos salen de $A$.
+\end{itemize}
+
+Entrada: primera línea con $k$ (número de casos); luego $k$ cadenas.
+Salida: \texttt{Caso \#x: y} para cada caso.  Si $y > 10^9+7$, imprime
+$y \bmod (10^9+7)$.
+
+\subsection{Ejemplo}
+
+\begin{center}
+\begin{tabular}{ll}
+  \toprule
+  $A$ & Salida \\
+  \midrule
+  \texttt{00000}   & \texttt{Caso \#1: 0} \\
+  \texttt{0101101} & \texttt{Caso \#2: 106} \\
+  \texttt{100}     & \texttt{Caso \#3: 2} \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Clave}
+
+Simula el proceso directamente.  Guarda $A$ en un \texttt{string} (o
+\texttt{deque<char>}).  En cada paso calcula el índice del centro con
+\texttt{size() / 2} y usa \texttt{erase()} para extraer.
+
+Acumula $S$ \textbf{como número}, no como cadena:
+
+\begin{center}
+\begin{tabular}{ll}
+  \toprule
+  \textbf{Caso} & \textbf{Actualización de $S$} \\
+  \midrule
+  Long.\ impar (un bit extraído $b$)   & $S = (S \cdot 2 + b) \bmod M$ \\
+  Long.\ par (mayor $b_1$, menor $b_2$) & $S = (S \cdot 4 + b_1 \cdot 2 + b_2) \bmod M$ \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\begin{consejo}
+  Al extraer el par, los índices del centro izquierdo y derecho en una cadena
+  de longitud $n$ par son $n/2 - 1$ y $n/2$ (indexando desde 0).
+  Extrae primero el derecho y luego el izquierdo para que el índice no
+  se desplace entre las dos operaciones de \texttt{erase}.
+\end{consejo}
+
+% =============================================================================
+\section{Resumen}
+% =============================================================================
+
+\begin{center}
+\begin{tabular}{lp{8.5cm}}
+  \toprule
+  \textbf{Problema} & \textbf{Solución en una línea} \\
+  \midrule
+  Sep.\ pares/imp. & \texttt{a = n \& 0xAAAAAAAA;\ b = n \& 0x55555555} \\[4pt]
+  Sep.\ enum.\ 1s  & Bucle bit a bit; alternar entre $a$ y $b$ según paridad del conteo \\[4pt]
+  Chasquidos       & \texttt{(c >> (n-1)) \& 1} \\[4pt]
+  Alg.\ de Phil    & Simulación con \texttt{string::erase}; acumular $S$ con módulo \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\end{document}
