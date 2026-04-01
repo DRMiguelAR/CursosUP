@@ -1,0 +1,400 @@
+% =============================================================================
+%  Notas de clase — Sesión 11: Funciones Recursivas
+%  Programación Avanzada — Universidad Panamericana
+%  Compilar: pdflatex sesion11_funciones_recursivas.tex
+% =============================================================================
+\documentclass[12pt, oneside]{article}
+\usepackage{progavanzada}
+\usepackage{multicol}
+
+\begin{document}
+
+\portada{Sesión 11}{Funciones Recursivas}{2026}
+
+\tableofcontents
+\newpage
+
+% =============================================================================
+\section{La recursión antes de las computadoras}
+% =============================================================================
+
+Mucho antes de que existiera C++, o cualquier lenguaje de programación,
+los matemáticos ya llevaban siglos usando la recursión sin llamarla así.
+
+En 1202, el matemático italiano \textbf{Leonardo de Pisa} —conocido como
+Fibonacci— publicó su \textit{Liber Abaci} con el siguiente problema:
+
+\begin{quote}
+  \textit{``Un par de conejos produce otro par cada mes.
+  Los conejos tardan un mes en madurar y, a partir del segundo mes,
+  producen un par nuevo cada mes.
+  ¿Cuántos pares habrá después de un año?''}
+\end{quote}
+
+La solución es la célebre \textbf{sucesión de Fibonacci}:
+$1, 1, 2, 3, 5, 8, 13, 21, 34, 55, \ldots$
+donde cada número es la suma de los dos anteriores.
+
+Escrito formalmente:
+\[
+  F(1) = 1 \qquad F(2) = 1 \qquad F(n) = F(n-1) + F(n-2)
+\]
+
+Eso \textit{es} una definición recursiva: un valor definido en términos de
+versiones anteriores de sí mismo, con casos base que detienen la cadena.
+Los matemáticos usan este estilo desde hace siglos; nosotros simplemente
+lo vamos a traducir a código.
+
+\begin{tecnico}[Gödel y las funciones recursivas primitivas]
+  En 1931 el matemático \textbf{Kurt Gödel} usó lo que hoy llamamos
+  \textit{funciones recursivas primitivas} en su célebre teorema de
+  incompletitud para codificar demostraciones matemáticas como números.
+  La idea de que una función puede definirse en términos de sí misma con
+  un rango más pequeño fue formalizada por Gödel mucho antes de que hubiera
+  procesadores capaces de ejecutarla.\\
+  \textit{Referencia:} Gödel, K. \textit{Über formal unentscheidbare Sätze
+  der Principia Mathematica}. Monatshefte für Mathematik, 1931.
+\end{tecnico}
+
+\begin{tecnico}[La primera implementación: LISP (1958)]
+  El primer lenguaje de programación que soportó funciones recursivas
+  de forma nativa fue \textbf{LISP}, diseñado por \textbf{John McCarthy}
+  en el MIT en 1958.  McCarthy quería un lenguaje capaz de procesar listas
+  de manera similar a como los matemáticos definen funciones: en términos
+  de sí mismas.  Antes de LISP, los lenguajes como FORTRAN no tenían una
+  pila de llamadas real y la recursión \textit{simplemente no era posible}.\\
+  \textit{Referencia:} McCarthy, J. \textit{Recursive Functions of Symbolic
+  Expressions and Their Computation by Machine}. CACM, 1960.
+\end{tecnico}
+
+\newpage
+
+% =============================================================================
+\section{¿Qué es una función recursiva?}
+% =============================================================================
+
+Una \textbf{función recursiva} es una función que, para resolver un problema,
+se llama a sí misma con una versión \textit{más pequeña} del mismo problema.
+
+La clave es esa palabra: \textbf{más pequeña}.  No puede llamarse con el mismo
+problema (recursión infinita) ni con uno más grande (divergencia).
+Cada llamada debe acercar el problema a un punto donde la respuesta sea
+inmediata y no requiera más llamadas.
+
+\begin{center}
+\begin{tabular}{ll}
+  \toprule
+  \textbf{Parte} & \textbf{Descripción} \\
+  \midrule
+  \textbf{Caso base}      & La versión del problema tan pequeña que se resuelve
+                            directamente, sin más llamadas. \\[4pt]
+  \textbf{Caso recursivo} & Reduce el problema un paso y delega el resto a
+                            una llamada con un argumento más pequeño. \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\begin{advertencia}
+  Si falta el \textbf{caso base}, la función se llama infinitamente y el
+  programa termina con un \textbf{stack overflow} (desbordamiento de pila).
+  Si el caso recursivo \textbf{no reduce} el problema, pasa lo mismo.
+  Ambos errores son los más comunes al aprender recursión.
+\end{advertencia}
+
+% =============================================================================
+\section{El primer ejemplo: suma acumulada}
+% =============================================================================
+
+Queremos calcular $1 + 2 + 3 + \cdots + n$ de forma recursiva.
+La observación clave es:
+\[
+  \text{suma}(n) = n + \underbrace{(1 + 2 + \cdots + (n-1))}_{\text{suma}(n-1)}
+\]
+
+Con eso, la definición completa es:
+
+\begin{center}
+\begin{tabular}{ll}
+  \toprule
+  \textbf{Caso} & \textbf{Definición} \\
+  \midrule
+  $n = 0$ (caso base)      & $\text{suma}(0) = 0$ \\
+  $n > 0$ (caso recursivo) & $\text{suma}(n) = n + \text{suma}(n-1)$ \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Traza de \texttt{suma(4)}}
+
+\begin{ejemplo}[Desenrollar la llamada]
+\begin{center}
+\begin{tabular}{ll}
+  \toprule
+  \textbf{Llamada} & \textbf{Expansión} \\
+  \midrule
+  \texttt{suma(4)} & $= 4 + \texttt{suma(3)}$ \\
+  \texttt{suma(3)} & $= 3 + \texttt{suma(2)}$ \\
+  \texttt{suma(2)} & $= 2 + \texttt{suma(1)}$ \\
+  \texttt{suma(1)} & $= 1 + \texttt{suma(0)}$ \\
+  \texttt{suma(0)} & $= 0$ \quad\textit{(caso base)} \\
+  \midrule
+  \textit{Regresando:} & \\
+  \texttt{suma(1)} & $= 1 + 0 = 1$ \\
+  \texttt{suma(2)} & $= 2 + 1 = 3$ \\
+  \texttt{suma(3)} & $= 3 + 3 = 6$ \\
+  \texttt{suma(4)} & $= 4 + 6 = 10$ \\
+  \bottomrule
+\end{tabular}
+\end{center}
+\end{ejemplo}
+
+\begin{consejo}
+  Para trazar una función recursiva a mano, dibuja primero todas las
+  llamadas ``hacia abajo'' hasta el caso base, y luego sustituye los
+  valores ``hacia arriba''.  El árbol tiene forma de V: baja hasta
+  el caso base y sube resolviendo.
+\end{consejo}
+
+% =============================================================================
+\section{El call stack: la memoria detrás de la recursión}
+% =============================================================================
+
+Cada vez que una función se llama, el sistema reserva un bloque de memoria
+llamado \textbf{stack frame} (marco de pila).  Ese bloque guarda:
+
+\begin{itemize}
+  \item Los parámetros recibidos (\texttt{x = 4}, \texttt{x = 3}, \ldots)
+  \item Las variables locales
+  \item La \textbf{dirección de retorno}: a qué línea regresar cuando la
+        función termine
+\end{itemize}
+
+Los frames se \textbf{apilan} conforme se hacen llamadas y se
+\textbf{desapilan} en orden inverso al regresar.
+Este mecanismo es el mismo que viste en la sesión 01 con la analogía
+del escritorio: la \textit{RAM} acumula los frames como platos en una pila.
+
+\subsection{La pila durante \texttt{suma(3)}}
+
+\begin{verbatim}
+  Estado JUSTO ANTES de que suma(0) retorne:
+
+  ┌─────────────────────────┐  ← tope (llamada más reciente)
+  │  suma(0)   x = 0        │  retorna 0 de inmediato
+  ├─────────────────────────┤
+  │  suma(1)   x = 1        │  espera el resultado de suma(0)
+  ├─────────────────────────┤
+  │  suma(2)   x = 2        │  espera el resultado de suma(1)
+  ├─────────────────────────┤
+  │  suma(3)   x = 3        │  espera el resultado de suma(2)
+  ├─────────────────────────┤
+  │  main()                 │  espera el resultado de suma(3)
+  └─────────────────────────┘  ← fondo
+
+  Después, los frames se desapilan:
+  suma(0)→0   suma(1)→1   suma(2)→3   suma(3)→6   main imprime 6
+\end{verbatim}
+
+\begin{recuerda}
+  La profundidad de la recursión (número de frames apilados
+  al mismo tiempo) está limitada por el tamaño de la pila del proceso,
+  que en la mayoría de sistemas es \textbf{1--8 MB}.
+  Para \texttt{suma(n)}, la profundidad máxima es $n + 1$ frames.
+  Con $n = 100{,}000$ es posible llegar al límite.
+\end{recuerda}
+
+% =============================================================================
+\section{Sin caso base: stack overflow}
+% =============================================================================
+
+Si se omite el caso base, la pila crece sin detenerse:
+
+\begin{verbatim}
+int sumaSinBase(int x) {
+    return x + sumaSinBase(x - 1);   // ← nunca para
+}
+\end{verbatim}
+
+\begin{verbatim}
+  sumaSinBase(10)
+  sumaSinBase(9)
+  sumaSinBase(8)
+  ...
+  sumaSinBase(-50000)
+  ...
+  ¡CRASH!  Segmentation fault / Stack overflow
+\end{verbatim}
+
+\begin{advertencia}
+  El nombre del sitio de preguntas técnicas más famoso del mundo,
+  \textbf{Stack Overflow} (\url{https://stackoverflow.com}), es
+  exactamente esta situación: la broma interna del fundador
+  Jeff Atwood sobre el error más icónico al aprender a programar.
+\end{advertencia}
+
+% =============================================================================
+\section{Ejemplos adicionales}
+% =============================================================================
+
+\subsection{Factorial}
+
+\[
+  0! = 1 \qquad n! = n \times (n-1)!
+\]
+
+\begin{ejemplo}[Traza de \texttt{factorial(5)}]
+\[
+  5! = 5 \times 4! = 5 \times 4 \times 3! = 5 \times 4 \times 3 \times 2!
+     = 5 \times 4 \times 3 \times 2 \times 1! = 5 \times 4 \times 3 \times 2 \times 1 \times 0!
+     = 120
+\]
+\end{ejemplo}
+
+\begin{consejo}
+  El factorial crece extremadamente rápido: $13! > 6 \times 10^9$, que ya
+  supera el rango de un \texttt{int} de 32 bits.  Usa \texttt{long long}
+  para factoriales mayores que 12.
+\end{consejo}
+
+\subsection{Potencias}
+
+\[
+  b^0 = 1 \qquad b^n = b \times b^{n-1}
+\]
+
+\begin{ejemplo}[Traza de \texttt{pot(2, 5)}]
+\[
+  2^5 = 2 \times 2^4 = 2 \times 2 \times 2^3 = \cdots = 2^5 = 32
+\]
+Cada llamada reduce el exponente en 1 hasta llegar a $b^0 = 1$.
+\end{ejemplo}
+
+\subsection{Sucesión de Fibonacci}
+
+\[
+  F(1) = 1, \quad F(2) = 1, \quad F(n) = F(n-1) + F(n-2)
+\]
+
+Fibonacci es uno de los ejemplos más naturales de recursión \textbf{doble}:
+el caso recursivo hace \textit{dos} llamadas en lugar de una.
+
+\begin{advertencia}
+  La implementación recursiva directa de Fibonacci es \textbf{ineficiente}:
+  $F(40)$ requiere más de $10^8$ llamadas porque calcula los mismos valores
+  una y otra vez.  Este problema se resuelve con \textit{memoización} o
+  programación dinámica — temas de cursos posteriores.
+\end{advertencia}
+
+\begin{tecnico}[Fibonacci y la naturaleza]
+  La sucesión de Fibonacci aparece en la disposición de las semillas de
+  un girasol, las espirales de las piñas de pino y el número de pétalos de
+  muchas flores.  La razón $F(n+1)/F(n)$ converge a la \textbf{proporción
+  áurea} $\varphi \approx 1.618\ldots$, que también aparece en la
+  arquitectura griega y en el arte del Renacimiento.  Lo que comenzó como
+  un problema de conejos en 1202 terminó siendo una de las constantes
+  matemáticas más observadas en la naturaleza.\\
+  \textit{Referencia:} Livio, M. \textit{The Golden Ratio}.
+  Broadway Books, 2002.
+\end{tecnico}
+
+% =============================================================================
+\section{Recursivo vs.\ iterativo}
+% =============================================================================
+
+Cualquier función recursiva puede reescribirse con un ciclo, y viceversa.
+La elección depende de la claridad y el contexto.
+
+\begin{center}
+\begin{tabular}{lll}
+  \toprule
+  \textbf{Criterio} & \textbf{Recursivo} & \textbf{Iterativo} \\
+  \midrule
+  Legibilidad      & Alta cuando el problema es naturalmente recursivo
+                   & Alta cuando hay un ciclo obvio \\[4pt]
+  Memoria          & Un frame por llamada activa (pila)
+                   & Solo las variables del ciclo \\[4pt]
+  Riesgo de fallo  & Stack overflow si la profundidad es grande
+                   & No tiene este riesgo \\[4pt]
+  Casos ideales    & Árboles, backtracking, divide y vencerás
+                   & Sumas, búsquedas simples, arreglos \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\begin{recuerda}
+  En este curso veremos que los algoritmos sobre \textbf{árboles} y
+  \textbf{grafos} son casi siempre más elegantes de forma recursiva.
+  Las \textbf{Torres de Hanoi} de la sesión 12 son el ejemplo clásico donde
+  la solución iterativa equivalente es considerablemente más difícil de
+  entender.
+\end{recuerda}
+
+% =============================================================================
+\section{Ejercicios}
+% =============================================================================
+
+Resuelve los siguientes ejercicios \textbf{a mano, en papel}.
+Para cada función recursiva, muestra la traza completa de llamadas
+(caso base y regreso de valores).
+
+\begin{enumerate}
+
+  \item Calcula \texttt{suma(6)} trazando todas las llamadas.
+        ¿Cuántos frames se apilan simultáneamente como máximo?
+
+  \item Calcula \texttt{factorial(6)} trazando la expansión y la
+        resolución inversa.  ¿Cuántas multiplicaciones se realizan?
+
+  \item Calcula \texttt{pot(3, 4)} paso a paso.
+        Verifica que el resultado sea $81$.
+
+  \item La siguiente función tiene un error.  Identifica el problema,
+        explica qué pasaría en ejecución y escribe la versión corregida.
+        \[
+          \texttt{int malo(int n) \{ return n + malo(n + 1); \}}
+        \]
+
+  \item Escribe la \textbf{definición recursiva} (en notación matemática,
+        no en código) de las siguientes funciones:
+        \begin{enumerate}
+          \item La suma de los primeros $n$ números impares:
+                $1 + 3 + 5 + \cdots + (2n-1)$.
+          \item El producto $n \times (n+1) \times (n+2) \times \cdots \times m$
+                (con $n \leq m$).
+        \end{enumerate}
+
+  \item Fibonacci.  Calcula $F(7)$ trazando el árbol de llamadas.
+        Cuenta cuántas veces se calcula $F(3)$ en el proceso.
+        ¿Ves el problema de eficiencia?
+
+  \item \textbf{Problema de reflexión.}
+        La función \texttt{suma(n)} tiene profundidad de recursión $n+1$.
+        Si el sistema admite una pila de 8 MB y cada frame ocupa 32 bytes,
+        ¿cuál es la profundidad máxima teórica?
+        ¿Qué tan grande puede ser $n$ antes de provocar stack overflow?
+
+\end{enumerate}
+
+% =============================================================================
+\section{Resumen}
+% =============================================================================
+
+\begin{recuerda}
+\begin{itemize}
+  \item Una función recursiva se llama a sí misma con un argumento
+        \textbf{más pequeño}; cada llamada se acerca al caso base.
+  \item Toda función recursiva correcta tiene:
+        (1) un \textbf{caso base} que retorna sin llamar, y
+        (2) un \textbf{caso recursivo} que reduce el problema.
+  \item Cada llamada crea un \textbf{stack frame} en la pila;
+        los frames se desapilan al retornar, en orden inverso.
+  \item Sin caso base → \textbf{stack overflow}.
+        Si el argumento no decrece → también.
+  \item La recursión es más elegante que los ciclos en problemas con
+        estructura naturalmente recursiva (árboles, particiones, etc.).
+  \item Fibonacci recursivo directo es \textbf{exponencialmente ineficiente};
+        hay soluciones mejores que veremos más adelante.
+\end{itemize}
+\end{recuerda}
+
+\end{document}

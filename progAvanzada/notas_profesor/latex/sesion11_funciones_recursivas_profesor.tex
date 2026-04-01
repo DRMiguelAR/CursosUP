@@ -1,0 +1,312 @@
+% =============================================================================
+%  Notas del profesor — Sesión 11: Funciones Recursivas
+%  Programación Avanzada — Universidad Panamericana
+%  Compilar: pdflatex sesion11_funciones_recursivas_profesor.tex
+% =============================================================================
+\documentclass[12pt, oneside]{article}
+\usepackage[profesor]{progavanzada}
+
+\begin{document}
+
+\portada{Sesión 11}{Funciones Recursivas}{2026}
+
+\tableofcontents
+\newpage
+
+% =============================================================================
+\section{Estructura de la sesión}
+% =============================================================================
+
+\begin{center}
+\begin{tabular}{clc}
+  \toprule
+  \textbf{Tiempo} & \textbf{Bloque} & \textbf{Tipo} \\
+  \midrule
+  10 min & Historia: Fibonacci, Gödel, LISP & Exposición \\
+  15 min & Definición, partes, primer ejemplo (\texttt{suma}) & Exposición + pizarrón \\
+  15 min & El call stack: diagrama en vivo & Demo en cuaderno \\
+  10 min & Stack overflow: \texttt{f2.cpp} en pizarrón & Demostración \\
+  15 min & Factorial, potencias, Fibonacci & Ejemplos guiados \\
+  15 min & Ejercicios 1--4 en parejas & Trabajo en clase \\
+  \midrule
+  \textbf{80 min} & & \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+% =============================================================================
+\section{Preguntas de arranque}
+% =============================================================================
+
+\begin{notaprofesor}[Preguntas para el inicio de clase]
+  Antes de abrir el cuaderno o el pizarrón, lanza estas preguntas al grupo:
+
+  \begin{enumerate}
+    \item \textbf{``¿Qué pasa si defines una palabra del diccionario usando
+          esa misma palabra en la definición?''}\\
+          \textit{Respuesta esperada:} es circular, no ayuda a entender.
+          Llevar esto a: una función recursiva bien hecha \textit{no} es
+          circular porque cada llamada usa un problema estrictamente más
+          pequeño.
+
+    \item \textbf{``¿Cuánto es la suma de los primeros 100 enteros?
+          ¿Y si no puedes usar la fórmula $n(n+1)/2$?''}\\
+          \textit{Respuesta esperada:} sumar uno por uno.
+          Entonces: ¿y si usas que $\text{suma}(100) = 100 + \text{suma}(99)$?
+          Esto prepara el terreno para la definición recursiva.
+
+    \item \textbf{``¿Alguien conoce las Torres de Hanoi?''}\\
+          Sin entrar en detalle — solo sembrar curiosidad para la sesión 12.
+  \end{enumerate}
+\end{notaprofesor}
+
+% =============================================================================
+\section{Notas históricas ampliadas}
+% =============================================================================
+
+\begin{notaprofesor}[Más contexto histórico para enriquecer la sesión]
+
+  \textbf{La paradoja del diccionario (Hofstadter).}
+  En su libro \textit{Gödel, Escher, Bach} (1979, Premio Pulitzer),
+  \textbf{Douglas Hofstadter} dedicó extensos capítulos a la recursión
+  como concepto unificador entre las matemáticas, la música de Bach
+  y el arte de Escher.  La idea de los ``bucles extraños'' (\textit{strange
+  loops}) — sistemas que se referencian a sí mismos — es central en el libro.
+  Vale la pena mencionarlo como lectura opcional para alumnos interesados;
+  es uno de los libros más influyentes en la intersección de matemáticas,
+  filosofía y cómputo.\\
+  \textit{Referencia:} Hofstadter, D. \textit{Gödel, Escher, Bach: An
+  Eternal Golden Braid}. Basic Books, 1979.
+
+  \medskip
+  \textbf{Las siglas de GNU.}
+  El proyecto GNU (``GNU's Not Unix'') tiene un nombre que es en sí mismo
+  recursivo: GNU se define usando GNU.  Esto es un guiño explícito de
+  Richard Stallman a la tradición de los hackers de los 80.
+  Es un ejemplo moderno y cotidiano de recursión en el lenguaje natural.
+
+  \medskip
+  \textbf{¿Por qué FORTRAN no podía hacer recursión?}
+  FORTRAN (1957) fue diseñado con la asunción de que cada función tenía
+  una única copia de sus variables locales — almacenadas en posiciones
+  fijas de memoria.  Si una función se llamaba a sí misma, la segunda
+  llamada sobreescribía los datos de la primera.  La solución fue agregar
+  una \textit{pila de llamadas} dinámica, idea que se atribuye principalmente
+  al equipo de ALGOL (1960) y que LISP implementó de forma elegante en la
+  misma época.  La pila de llamadas es tan fundamental hoy que es difícil
+  imaginar un procesador sin ella.
+
+  \medskip
+  \textbf{Mutua recursión.}
+  Dos funciones pueden ser mutuamente recursivas: $f$ llama a $g$ y $g$
+  llama a $f$.  Un ejemplo clásico es la comprobación de paridad:
+  \texttt{esImpar(n) = esPar(n-1)} y \texttt{esPar(n) = esImpar(n-1)},
+  con casos base \texttt{esPar(0) = true} y \texttt{esImpar(0) = false}.
+  Mencionarlo como curiosidad si el tiempo lo permite.
+\end{notaprofesor}
+
+% =============================================================================
+\section{Demo recomendada: visualizar el call stack en vivo}
+% =============================================================================
+
+\begin{notaprofesor}[Cómo hacer la demo del call stack]
+  La celda de \texttt{sumaTraza} del cuaderno muestra la indentación
+  proporcional al nivel de profundidad.  Antes de ejecutarla, dibuja en
+  el pizarrón la pila de frames manualmente para \texttt{suma(3)}:
+
+  \begin{enumerate}
+    \item Dibuja un rectángulo para \texttt{main()} al fondo.
+    \item Encima, dibuja \texttt{suma(3)} con su parámetro \texttt{x=3}.
+          Escribe ``espera\ldots'' porque aún no puede calcular el resultado.
+    \item Sigue apilando \texttt{suma(2)}, \texttt{suma(1)}, \texttt{suma(0)}.
+    \item Al llegar al caso base, tacha el frame de \texttt{suma(0)} y escribe
+          ``retorna 0'' con una flecha hacia abajo.
+    \item Ve sustituyendo valores hacia abajo en la pila.
+  \end{enumerate}
+
+  Luego ejecuta \texttt{sumaTraza(4)} en el cuaderno.  Los alumnos van a
+  ver que la indentación replica exactamente el diagrama del pizarrón.
+  El impacto visual de ver el código confirmar el dibujo es alto.
+\end{notaprofesor}
+
+% =============================================================================
+\section{FAQs: dudas frecuentes con respuestas}
+% =============================================================================
+
+\begin{notaprofesor}[FAQ 1 — ``¿No es un ciclo más eficiente que la recursión?'']
+  \textbf{A veces sí, a veces no.}  Para \texttt{suma} o \texttt{factorial},
+  el ciclo es marginalmente más eficiente porque no crea frames extra.
+  Pero para problemas como las Torres de Hanoi, recorridos de árboles o
+  algoritmos de backtracking, la solución recursiva es órdenes de magnitud
+  más legible y la diferencia de rendimiento es irrelevante o inexistente.
+  El mensaje clave: \textbf{elige la herramienta que expresa mejor
+  la estructura del problema}.
+\end{notaprofesor}
+
+\begin{notaprofesor}[FAQ 2 — ``¿Qué tan grande puede ser $n$ antes de
+  stack overflow?'']
+  Depende del sistema y del tamaño de cada frame.  En la práctica:
+  con \texttt{suma(n)} en Linux x86-64, el límite está alrededor de
+  $n \approx 100{,}000$--$300{,}000$.
+  El ejercicio 7 de las notas pide calcularlo teóricamente:
+  $8 \text{ MB} / 32 \text{ bytes/frame} = 262{,}144$ frames.
+  Ese número es una estimación; el frame real incluye más datos
+  (dirección de retorno, registros guardados, etc.), así que el límite
+  real es menor.
+
+  Si un alumno prueba en su máquina y el resultado difiere,
+  está bien: eso ilustra que el límite es específico del sistema.
+\end{notaprofesor}
+
+\begin{notaprofesor}[FAQ 3 — ``¿Por qué el caso base de factorial es $0! = 1$ y no $1! = 1$?'']
+  Ambos funcionan como caso base: con $0! = 1$ el programa llega hasta $n=0$,
+  con $1! = 1$ se detiene antes.  Sin embargo, $0! = 1$ es la definición
+  \textbf{matemáticamente correcta} del factorial (la combinatoria requiere
+  que el número de formas de ordenar cero elementos sea 1).
+  Usar $1! = 1$ como caso base es válido en código pero matemáticamente
+  incompleto porque \texttt{factorial(0)} no estaría definido.
+\end{notaprofesor}
+
+\begin{notaprofesor}[FAQ 4 — ``¿La recursión es lo mismo que un ciclo?'']
+  Computacionalmente, sí — cualquier función recursiva puede transformarse
+  en un ciclo y viceversa (son equivalentes en expresividad).
+  Conceptualmente, no: la recursión expresa ``el problema se define en
+  términos de sí mismo'', lo que a veces refleja la estructura natural del
+  problema mucho mejor que un ciclo.  La elección es de estilo y claridad,
+  no de capacidad.
+\end{notaprofesor}
+
+\begin{notaprofesor}[FAQ 5 — ``¿Qué es la memoización que menciona la nota de Fibonacci?'']
+  Memoización es guardar los resultados de llamadas anteriores para no
+  recalcularlos.  Con Fibonacci, si guardamos $F(3)$ la primera vez que
+  lo calculamos, las siguientes llamadas a $F(3)$ simplemente leen ese valor.
+  El tiempo pasa de $O(2^n)$ a $O(n)$.  Es un anticipo de
+  \textit{programación dinámica}, que se ve en cursos de algoritmos.
+  No es necesario profundizar en esta sesión; basta con mencionar que
+  el problema existe y tiene solución elegante.
+\end{notaprofesor}
+
+% =============================================================================
+\section{Soluciones a los ejercicios}
+% =============================================================================
+
+\begin{notaprofesor}[Ejercicio 1 — Traza de suma(6)]
+  \begin{center}
+  \begin{tabular}{ll}
+    \texttt{suma(6)} & $= 6 + \texttt{suma(5)} = 6 + 15 = 21$ \\
+    \texttt{suma(5)} & $= 5 + \texttt{suma(4)} = 5 + 10 = 15$ \\
+    \texttt{suma(4)} & $= 4 + \texttt{suma(3)} = 4 + 6 = 10$ \\
+    \texttt{suma(3)} & $= 3 + \texttt{suma(2)} = 3 + 3 = 6$ \\
+    \texttt{suma(2)} & $= 2 + \texttt{suma(1)} = 2 + 1 = 3$ \\
+    \texttt{suma(1)} & $= 1 + \texttt{suma(0)} = 1 + 0 = 1$ \\
+    \texttt{suma(0)} & $= 0$ \quad (caso base) \\
+  \end{tabular}
+  \end{center}
+  Resultado: $\texttt{suma(6)} = 21$.
+  Frames apilados simultáneamente: \textbf{8}
+  (\texttt{main} + \texttt{suma(6)} + \ldots + \texttt{suma(0)}).
+\end{notaprofesor}
+
+\begin{notaprofesor}[Ejercicio 2 — Traza de factorial(6)]
+  $6! = 6 \times 5 \times 4 \times 3 \times 2 \times 1 \times 1 = 720$.\\
+  Multiplicaciones realizadas: \textbf{6} (una por cada llamada
+  recursiva, excluyendo el caso base que solo retorna 1).
+\end{notaprofesor}
+
+\begin{notaprofesor}[Ejercicio 3 — pot(3, 4)]
+  \texttt{pot(3,4)} $= 3 \times$ \texttt{pot(3,3)}
+  $= 3 \times 3 \times$ \texttt{pot(3,2)}
+  $= 3 \times 3 \times 3 \times$ \texttt{pot(3,1)}
+  $= 3 \times 3 \times 3 \times 3 \times$ \texttt{pot(3,0)}
+  $= 3^4 = 81$. \checkmark
+\end{notaprofesor}
+
+\begin{notaprofesor}[Ejercicio 4 — Función \texttt{malo}]
+  \textbf{Problema:} el caso recursivo llama con \texttt{n + 1} en lugar
+  de \texttt{n - 1}.  El argumento \textit{crece} en lugar de decrecer,
+  así que nunca se acerca a ningún caso base.  Si hubiera un caso base
+  para $n = 0$, una llamada con $n > 0$ \textbf{nunca} lo alcanzaría.
+  Resultado: recursión infinita → stack overflow.
+
+  \textbf{Versión corregida} (suponiendo que la intención era sumar
+  de \texttt{n} hasta 0):
+  \[
+    \texttt{int buena(int n) \{ if (n==0) return 0; return n + buena(n-1); \}}
+  \]
+\end{notaprofesor}
+
+\begin{notaprofesor}[Ejercicio 5 — Definiciones recursivas]
+  \textbf{a) Suma de los primeros $n$ impares:}
+  \[
+    S(1) = 1, \qquad S(n) = (2n-1) + S(n-1)
+  \]
+  Curiosidad: $S(n) = n^2$ siempre.  Pídeles que lo verifiquen con $n=5$.
+
+  \textbf{b) Producto $n \cdots m$:}
+  \[
+    P(n, n) = n, \qquad P(n, m) = n \times P(n+1, m) \quad (n < m)
+  \]
+  Alternativa con $n > m$ como caso base:
+  \[
+    P(n, m) = 1 \;\text{ si } n > m, \qquad P(n, m) = n \times P(n+1, m)
+  \]
+\end{notaprofesor}
+
+\begin{notaprofesor}[Ejercicio 6 — Árbol de Fibonacci para $F(7)$]
+  Árbol simplificado (se omiten hojas triviales):
+  \begin{center}
+  \begin{tabular}{ll}
+    $F(7) = F(6) + F(5) = 8 + 5 = 13$ \\
+  \end{tabular}
+  \end{center}
+  Los primeros valores: $1,1,2,3,5,8,13$.  \checkmark
+
+  $F(3)$ aparece en el árbol de $F(7)$:
+  lo calcula $F(5)$ que lo necesita, $F(4)$ que lo necesita,
+  y sub-llamadas de cada uno.
+  En total, $F(3)$ se calcula \textbf{5 veces} al calcular $F(7)$.
+
+  En general, el número de llamadas para calcular $F(n)$ es
+  aproximadamente $2^{n/2}$ — crecimiento exponencial.
+  Para $F(40)$ son más de $10^8$ llamadas.
+\end{notaprofesor}
+
+\begin{notaprofesor}[Ejercicio 7 — Profundidad máxima]
+  $8\,\text{MB} = 8 \times 1{,}048{,}576 = 8{,}388{,}608 \text{ bytes}$.\\
+  Con frames de 32 bytes: $8{,}388{,}608 / 32 = 262{,}144$ frames.\\
+  Por tanto, la profundidad teórica máxima es $\approx 262{,}144$, lo que
+  equivale a llamar \texttt{suma(262143)}.
+
+  En la práctica el frame es mayor (en Linux x86-64 con \texttt{g++} suele
+  ser 32--64 bytes con optimizaciones desactivadas), así que el límite real
+  está entre 100{,}000 y 250{,}000.  Lo interesante pedagógicamente es
+  que el límite \textit{existe} y es calculable.
+\end{notaprofesor}
+
+% =============================================================================
+\section{Conexión con las sesiones 12 y 13}
+% =============================================================================
+
+\begin{notaprofesor}[Anticipo para motivar a los alumnos]
+  Al final de la sesión, si el tiempo lo permite, menciona que la
+  \textbf{sesión 12} tendrá una actividad de diseño: implementar las
+  Torres de Hanoi como arte ASCII en equipos de tres.  No des la solución
+  del algoritmo recursivo todavía — es importante que experimenten con el
+  diseño visual primero y que lleguen a la sesión 13 con el código de arte
+  ya hecho.
+
+  El algoritmo para mover $n$ discos de la torre A a la C usando B como
+  auxiliar es:
+  \begin{enumerate}
+    \item Mueve los $n-1$ discos superiores de A a B (usando C como auxiliar).
+    \item Mueve el disco más grande de A a C.
+    \item Mueve los $n-1$ discos de B a C (usando A como auxiliar).
+  \end{enumerate}
+
+  El caso base es $n = 0$: no hay nada que mover.
+  El número de movimientos es $2^n - 1$ — verificable con la traza.
+  \textbf{No anticipes esto} en la sesión 11; déjalo como descubrimiento
+  de la sesión 13.
+\end{notaprofesor}
+
+\end{document}
