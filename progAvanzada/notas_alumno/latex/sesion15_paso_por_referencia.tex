@@ -1,0 +1,457 @@
+% =============================================================================
+%  Notas de clase — Sesión 15: Paso por Referencia
+%  Programación Avanzada — Universidad Panamericana
+%  Compilar: pdflatex sesion15_paso_por_referencia.tex
+% =============================================================================
+\documentclass[12pt, oneside]{article}
+\usepackage{progavanzada}
+
+\begin{document}
+
+\portada{Sesión 15}{Paso por Referencia}{2026}
+
+\tableofcontents
+\newpage
+
+% =============================================================================
+\section{La trampa invisible}
+% =============================================================================
+
+Escribe esta función y dime qué esperas que imprima:
+
+\begin{codigo}
+void sumaUno(int n) {
+    n = n + 1;
+}
+
+int a = 10;
+sumaUno(a);
+cout << a;   // ¿10 u 11?
+\end{codigo}
+
+Si respondiste 11, estás en buena compañía — y en el error. El programa imprime \textbf{10}.
+La variable \cpp{a} no cambió. La función modificó una copia temporal y esa copia desapareció
+al terminar la llamada.
+
+Esta sesión responde exactamente esa pregunta: ¿cómo le digo a una función que sí quiero
+que modifique el original?
+
+\begin{tecnico}[Historia: FORTRAN y el bug de los constantes]
+  En \textbf{FORTRAN} (1957), el primer lenguaje de alto nivel, \textit{todos} los argumentos
+  se pasaban por referencia — incluso los literales numéricos. Esto llevó a un bug legendario:
+  al escribir \texttt{CALL FOO(2)} y que \texttt{FOO} modificara su parámetro, el programa
+  podía alterar el valor almacenado para el literal \texttt{2}. Después de la llamada,
+  cualquier aparición de \texttt{2} en el programa devolvía \texttt{3}.
+  Este tipo de aliasing involuntario fue una de las razones por las que C eligió el paso
+  por valor como comportamiento predeterminado.
+  \par\smallskip
+  \textit{Referencia:} Backus, J. (1978). ``The History of FORTRAN I, II, and III''.
+  \textit{ACM SIGPLAN Notices}, 13(8), 165--180.
+  \url{https://doi.org/10.1145/960118.808380}
+\end{tecnico}
+
+% =============================================================================
+\section{Paso por valor: el comportamiento por defecto}
+% =============================================================================
+
+Cuando llamas a una función, C++ crea una nueva variable local en el \textit{stack}
+de esa función y \textbf{copia} el valor del argumento en ella. La función trabaja
+con esa copia; el original permanece intacto.
+
+\begin{center}
+\begin{tabular}{p{6cm} p{6cm}}
+\toprule
+\textbf{En \cpp{main()}} & \textbf{En \cpp{sumaUno()}} \\
+\midrule
+\begin{verbatim}
+  +---------+
+  |   10    |  <- int a
+  +---------+
+  0xAA00
+\end{verbatim}
+&
+\begin{verbatim}
+  +---------+
+  |   10    |  <- int n  (copia)
+  +---------+
+  0xBB00
+\end{verbatim}
+\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\cpp{a} y \cpp{n} son celdas de memoria distintas. Cualquier cambio en \cpp{n} no afecta a \cpp{a}.
+
+\begin{recuerda}
+  El paso por valor es seguro y predecible: la función nunca modifica
+  los datos del llamador por accidente. Es la opción correcta para datos
+  pequeños (\cpp{int}, \cpp{double}, \cpp{char}) que la función solo necesita \textit{leer}.
+\end{recuerda}
+
+% =============================================================================
+\section{Paso por referencia}
+% =============================================================================
+
+Para que una función \textbf{modifique} el original, declara el parámetro con
+\textbf{\cpp{\&}}. El símbolo indica que la función recibe un \textit{alias}
+— otro nombre para la misma celda de memoria — en lugar de una copia.
+
+\begin{codigo}[caption={Paso por referencia: el \& en el parámetro}]
+void sumaUno(int& n) {   // n es alias del argumento
+    n = n + 1;
+}
+
+int a = 10;
+cout << "antes:  " << a << endl;   // 10
+sumaUno(a);
+cout << "despues: " << a << endl;  // 11
+\end{codigo}
+
+Ahora \cpp{n} y \cpp{a} son el mismo espacio de memoria:
+
+\begin{center}
+\begin{tabular}{p{5cm} p{7cm}}
+\toprule
+\textbf{Paso por valor} & \textbf{Paso por referencia} \\
+\midrule
+\begin{verbatim}
+main()     sumaUno()
++------+   +------+
+|  10  |   |  10  | (copia)
++------+   +------+
+0xAA00     0xBB00
+\end{verbatim}
+&
+\begin{verbatim}
+  main()
+  +------+
+  |  10  | <-- a == n (mismo espacio)
+  +------+
+  0xAA00
+\end{verbatim}
+\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{advertencia}
+  El \cpp{\&} en una \textbf{declaración de parámetro} (\cpp{int\& n}) indica
+  paso por referencia. El \cpp{\&} en una \textbf{expresión} (\cpp{\&a}) es el
+  operador dirección-de, que devuelve la dirección de \cpp{a}. Son dos usos del
+  mismo símbolo con significados completamente distintos. En la \textit{llamada}
+  a la función no se escribe ningún \cpp{\&}.
+\end{advertencia}
+
+% =============================================================================
+\section{Paso por apuntador: el mecanismo heredado de C}
+% =============================================================================
+
+Antes de que C++ introdujera las referencias, la única forma de lograr el mismo
+efecto era pasando la \textbf{dirección} de la variable y trabajando con un apuntador
+dentro de la función. C todavía usa este mecanismo hoy.
+
+\begin{codigo}[caption={Paso por apuntador}]
+void sumaUno(int* p) {   // p recibe una direccion
+    (*p) = (*p) + 1;     // desreferenciamos para modificar el original
+}
+
+int a = 10;
+sumaUno(&a);             // pasamos la direccion de a
+cout << a;               // 11
+\end{codigo}
+
+El resultado es idéntico al paso por referencia, pero la sintaxis es más ruidosa:
+hay que escribir \cpp{\&a} en la llamada y \cpp{*p} dentro de la función.
+
+\begin{ejemplo}[¿Por qué \cpp{scanf} necesita \cpp{\&x}?]
+  Si alguna vez te preguntaste por qué \cpp{scanf("\%d", \&x)} exige el
+  \cpp{\&} y \cpp{cin >> x} no, aquí está la respuesta: \cpp{scanf} es una
+  función de C (que no tiene referencias), así que necesita la dirección para
+  poder modificar \cpp{x}. \cpp{cin >>} es un operador de C++ implementado con
+  referencias, por lo que la dirección se pasa de forma implícita y transparente.
+  El mecanismo es el mismo; solo cambia si el compilador lo hace visible o no.
+\end{ejemplo}
+
+% =============================================================================
+\section{¿Cuándo usar cada mecanismo?}
+% =============================================================================
+
+\begin{center}
+\begin{tabular}{p{3.2cm} p{3.5cm} p{6cm}}
+  \toprule
+  \textbf{Mecanismo} & \textbf{Sintaxis} & \textbf{Cuándo usarlo} \\
+  \midrule
+  Por valor          & \cpp{int n}       & Dato pequeño que la función solo lee \\
+  Por referencia     & \cpp{int\& n}     & La función necesita modificar el original \\
+  Por ref.\ constante& \cpp{const int\& n} & Dato grande que la función solo lee (evita copias) \\
+  Por apuntador      & \cpp{int* p}      & Puede ser \cpp{nullptr}, o al trabajar con arreglos y memoria dinámica \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Referencia constante: leer sin copiar}
+
+Un \cpp{std::string} o un \cpp{std::vector} pueden ocupar kilobytes o más.
+Pasarlos por valor crea una copia completa en cada llamada. La solución es
+\cpp{const\&}: le prometemos al compilador que no vamos a modificar el dato,
+y a cambio solo pasamos la dirección (8 bytes), no una copia.
+
+\begin{codigo}[caption={const\& para evitar copias costosas}]
+// MAL: crea una copia del string completo en cada llamada
+void imprimirV(string texto) {
+    cout << texto << endl;
+}
+
+// BIEN: solo pasa la direccion, sin copiar nada
+void imprimir(const string& texto) {
+    // texto = "otro";  // error: no se puede modificar (es const)
+    cout << texto << endl;
+}
+
+string saludo = "Hola, mundo";
+imprimir(saludo);   // eficiente: 8 bytes pasados, no toda la cadena
+\end{codigo}
+
+\begin{consejo}
+  Regla práctica: si el parámetro es de un tipo que ocupa más de 8 bytes
+  y la función no necesita modificarlo, usa \cpp{const\&}. Para tipos
+  primitivos (\cpp{int}, \cpp{double}, \cpp{char}) el valor copiado es tan
+  pequeño como la dirección, así que el paso por valor es igual de eficiente
+  y más claro.
+\end{consejo}
+
+% =============================================================================
+\section{Funciones con múltiples resultados}
+% =============================================================================
+
+Una función solo puede tener un \cpp{return}. El paso por referencia permite
+"devolver" varios resultados usando \textbf{parámetros de salida}.
+
+\begin{codigo}[caption={Mínimo y máximo de un arreglo en una sola pasada}]
+void minMax(const int* arr, int n, int& minVal, int& maxVal) {
+    minVal = maxVal = arr[0];
+    for (int i = 1; i < n; i++) {
+        if (arr[i] < minVal) minVal = arr[i];
+        if (arr[i] > maxVal) maxVal = arr[i];
+    }
+}
+
+int datos[6] = {3, 7, 1, 9, 4, 6};
+int minimo, maximo;
+
+minMax(datos, 6, minimo, maximo);
+
+cout << "Minimo: " << minimo << endl;  // 1
+cout << "Maximo: " << maximo << endl;  // 9
+\end{codigo}
+
+\cpp{minVal} y \cpp{maxVal} son aliases de \cpp{minimo} y \cpp{maximo}. Al escribir
+en ellas dentro de la función, estamos escribiendo directamente en las variables del llamador.
+
+\begin{tecnico}[Usos reales en la industria]
+  Este patrón de parámetros de salida es omnipresente:
+  \begin{itemize}
+    \item La función \cpp{std::minmax\_element} de la STL regresa un par de
+          iteradores usando exactamente este concepto.
+    \item En motores de videojuegos (Unreal Engine, Unity via C\#), las funciones
+          que calculan física o geometría frecuentemente devuelven múltiples
+          vectores y normales como parámetros \cpp{out}.
+    \item En sistemas embebidos, donde las excepciones están deshabilitadas,
+          los parámetros de salida son la forma estándar de reportar éxito/error
+          junto con el resultado.
+  \end{itemize}
+\end{tecnico}
+
+% =============================================================================
+\section{Arreglos: siempre por referencia implícita}
+% =============================================================================
+
+Los arreglos son un caso especial: \textbf{siempre} se pasan por referencia,
+aunque no escribas ningún \cpp{\&}. Al pasar un arreglo a una función, su nombre
+\textit{decae} automáticamente a un apuntador al primer elemento, y la función
+trabaja directamente sobre el arreglo original.
+
+\begin{codigo}[caption={Arreglos: la función modifica el original}]
+void duplicar(int* arr, int n) {
+    for (int i = 0; i < n; i++)
+        arr[i] *= 2;   // modifica el arreglo original
+}
+
+int nums[5] = {1, 2, 3, 4, 5};
+duplicar(nums, 5);
+
+for (int i = 0; i < 5; i++)
+    cout << nums[i] << " ";   // 2 4 6 8 10
+\end{codigo}
+
+\begin{recuerda}
+  Cuando pasas un arreglo a una función siempre hay que pasar también
+  el \textbf{tamaño} como parámetro adicional. Al decaer a apuntador,
+  la información del tamaño se pierde: dentro de la función,
+  \cpp{sizeof(arr)} daría el tamaño del apuntador (8 bytes), no del arreglo.
+  Esto es exactamente lo que estudiamos con el \textit{array decay} en la
+  sesión anterior.
+\end{recuerda}
+
+\subsection{Arreglos bidimensionales}
+
+Para pasar una matriz, la función necesita conocer \textbf{todas las dimensiones
+excepto la primera} (que puede omitirse):
+
+\begin{codigo}[caption={Arreglo 2D como parámetro}]
+void incrementar(int mat[][3], int filas) {
+    for (int i = 0; i < filas; i++)
+        for (int j = 0; j < 3; j++)
+            mat[i][j]++;
+}
+
+int m[3][3] = {{1,2,3},{4,5,6},{7,8,9}};
+incrementar(m, 3);
+// m ahora contiene {{2,3,4},{5,6,7},{8,9,10}}
+\end{codigo}
+
+La razón por la que se necesita la segunda dimensión es aritmética de apuntadores:
+para calcular \cpp{mat[i][j]}, el compilador necesita saber cuántos \cpp{int}
+ocupa cada fila.
+
+% =============================================================================
+\section{Aplicación: Bubble Sort}
+% =============================================================================
+
+Bubble Sort es el ejemplo perfecto para conectar los tres conceptos de esta sesión:
+el \cpp{swap} requiere paso por referencia, el \cpp{bubblesort} recibe el arreglo
+como apuntador, y el \cpp{comparar} recibe por valor (solo lee).
+
+\subsection{La función \cpp{swap}}
+
+Intercambiar dos variables es imposible con paso por valor. Necesitamos referencias:
+
+\begin{codigo}[caption={swap: el ejemplo canónico de paso por referencia}]
+void swap(int& a, int& b) {
+    int temp = a;
+    a = b;
+    b = temp;
+}
+
+int x = 5, y = 9;
+swap(x, y);
+cout << x << " " << y;  // 9 5
+\end{codigo}
+
+\begin{consejo}
+  La biblioteca estándar ya incluye \cpp{std::swap} (en \texttt{<algorithm>}),
+  implementado exactamente así. Internamente, todos los algoritmos de ordenamiento
+  de la STL (\cpp{std::sort}, \cpp{std::stable\_sort}) la usan.
+\end{consejo}
+
+\subsection{El algoritmo completo}
+
+La idea de Bubble Sort: compara pares adyacentes e intercámbialos si están en
+el orden equivocado. Repite hasta que ningún par necesite intercambio.
+
+\begin{center}
+\begin{tabular}{cll}
+  \toprule
+  \textbf{Pasada} & \textbf{Arreglo} & \textbf{Acción} \\
+  \midrule
+  Inicial & \texttt{[5, 3, 8, 1, 4]} & --- \\
+  1       & \texttt{[3, 5, 1, 4, 8]} & el 8 llegó al final \\
+  2       & \texttt{[3, 1, 4, 5, 8]} & el 5 llegó a su lugar \\
+  3       & \texttt{[1, 3, 4, 5, 8]} & el 3 llegó a su lugar \\
+  4       & \texttt{[1, 3, 4, 5, 8]} & sin cambios: terminó \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+El nombre viene de que los elementos grandes ``burbujean'' hacia el final en cada pasada.
+
+\begin{codigo}[caption={Bubble Sort completo}]
+bool comparar(int a, int b) {
+    return a > b;   // true si hay que intercambiar (a deberia ir despues)
+}
+
+void swap(int& a, int& b) {
+    int temp = a;  a = b;  b = temp;
+}
+
+void bubblesort(int* arr, int n) {
+    for (int i = 0; i < n - 1; i++)
+        for (int j = 0; j < n - i - 1; j++)
+            if (comparar(arr[j], arr[j+1]))
+                swap(arr[j], arr[j+1]);
+}
+\end{codigo}
+
+\begin{tecnico}[\cpp{std::sort} y los comparadores]
+  La función \cpp{std::sort} de la STL acepta un \textbf{comparador} como
+  tercer argumento — exactamente igual que nuestro \cpp{comparar}. Esto te
+  permite ordenar en cualquier dirección o por cualquier criterio:
+  \begin{codigo}
+  #include <algorithm>
+  int arr[5] = {3, 1, 4, 1, 5};
+
+  // Orden ascendente (defecto)
+  sort(arr, arr+5);
+
+  // Orden descendente: pasa una funcion comparadora
+  sort(arr, arr+5, [](int a, int b){ return a > b; });
+  \end{codigo}
+  La \textit{lambda} \cpp{[](int a, int b)\{ return a > b; \}} es básicamente
+  nuestra función \cpp{comparar} escrita en línea. C++11 la introdujo
+  precisamente para evitar tener que declarar funciones auxiliares por separado.
+\end{tecnico}
+
+% =============================================================================
+\section{Ejercicios}
+% =============================================================================
+
+\subsection*{Ejercicio 1 — Elevar al cubo}
+
+Escribe una función \cpp{cubo(int\& n)} que eleve \cpp{n} a la tercera potencia,
+modificando la variable original. Pruébala con los valores $\{2, 3, 4, 5\}$ e imprime
+el arreglo antes y después de aplicarla a cada elemento.
+
+\subsection*{Ejercicio 2 — Tres resultados de una sola pasada}
+
+Escribe una función:
+\begin{codigo}
+void estadisticas(const int* arr, int n,
+                  int& minVal, int& maxVal, int& suma);
+\end{codigo}
+que calcule el mínimo, el máximo y la suma del arreglo en una sola pasada.
+Pruébala con \cpp{int datos[7] = \{12, 5, 8, 21, 3, 17, 9\}}.
+
+\subsection*{Ejercicio 3 — Normalizar un arreglo}
+
+Escribe una función \cpp{normalizar(double* arr, int n)} que divida cada
+elemento entre el valor máximo del arreglo, de modo que todos los valores queden
+en el rango $[0,\,1]$. Pruébala con \cpp{double v[5] = \{20.0, 50.0, 10.0, 80.0, 35.0\}}.
+
+\noindent\textit{Pista: necesitarás encontrar el máximo primero y luego recorrer el arreglo de nuevo.
+¿Podrías reutilizar tu función del ejercicio 2?}
+
+\subsection*{Ejercicio 4 — Bubble Sort descendente}
+
+Modifica el \cpp{comparar} del Bubble Sort para que el algoritmo ordene en orden
+\textbf{descendente}. Sin cambiar \cpp{swap} ni \cpp{bubblesort}, ¿qué línea es
+la única que hay que modificar? Explica por escrito por qué basta con ese cambio.
+
+% =============================================================================
+\section{Resumen}
+% =============================================================================
+
+\begin{recuerda}
+\begin{itemize}
+  \item Por \textbf{valor} (\cpp{int n}): la función recibe una copia; el original no cambia.
+  \item Por \textbf{referencia} (\cpp{int\& n}): la función recibe un alias; sí modifica el original.
+  \item Por \textbf{referencia constante} (\cpp{const int\& n}): alias de solo lectura; útil para objetos grandes.
+  \item Por \textbf{apuntador} (\cpp{int* p}): la función recibe una dirección; puede ser \cpp{nullptr}.
+  \item Los arreglos \textbf{siempre} decaen a apuntador al pasarse; hay que pasar el tamaño por separado.
+  \item Con referencias se pueden devolver \textbf{múltiples resultados} de una función sin usar \cpp{return}.
+  \item \cpp{swap} con referencias es el patrón base de todos los algoritmos de ordenamiento.
+  \item \cpp{std::sort} acepta un comparador para ordenar por cualquier criterio.
+\end{itemize}
+\end{recuerda}
+
+\end{document}

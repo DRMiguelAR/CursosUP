@@ -1,0 +1,355 @@
+% =============================================================================
+%  Notas del Profesor — Sesión 15: Paso por Referencia
+%  Programación Avanzada — Universidad Panamericana
+%  Compilar: pdflatex sesion15_paso_por_referencia_profesor.tex
+% =============================================================================
+\documentclass[12pt, oneside]{article}
+\usepackage[profesor]{progavanzada}
+
+\begin{document}
+
+\portada{Sesión 15}{Paso por Referencia}{2026}
+
+\tableofcontents
+\newpage
+
+% =============================================================================
+\section{Objetivos de la sesión}
+% =============================================================================
+
+Al finalizar la sesión el alumno será capaz de:
+
+\begin{enumerate}
+  \item Predecir si una función modificará o no el argumento original, dado su encabezado.
+  \item Declarar parámetros por valor, por referencia (\cpp{int\&}) y por apuntador (\cpp{int*}).
+  \item Elegir el mecanismo de paso adecuado según el tipo de dato y la necesidad de modificación.
+  \item Usar \cpp{const\&} para evitar copias costosas sin permitir modificaciones.
+  \item Implementar funciones que "devuelven" múltiples valores mediante referencias.
+  \item Implementar \cpp{swap} y explicar por qué necesita paso por referencia.
+  \item Completar la implementación de Bubble Sort con las tres funciones separadas.
+\end{enumerate}
+
+\begin{notaprofesor}[Duración estimada]
+  90 minutos (sesión simple). Distribución sugerida:\\
+  15 min — apertura: la trampa invisible, demo en vivo \\
+  20 min — paso por valor vs referencia, diagramas de memoria \\
+  15 min — paso por apuntador, tabla comparativa, \cpp{const\&} \\
+  15 min — múltiples resultados + arreglos \\
+  25 min — Bubble Sort: \cpp{swap}, \cpp{comparar}, \cpp{bubblesort} en vivo \\
+  \textit{Los ejercicios quedan como práctica para el cuaderno Jupyter.}
+\end{notaprofesor}
+
+% =============================================================================
+\section{Prerrequisitos}
+% =============================================================================
+
+\begin{itemize}
+  \item Apuntadores, referencias y aritmética de apuntadores (sesión 14)
+  \item \textit{Array decay} y la pérdida del tamaño al pasar arreglos (sesión 14)
+  \item Funciones: declaración, parámetros y valor de retorno (sesiones 11--13)
+\end{itemize}
+
+\begin{notaprofesor}
+  Los alumnos ya vieron referencias en la sesión 14 como \textit{alias}. Esta sesión
+  conecta ese concepto con el paso de parámetros, que es donde las referencias cobran
+  utilidad práctica. Si algún alumno tiene experiencia en Python o Java, señala que en
+  esos lenguajes los objetos se pasan por referencia automáticamente — el equivalente
+  al \cpp{int\&} de C++ lo hacen transparente el intérprete o la JVM.
+\end{notaprofesor}
+
+% =============================================================================
+\section{Secuencia de clase}
+% =============================================================================
+
+\subsection{Apertura — La trampa invisible (15 min)}
+
+Escribe en el pizarrón (sin usar el cuaderno todavía):
+
+\begin{codigo}
+void sumaUno(int n) { n = n + 1; }
+
+int a = 10;
+sumaUno(a);
+cout << a;
+\end{codigo}
+
+Pide a los alumnos que predigan el resultado \textit{por escrito} antes de
+ejecutarlo. Luego ejecuta. El objetivo es que la disonancia entre lo esperado
+(11) y lo obtenido (10) genere la pregunta; no expliques todavía.
+
+\begin{notaprofesor}[Pregunta de arranque]
+  ``¿Cuántos de ustedes esperaban 11?''\\
+  Respuesta esperada: la mayoría levanta la mano.\\
+  Respuesta correcta: 10. La función modifica su propia copia de \cpp{n}.\\
+  Sigue con: ``¿Por qué C++ hace esto? ¿No sería más intuitivo que sí cambiara?''
+  Deja que discutan 2 minutos y luego presenta el modelo de memoria en el pizarrón.
+\end{notaprofesor}
+
+Dibuja el diagrama de dos celdas separadas (la de \cpp{a} en \texttt{main} y la
+de \cpp{n} en \texttt{sumaUno}) con direcciones distintas. Solo entonces introduce
+la palabra ``copia'' y el término ``paso por valor''.
+
+\subsection{Paso por referencia y por apuntador (35 min)}
+
+Muestra las tres versiones del \cpp{sumaUno} en secuencia (valor, referencia,
+apuntador) y pide que predigan el resultado de cada una antes de ejecutar.
+
+\begin{notaprofesor}[Error muy frecuente: escribir \cpp{\&} en la llamada]
+  Muchos alumnos escriben \cpp{sumaUno(\&a)} cuando la función ya es por
+  referencia (\cpp{int\& n}). Esto es un error de compilación: \cpp{\&a} es
+  de tipo \cpp{int*}, no \cpp{int\&}. El \cpp{\&} en la declaración del
+  parámetro hace que el compilador tome la dirección \textit{implícitamente}.
+  Enfatiza que el \cpp{\&} va \textbf{solo en la declaración}, no en la llamada.
+\end{notaprofesor}
+
+Presenta la tabla comparativa (valor / referencia / \cpp{const\&} / apuntador)
+y el ejemplo de \cpp{const string\&}. Conecta con \cpp{cin >>} vs \cpp{scanf \&x}
+para anclar el concepto en algo que ya conocen.
+
+\begin{notaprofesor}[Pregunta de sondeo — const\&]
+  ``Si \cpp{const\&} es eficiente y seguro, ¿por qué no usarlo para todo?''\\
+  Respuesta esperada: para tipos primitivos la dirección (\cpp{int\&}) ocupa
+  tanto como el dato mismo (4 vs 8 bytes en 64-bit), y la desreferencia añade
+  una instrucción extra. El compilador puede optimizarlo, pero semánticamente
+  es más claro \cpp{int} a secas cuando no se quiere modificar.
+\end{notaprofesor}
+
+\subsection{Múltiples resultados y arreglos (15 min)}
+
+Demuestra la función \cpp{minMax} y pregunta: ``¿Por qué \cpp{minVal} y
+\cpp{maxVal} son \cpp{int\&} pero \cpp{arr} es \cpp{const int*}?''
+Deja que los alumnos respondan antes de explicar.
+
+Cierra esta sección recordando el \textit{array decay} de la sesión anterior:
+muestra que dentro de la función \cpp{sizeof(arr)} devuelve 8 (apuntador),
+no el tamaño real del arreglo. La relación directa con la sesión 14 refuerza
+la coherencia del curso.
+
+\subsection{Bubble Sort (25 min)}
+
+Construye el algoritmo en vivo, función por función:
+
+\begin{enumerate}
+  \item Escribe \cpp{swap} y verifica que intercambia dos variables. Pregunta:
+        ``¿Qué pasaría si quitara el \cpp{\&}?'' (respuesta: intercambia copias, no cambia nada).
+  \item Escribe \cpp{comparar}. Pregunta: ``¿Qué valor devuelve \cpp{comparar(3,5)}?
+        ¿Y \cpp{comparar(5,3)}?'' antes de ejecutar.
+  \item Escribe \cpp{bubblesort} y traza manualmente la primera pasada sobre el pizarrón
+        con el arreglo de ejemplo \cpp{\{33, 42, 88, 3, 50, 27, 77, 69\}}.
+\end{enumerate}
+
+\begin{notaprofesor}[Demo en vivo — Inversión del comparador]
+  Al terminar el Bubble Sort ascendente, cambia el \cpp{>} por \cpp{<} en
+  \cpp{comparar} sin tocar ninguna otra función. Ejecuta y muestra que el
+  arreglo queda en orden descendente. El punto: encapsular el criterio de
+  comparación en una función separada hace el código flexible. Conecta con
+  \cpp{std::sort} y los comparadores lambda.
+\end{notaprofesor}
+
+% =============================================================================
+\section{Errores conceptuales frecuentes}
+% =============================================================================
+
+\begin{notaprofesor}[FAQ y errores comunes]
+
+\textbf{1. ``¿Cuál es la diferencia real entre referencia y apuntador si los dos modifican el original?''}\\
+La referencia es un alias que no puede ser nula ni reasignada; el apuntador es
+una dirección que puede ser \cpp{nullptr} y puede apuntar a distintos objetos.
+La referencia es más segura; el apuntador, más flexible. En paso de parámetros,
+preferir referencia salvo que se necesite \cpp{nullptr} o aritmética de apuntadores.
+
+\vspace{0.6em}
+\textbf{2. Confundir \cpp{int\&} (referencia) con \cpp{\&x} (dirección-de)}\\
+Un ejercicio útil: dar el mismo símbolo en tres contextos y pedir que identifiquen
+el significado: \cpp{int\& r = x;} (declaración de referencia), \cpp{cout << \&x}
+(dirección de \cpp{x}), y \cpp{int* p = \&x;} (se asigna la dirección de \cpp{x} a \cpp{p}).
+
+\vspace{0.6em}
+\textbf{3. Pensar que los arreglos se copian al pasar a funciones}\\
+Viene de Java/Python donde los arrays sí se pueden copiar con facilidad. Demostrar
+modificando el arreglo dentro de una función y mostrando que el original cambió.
+
+\vspace{0.6em}
+\textbf{4. Escribir \cpp{swap} sin variable temporal}\\
+Algunos alumnos intentan \cpp{a = a + b; b = a - b; a = a - b;} o versiones con XOR.
+Funcionan para enteros pero fallan para flotantes o tipos no numéricos. La versión
+con temporal es la correcta y la que usa \cpp{std::swap} internamente.
+
+\vspace{0.6em}
+\textbf{5. Olvidar \cpp{n - i - 1} en el límite interno del Bubble Sort}\\
+El índice interno puede ser \cpp{n - 1} y el algoritmo sigue siendo correcto,
+solo hace comparaciones redundantes al final (los últimos \cpp{i} elementos
+ya están ordenados). No es un error grave, pero es una oportunidad para hablar
+de optimización.
+
+\end{notaprofesor}
+
+% =============================================================================
+\section{Soluciones a los ejercicios}
+% =============================================================================
+
+\subsection{Ejercicio 1 — Elevar al cubo}
+
+\begin{codigo}
+void cubo(int& n) {
+    n = n * n * n;
+}
+
+int arr[4] = {2, 3, 4, 5};
+for (int i = 0; i < 4; i++)
+    cubo(arr[i]);
+// arr = {8, 27, 64, 125}
+\end{codigo}
+
+\begin{notaprofesor}[Errores típicos en este ejercicio]
+  Algunos alumnos intentan \cpp{n = n\textasciicircum 3} (XOR bit a bit, no potencia).
+  Recordar que C++ no tiene operador de exponenciación; se usa \cpp{pow(n, 3)} de
+  \texttt{<cmath>} o la multiplicación explícita.
+\end{notaprofesor}
+
+\subsection{Ejercicio 2 — Tres resultados en una pasada}
+
+\begin{codigo}
+void estadisticas(const int* arr, int n,
+                  int& minVal, int& maxVal, int& suma) {
+    minVal = maxVal = arr[0];
+    suma = arr[0];
+    for (int i = 1; i < n; i++) {
+        if (arr[i] < minVal) minVal = arr[i];
+        if (arr[i] > maxVal) maxVal = arr[i];
+        suma += arr[i];
+    }
+}
+
+int datos[7] = {12, 5, 8, 21, 3, 17, 9};
+int mn, mx, s;
+estadisticas(datos, 7, mn, mx, s);
+cout << "min=" << mn << " max=" << mx << " suma=" << s << endl;
+// min=3 max=21 suma=75
+\end{codigo}
+
+\subsection{Ejercicio 3 — Normalizar un arreglo}
+
+\begin{codigo}
+void normalizar(double* arr, int n) {
+    double maxVal = arr[0];
+    for (int i = 1; i < n; i++)
+        if (arr[i] > maxVal) maxVal = arr[i];
+
+    for (int i = 0; i < n; i++)
+        arr[i] /= maxVal;
+}
+
+double v[5] = {20.0, 50.0, 10.0, 80.0, 35.0};
+normalizar(v, 5);
+// v = {0.25, 0.625, 0.125, 1.0, 0.4375}
+\end{codigo}
+
+\begin{notaprofesor}
+  Punto de discusión: ¿qué pasa si \cpp{maxVal} es cero? División por cero.
+  Para un arreglo de datos reales habría que protegerse contra ese caso.
+  Buen gancho para hablar de validación en los límites del sistema.
+\end{notaprofesor}
+
+\subsection{Ejercicio 4 — Bubble Sort descendente}
+
+Solo hay que cambiar una línea en \cpp{comparar}:
+
+\begin{codigo}
+// Ascendente:
+bool comparar(int a, int b) { return a > b; }
+
+// Descendente (unica linea que cambia):
+bool comparar(int a, int b) { return a < b; }
+\end{codigo}
+
+La explicación: \cpp{bubblesort} intercambia \cpp{arr[j]} y \cpp{arr[j+1]}
+cuando \cpp{comparar} devuelve \cpp{true}. Si la condición de intercambio es
+``el izquierdo es menor'', los elementos pequeños migrarán hacia el final
+(orden descendente).
+
+\begin{notaprofesor}[Extensión interesante]
+  Pregunta abierta para los alumnos más avanzados: ``¿Podrías hacer que
+  \cpp{comparar} sea un \textit{parámetro} de \cpp{bubblesort}, para que
+  el usuario decida el criterio de ordenamiento?''
+  \begin{codigo}
+  void bubblesort(int* arr, int n, bool(*cmp)(int,int)) {
+      for (int i = 0; i < n-1; i++)
+          for (int j = 0; j < n-i-1; j++)
+              if (cmp(arr[j], arr[j+1]))
+                  swap(arr[j], arr[j+1]);
+  }
+
+  bubblesort(arr, n, comparar);
+  \end{codigo}
+  Este es el germen del polimorfismo de comportamiento, que en C++ moderno
+  se expresa con lambdas y \cpp{std::function}. No es necesario profundizar
+  ahora, pero despierta curiosidad hacia los temas futuros.
+\end{notaprofesor}
+
+% =============================================================================
+\section{Conexiones con temas posteriores}
+% =============================================================================
+
+\begin{itemize}
+  \item \textbf{Sesiones 16--17} — Recursividad: las funciones recursivas
+        se llaman a sí mismas con paso por valor o por referencia según si
+        necesitan acumular resultados.
+  \item \textbf{Sesiones 18--20} — Memoria dinámica: \cpp{new} devuelve un
+        apuntador que se pasa entre funciones; entender paso por apuntador
+        es requisito.
+  \item \textbf{Sesiones 21--25} — Orientación a Objetos: los métodos reciben
+        \cpp{this} (apuntador al objeto) implícitamente; los constructores de
+        copia usan \cpp{const T\&}.
+  \item \textbf{C++ moderno} — \cpp{std::sort} con lambda, \cpp{std::swap},
+        \cpp{std::move} (referencias rvalue, C++11) son extensiones directas
+        del paso por referencia.
+\end{itemize}
+
+% =============================================================================
+\section{Material de la sesión}
+% =============================================================================
+
+\begin{itemize}
+  \item \textbf{Cuaderno:}
+        \texttt{sesiones/sesion15\_paso\_por\_referencia.ipynb}
+  \item \textbf{Ejemplos:}
+        \texttt{materialInicial/sesion15/referencias01--06.cpp}, \texttt{sort.cpp}
+  \item \textbf{Notas alumno:}
+        \texttt{notas\_alumno/pdf/sesion15\_paso\_por\_referencia.pdf}
+\end{itemize}
+
+% =============================================================================
+\section{Rúbrica de ejercicios}
+% =============================================================================
+
+\begin{center}
+\begin{tabular}{p{6.5cm}cc}
+  \toprule
+  \textbf{Ejercicio / Criterio} & \textbf{Puntos} & \textbf{Evidencia} \\
+  \midrule
+  \multicolumn{3}{l}{\textit{Ejercicio 1 — Elevar al cubo}} \\
+  \quad Parámetro declarado como \cpp{int\&}       & 4 & firma de la función \\
+  \quad Resultado correcto para los 4 valores      & 4 & salida esperada \\
+  \quad No usa \cpp{pow}                            & 2 & multiplicación explícita \\
+  \midrule
+  \multicolumn{3}{l}{\textit{Ejercicio 2 — Tres resultados}} \\
+  \quad Tres parámetros de salida como \cpp{int\&} & 3 & firma correcta \\
+  \quad Una sola pasada (un solo \cpp{for})         & 4 & código con 1 ciclo \\
+  \quad Resultados correctos                        & 3 & min=3, max=21, suma=75 \\
+  \midrule
+  \multicolumn{3}{l}{\textit{Ejercicio 3 — Normalizar}} \\
+  \quad Arreglo como \cpp{double*}, modifica el original & 3 & sin \cpp{const} en \cpp{arr} \\
+  \quad Encuentra el máximo correctamente          & 3 & primera pasada \\
+  \quad Divide todos los elementos                 & 4 & segunda pasada \\
+  \midrule
+  \multicolumn{3}{l}{\textit{Ejercicio 4 — Bubble Sort descendente}} \\
+  \quad Identifica la línea correcta a cambiar     & 5 & solo \cpp{comparar} modificado \\
+  \quad Explicación escrita correcta               & 5 & razonamiento con criterio de intercambio \\
+  \midrule
+  \textbf{Total}                                   & \textbf{40} & \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\end{document}
