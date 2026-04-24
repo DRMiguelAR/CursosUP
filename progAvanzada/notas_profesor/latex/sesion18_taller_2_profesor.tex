@@ -1,0 +1,353 @@
+% =============================================================================
+%  Notas del Profesor — Sesión 18: Taller 2 — Resolución de problemas
+%  Programación Avanzada — Universidad Panamericana
+%  Compilar: pdflatex sesion18_taller_2_profesor.tex
+% =============================================================================
+\documentclass[12pt, oneside]{article}
+\usepackage[profesor]{progavanzada}
+
+\begin{document}
+
+\portada{Sesión 18}{Taller 2 — Resolución de problemas}{2026}
+
+\tableofcontents
+\newpage
+
+% =============================================================================
+\section{Objetivos de la sesión}
+% =============================================================================
+
+Al finalizar la sesión el alumno será capaz de:
+
+\begin{enumerate}
+  \item Buscar el elemento más cercano en una lista hacia la izquierda
+        y hacia la derecha con un recorrido lineal.
+  \item Construir una cadena de salida que depende de una distancia
+        calculada en tiempo de ejecución.
+  \item Reconocer cuándo la fuerza bruta es la estrategia correcta
+        (problema de tamaño fijo y pequeño).
+  \item Usar \texttt{substr} y \texttt{stoll} para procesar dígitos
+        de un número leído como cadena.
+\end{enumerate}
+
+\begin{notaprofesor}[Duración estimada]
+  90 minutos.  Distribución sugerida:\\
+  \phantom{00} 5 min — presentación del taller \\
+  \phantom{00}10 min — \textbf{Problema 1, Parte 1:} revisión guiada en pizarrón \\
+  \phantom{00}30 min — \textbf{Problema 1, Parte 2:} trabajo en equipo + envío \\
+  \phantom{00} 8 min — \textbf{Problema 2, Parte 1:} revisión guiada en pizarrón \\
+  \phantom{00}27 min — \textbf{Problema 2, Parte 2:} trabajo en equipo + envío \\
+  \phantom{00}10 min — cierre: discusión de soluciones \\[4pt]
+  Los alumnos trabajan en equipos de dos o tres personas y usan el
+  cuaderno Jupyter (\texttt{sesiones/sesion18\_taller\_2.ipynb}) para
+  probar localmente.
+\end{notaprofesor}
+
+% =============================================================================
+\section{Dinámica del taller}
+% =============================================================================
+
+\begin{notaprofesor}[Guión general de la Parte 1]
+  Para cada problema, sigue este orden en el pizarrón:
+  \begin{enumerate}
+    \item Lee el enunciado en voz alta; detente en cada párrafo y
+          pregunta ``¿qué nos dan?'' y ``¿qué nos piden?''.
+    \item Escribe la entrada del ejemplo tal como aparece; etiqueta
+          cada dato (``esta línea es $n$'', ``estos son los nombres'', etc.).
+    \item Traza el procesamiento paso a paso con los números concretos.
+    \item Escribe la salida obtenida y verifica que coincide con el
+          enunciado.
+    \item Lanza la pregunta de cierre sin responderla: deja esa
+          generalización para el equipo.
+  \end{enumerate}
+\end{notaprofesor}
+
+\begin{notaprofesor}[Cuenta en el juez]
+  Verifica que todos los alumnos tengan cuenta en el juez usado antes
+  de empezar la Parte 2.
+\end{notaprofesor}
+
+\newpage
+
+% =============================================================================
+\section{Problema 1: El profesor y los nombres}
+% =============================================================================
+
+\subsection{Enunciado completo}
+
+Dados $n$ alumnos en fila, algunos con nombre conocido y otros marcados
+con \texttt{?}, responder $m$ consultas: ¿cómo llamarías al alumno en
+la posición $p$?
+
+\begin{itemize}
+  \item Si la posición tiene nombre conocido: imprimir el nombre.
+  \item Si el conocido más cercano está a distancia $d$ a la izquierda:
+        ``\texttt{derecha} $\times d$ \texttt{de Nombre}''.
+  \item Si está a la derecha: ``\texttt{izquierda} $\times d$
+        \texttt{de Nombre}''.
+  \item Si hay dos a igual distancia (uno a cada lado):
+        ``\texttt{justo enmedio de NombreIzq y NombreDer}''.
+\end{itemize}
+
+\subsection{Parte 1 — Guía de pizarrón}
+
+\begin{notaprofesor}[Lo que escribes en el pizarrón]
+  \begin{enumerate}
+    \item Dibuja la fila con posiciones numeradas del 1 al 10:
+    \begin{center}
+      \ttfamily
+      \begin{tabular}{|c|c|c|c|c|c|c|c|c|c|}
+        \hline
+        A & ? & ? & B & ? & ? & ? & C & ? & ? \\
+        \hline
+        1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10 \\
+        \hline
+      \end{tabular}
+    \end{center}
+    \item \textbf{Consulta $p = 3$:} ``¿Quién es el más cercano?''
+          Señala a la izquierda: A en pos.\ 1, distancia 2.
+          Señala a la derecha: B en pos.\ 4, distancia 1.
+          B es más cercano.  B está a la \textit{derecha} de la posición 3,
+          por eso lo llamamos desde su \textit{izquierda}.
+          Salida: ``\texttt{izquierda de B}''.
+    \item \textbf{Consulta $p = 8$:} nombre conocido (C).
+          Salida: ``\texttt{C}''.
+    \item \textbf{Consulta $p = 6$:} B en pos.\ 4, distancia 2.
+          C en pos.\ 8, distancia 2.  Igual → enmedio.
+          Salida: ``\texttt{justo enmedio de B y C}''
+          (primero el de la izquierda).
+    \item \textbf{Consulta $p = 10$:} solo C a la izquierda,
+          distancia 2.  No hay nadie a la derecha.
+          C está a la \textit{izquierda} de la posición 10,
+          entonces nos movemos hacia su \textit{derecha}.
+          Salida: ``\texttt{derecha derecha de C}''.
+    \item Pregunta de cierre: ``¿Cómo generalizamos esto para cualquier
+          fila y cualquier consulta?'' — dejar para el equipo.
+  \end{enumerate}
+\end{notaprofesor}
+
+\subsection{Análisis de la solución}
+
+El algoritmo para cada consulta $p$:
+
+\begin{enumerate}
+  \item Si \texttt{nombres[p-1] != "?"}: imprimir el nombre y continuar.
+  \item Recorrer hacia la izquierda desde $p-2$ hasta 0; el primer
+        nombre conocido encontrado es el más cercano a la izquierda
+        (distancia $d_L = p - 1 - i$, donde $i$ es su índice en el arreglo).
+  \item Recorrer hacia la derecha desde $p$ hasta $n-1$; el primer
+        nombre conocido encontrado es el más cercano a la derecha
+        (distancia $d_R = i - (p-1)$).
+  \item Si solo existe $d_L$: imprimir ``\texttt{derecha}'' $d_L$ veces
+        + ``\texttt{de Nombre}''.
+  \item Si solo existe $d_R$: imprimir ``\texttt{izquierda}'' $d_R$ veces
+        + ``\texttt{de Nombre}''.
+  \item Si $d_L < d_R$: imprimir ``\texttt{derecha}'' $d_L$ veces +
+        ``\texttt{de NombreIzq}''.
+  \item Si $d_R < d_L$: imprimir ``\texttt{izquierda}'' $d_R$ veces +
+        ``\texttt{de NombreDer}''.
+  \item Si $d_L = d_R$: imprimir ``\texttt{justo enmedio de NombreIzq
+        y NombreDer}''.
+\end{enumerate}
+
+\subsection{Solución en C++}
+
+\begin{verbatim}
+#include <iostream>
+#include <vector>
+#include <string>
+using namespace std;
+
+int main() {
+    int n;
+    cin >> n;
+    vector<string> nom(n);
+    for (auto& s : nom) cin >> s;
+
+    int m;
+    cin >> m;
+    while (m--) {
+        int p;
+        cin >> p;
+        p--;  // pasar a índice 0
+
+        if (nom[p] != "?") {
+            cout << nom[p] << "\n";
+            continue;
+        }
+
+        int dL = -1, dR = -1;
+        string nL, nR;
+
+        for (int i = p - 1; i >= 0; i--) {
+            if (nom[i] != "?") { dL = p - i; nL = nom[i]; break; }
+        }
+        for (int i = p + 1; i < n; i++) {
+            if (nom[i] != "?") { dR = i - p; nR = nom[i]; break; }
+        }
+
+        if (dL == -1 || (dR != -1 && dR < dL)) {
+            for (int i = 0; i < dR; i++) cout << "izquierda ";
+            cout << "de " << nR << "\n";
+        } else if (dR == -1 || dL < dR) {
+            for (int i = 0; i < dL; i++) cout << "derecha ";
+            cout << "de " << nL << "\n";
+        } else {
+            cout << "justo enmedio de " << nL << " y " << nR << "\n";
+        }
+    }
+}
+\end{verbatim}
+
+\begin{notaprofesor}[FAQs Problema 1]
+  \textbf{¿Por qué ``izquierda de B'' y no ``derecha de A'' en la posición 3?}\\
+  B está a distancia 1 y A está a distancia 2.  B es el más cercano.
+  B está a la derecha de la posición 3, así que el alumno está
+  a la izquierda de B.
+
+  \medskip
+  \textbf{¿Puede haber más de dos nombres a la misma distancia mínima?}\\
+  No.  Como hay un solo alumno por posición, solo puede haber un nombre
+  conocido a distancia $d$ a la izquierda y otro a distancia $d$ a la
+  derecha.  El caso de dos equidistantes siempre es uno a cada lado.
+
+  \medskip
+  \textbf{¿Qué pasa si todos los alumnos menos uno son \texttt{?}?}\\
+  El problema garantiza al menos un nombre conocido, así que siempre
+  habrá al menos un $d_L$ o $d_R$ definido.  No hay caso sin respuesta.
+\end{notaprofesor}
+
+\newpage
+
+% =============================================================================
+\section{Problema 2: Once Cifras}
+% =============================================================================
+
+\subsection{Enunciado}
+
+Dado un número de 11 cifras, partirlo en tres subcadenas contiguas y
+sumar las tres partes interpretadas como enteros.  Encontrar la partición
+que minimiza esa suma.
+
+\subsection{Parte 1 — Guía de pizarrón}
+
+\begin{notaprofesor}[Lo que escribes en el pizarrón]
+  \begin{enumerate}
+    \item Escribe el número en el pizarrón:
+          \texttt{3\,1\,1\,2\,4\,5\,1\,0\,9\,8\,8}
+          y dibuja dos ``tijeras'' moviéndose por los espacios entre
+          dígitos.
+    \item ``Para partir en 3, necesito 2 puntos de corte.
+          Si llamo $i$ al primero y $j$ al segundo, con $1 \le i < j \le 10$,
+          las tres partes son los dígitos antes de $i$, entre $i$ y $j$,
+          y después de $j$.''
+    \item Muestra un ejemplo concreto: $i=4$, $j=7$:
+          \texttt{3112} + \texttt{451} + \texttt{0988}
+          $= 3112 + 451 + 988 = 4551$.
+    \item ``¿Cuántas combinaciones $(i,j)$ hay?''
+          Son $\binom{10}{2} = 45$.  ``¿Podemos probarlas todas?
+          Sí, 45 es un número pequeñísimo.''
+    \item Muestra otra partición: $i=3$, $j=7$:
+          \texttt{311} + \texttt{2451} + \texttt{0988}
+          $= 311 + 2451 + 988 = 3750$.  ``Esta es menor.''
+    \item Pregunta de cierre: ``¿Cómo sabes que 3750 es el mínimo
+          de todas las 45?'' — dejar para el equipo.
+  \end{enumerate}
+\end{notaprofesor}
+
+\begin{notaprofesor}[Nota sobre la descripción del enunciado]
+  El ejemplo en el enunciado del problema muestra
+  ``\texttt{3112 + 451 + 0988 = 3750}'', pero
+  $3112 + 451 + 988 = 4551 \ne 3750$.
+  La partición correcta que da 3750 es $i=3$, $j=7$:
+  ``\texttt{311} + \texttt{2451} + \texttt{0988}''
+  ($311 + 2451 + 988 = 3750$).
+  El enunciado tiene un error tipográfico en la descripción del ejemplo.
+  La entrada y la salida correctas (\texttt{31124510988} → \texttt{3750})
+  sí son correctas.  No menciones esto hasta que los alumnos hayan
+  resuelto el problema.
+\end{notaprofesor}
+
+\subsection{Análisis de la solución}
+
+Leer el número como \texttt{string} de longitud 11.
+Iterar sobre todos los pares $(i, j)$ con $1 \le i < j \le 10$:
+
+\begin{itemize}
+  \item Parte 1: \texttt{s.substr(0, i)} → $a$
+  \item Parte 2: \texttt{s.substr(i, j - i)} → $b$
+  \item Parte 3: \texttt{s.substr(j)} → $c$
+  \item Actualizar mínimo de $a + b + c$
+\end{itemize}
+
+Los ceros iniciales (\texttt{"0988"}) se eliminan automáticamente al
+convertir con \texttt{stoll}.
+
+\begin{notaprofesor}[¿Cabe en \texttt{int}?]
+  El peor caso es ``\texttt{9}'' + ``\texttt{9}'' + ``\texttt{999999999}''
+  $= 9 + 9 + 999\,999\,999 = 1\,000\,000\,017$, que cabe en \texttt{int}
+  (máx $\approx 2.1 \times 10^9$).  Usar \texttt{long long} es buena
+  práctica defensiva.
+\end{notaprofesor}
+
+\subsection{Solución en C++}
+
+\begin{verbatim}
+#include <iostream>
+#include <string>
+#include <climits>
+using namespace std;
+
+int main() {
+    string s;
+    cin >> s;
+
+    long long minSuma = LLONG_MAX;
+    int n = (int)s.size();   // debe ser 11
+
+    for (int i = 1; i < n - 1; i++) {
+        for (int j = i + 1; j < n; j++) {
+            long long a = stoll(s.substr(0, i));
+            long long b = stoll(s.substr(i, j - i));
+            long long c = stoll(s.substr(j));
+            minSuma = min(minSuma, a + b + c);
+        }
+    }
+
+    cout << minSuma << "\n";
+}
+\end{verbatim}
+
+\begin{notaprofesor}[FAQs Problema 2]
+  \textbf{¿Qué pasa si la cadena empieza con cero?}\\
+  El enunciado dice que es un número de 11 dígitos, así que no empieza
+  con cero.  Las subcadenas intermedias sí pueden empezar con cero;
+  \texttt{stoll} lo maneja correctamente.
+
+  \medskip
+  \textbf{Un alumno lee el número como \texttt{long long} en vez de
+  \texttt{string}.  ¿Puede extraer las partes con aritmética?}\\
+  Sí, pero es mucho más complicado (divisiones y módulos con potencias
+  de 10).  La solución con \texttt{string} y \texttt{substr} es
+  más clara y equivalente en eficiencia para este tamaño.
+
+  \medskip
+  \textbf{¿Por qué el mínimo no siempre es la partición más equilibrada?}\\
+  Intuitivamente sí: 4+4+3 dígitos distribuye bien y evita números
+  grandes, por eso el mínimo tiende a estar cerca de esa distribución.
+  Pero el valor de los dígitos importa; por eso hay que verificar
+  todas las opciones.
+\end{notaprofesor}
+
+\newpage
+
+% =============================================================================
+\section{Materiales y recursos}
+% =============================================================================
+
+\begin{itemize}
+  \item \textbf{Cuaderno:} \texttt{sesiones/sesion18\_taller\_2.ipynb}
+  \item \textbf{Notas alumno:} \texttt{notas\_alumno/pdf/sesion18\_taller\_2.pdf}
+\end{itemize}
+
+\end{document}

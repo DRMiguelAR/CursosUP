@@ -1,0 +1,262 @@
+% =============================================================================
+%  Notas de clase — Sesión 18: Taller 2 — Resolución de problemas
+%  Programación Avanzada — Universidad Panamericana
+%  Compilar: pdflatex sesion18_taller_2.tex
+% =============================================================================
+\documentclass[12pt, oneside]{article}
+\usepackage{progavanzada}
+\usepackage{array}
+
+\begin{document}
+
+\portada{Sesión 18}{Taller 2 — Resolución de problemas}{2026}
+
+\tableofcontents
+\newpage
+
+% =============================================================================
+\section{Instrucciones del taller}
+% =============================================================================
+
+Esta sesión sigue la misma dinámica que el Taller 1: trabajo en
+\textbf{equipos de dos o tres personas}, con dos momentos por problema.
+
+\begin{description}
+  \item[Parte 1 — Revisión guiada.]
+    El profesor trabaja el caso de prueba en el pizarrón.
+    Tu tarea es \textbf{poner atención}: observa cómo se leen los datos,
+    qué operaciones se hacen y cómo se obtiene la salida esperada.
+    No abras el cuaderno todavía.
+
+  \item[Parte 2 — Trabajo en equipo.]
+    Con lo observado, tu equipo generaliza el algoritmo, lo implementa en
+    C++ y lo envía al juez.
+\end{description}
+
+\begin{advertencia}
+  Durante la \textbf{Parte 1} no escribas código ni intentes adelantarte
+  a la solución.  El objetivo es entender \emph{qué} pide el problema,
+  no todavía \emph{cómo} resolverlo para cualquier entrada.
+\end{advertencia}
+
+\begin{consejo}
+  \textbf{Flujo de la Parte 2:}
+  \begin{enumerate}
+    \item Con el ejemplo ya resuelto, identifica la condición o proceso
+          general.
+    \item Escribe el algoritmo en pseudocódigo antes de escribir código.
+    \item Implementa en C++ y prueba con el mismo ejemplo del enunciado.
+    \item Envía al juez.  Si recibes \texttt{WA}, construye un
+          contraejemplo antes de modificar el código al azar.
+  \end{enumerate}
+\end{consejo}
+
+\newpage
+
+% =============================================================================
+\section{Problema 1: El profesor y los nombres}
+% =============================================================================
+
+\subsection{Enunciado}
+
+Un profesor se sabe de memoria solo algunos nombres de sus alumnos.
+Cuando necesita llamar a un alumno cuyo nombre no conoce, lo hace
+refiriéndose al alumno conocido más cercano.
+
+Dados los $n$ alumnos en fila (algunos con nombre conocido, otros como
+\texttt{?}), y $m$ preguntas de la forma ``¿cómo llamarías al alumno en
+la posición $p$?'', escribe el programa que responda cada pregunta.
+
+\textbf{Reglas para nombrar:}
+\begin{itemize}
+  \item Si la posición $p$ tiene nombre conocido: imprimir el nombre.
+  \item Si el alumno conocido más cercano está a distancia $d$ y está
+        a la \textbf{izquierda}: imprimir \textit{d} veces
+        ``\texttt{derecha}'' seguido de ``\texttt{de Nombre}''.
+  \item Si está a la \textbf{derecha}: imprimir \textit{d} veces
+        ``\texttt{izquierda}'' seguido de ``\texttt{de Nombre}''.
+  \item Si hay dos alumnos conocidos a la \textbf{misma distancia}
+        (uno a cada lado): imprimir
+        ``\texttt{justo enmedio de NombreIzq y NombreDer}''.
+\end{itemize}
+
+\textbf{Entrada.}
+Primera línea: $n$ ($1 \le n \le 100$).
+Segunda línea: $n$ nombres separados por espacios (\texttt{?} si se
+desconoce; cadena de máximo 3 letras si se conoce).
+Al menos un nombre no es \texttt{?}.
+Tercera línea: $m$ ($1 \le m \le 100$).
+Las siguientes $m$ líneas: una posición $p$ ($1 \le p \le n$) por línea.
+
+\textbf{Salida.}
+Por cada consulta, una línea con la forma de llamar al alumno.
+
+\subsection{Parte 1 — Revisión guiada}
+
+\begin{advertencia}
+  \textbf{Pon atención al pizarrón.}  El profesor va a trazar la fila,
+  marcar los nombres conocidos y resolver cada consulta paso a paso.
+  Observa cómo se determina el nombre conocido más cercano y cómo se
+  construye la cadena de respuesta.
+\end{advertencia}
+
+\begin{center}
+\begin{tabular}{ll}
+  \toprule
+  \textbf{Entrada} & \textbf{Salida} \\
+  \midrule
+  \begin{minipage}[t]{5cm}
+    \texttt{10}\\
+    \texttt{A ? ? B ? ? ? C ? ?}\\
+    \texttt{4}\\
+    \texttt{3}\\
+    \texttt{8}\\
+    \texttt{6}\\
+    \texttt{10}
+  \end{minipage}
+  &
+  \begin{minipage}[t]{5cm}
+    \texttt{izquierda de B}\\
+    \texttt{C}\\
+    \texttt{justo enmedio de B y C}\\
+    \texttt{derecha derecha de C}
+  \end{minipage} \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{Notas de lo observado en el pizarrón:}
+
+\vspace{3.5cm}
+
+\subsection{Parte 2 — Trabajo en equipo}
+
+\subsubsection{Análisis}
+
+¿Cómo encuentras el nombre conocido más cercano \textbf{a la izquierda}
+de la posición $p$?
+
+\vspace{2.5cm}
+
+¿Cómo encuentras el más cercano \textbf{a la derecha}?
+
+\vspace{2.5cm}
+
+¿Cuándo se imprime ``\texttt{justo enmedio}''?  ¿Cuándo sólo
+``\texttt{izquierda}'' o ``\texttt{derecha}''?
+
+\vspace{2cm}
+
+¿Cómo generas la cadena con $d$ repeticiones de
+``\texttt{derecha}'' o ``\texttt{izquierda}'' en C++?
+
+\vspace{2cm}
+
+\begin{recuerda}
+  Las posiciones en el enunciado van de 1 a $n$.  En un arreglo de C++
+  los índices van de 0 a $n-1$.  Recuerda restar 1 al leer $p$.
+\end{recuerda}
+
+\subsubsection{Pseudocódigo}
+
+\vspace{5cm}
+
+\newpage
+
+% =============================================================================
+\section{Problema 2: Once Cifras}
+% =============================================================================
+
+\subsection{Enunciado}
+
+Se tiene un número de \textbf{11 cifras}.  Se parte en \textbf{tres
+partes} (cada parte es una subcadena contigua de dígitos) y se suman.
+¿Cuál es la menor suma posible de entre todas las formas de hacer
+el corte?
+
+\textbf{Entrada.}
+Un número entero de 11 dígitos.
+
+\textbf{Salida.}
+La menor suma posible.
+
+\subsection{Parte 1 — Revisión guiada}
+
+\begin{advertencia}
+  \textbf{Pon atención al pizarrón.}  El profesor va a mostrar qué
+  significa ``partir en tres partes'', cómo se calcula la suma de
+  una partición concreta y cuántas particiones distintas hay en total.
+  Observa el patrón antes de pensar en la solución general.
+\end{advertencia}
+
+\begin{center}
+\begin{tabular}{ll}
+  \toprule
+  \textbf{Entrada} & \textbf{Salida} \\
+  \midrule
+  \texttt{31124510988} & \texttt{3750} \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{Notas de lo observado en el pizarrón:}
+
+\vspace{3.5cm}
+
+\subsection{Parte 2 — Trabajo en equipo}
+
+\subsubsection{Análisis}
+
+¿Cuántos puntos de corte necesitas para dividir una cadena de 11
+dígitos en 3 partes?
+
+\vspace{1.5cm}
+
+Si la cadena tiene 11 dígitos y los dos puntos de corte están en las
+posiciones $i$ y $j$ (con $1 \le i < j \le 10$), ¿cuántas combinaciones
+$(i, j)$ hay?
+
+\vspace{1.5cm}
+
+¿Qué ocurre con los ceros a la izquierda al convertir una subcadena a
+número?  (\textit{Ejemplo: ``\texttt{0988}'' como entero es 988.})
+¿Eso afecta el resultado?
+
+\vspace{2cm}
+
+¿Cabe el valor máximo posible de la suma en un \texttt{int}?
+(\textit{Pista: el peor caso es partir ``\texttt{99999999999}''
+en ``\texttt{9}'' + ``\texttt{9}'' + ``\texttt{999999999}''.})
+
+\vspace{2cm}
+
+\begin{recuerda}
+  Si lees el número como \texttt{string}, puedes usar \texttt{substr}
+  para obtener cada parte y \texttt{stoll} para convertirla a entero.
+  Iterar sobre todos los pares $(i, j)$ con dos \texttt{for} anidados
+  es suficiente dado el tamaño del problema.
+\end{recuerda}
+
+\subsubsection{Pseudocódigo}
+
+\vspace{5cm}
+
+\newpage
+
+% =============================================================================
+\section{Resumen de la sesión}
+% =============================================================================
+
+\begin{itemize}
+  \item Para ``El profesor y los nombres'': busca el nombre conocido más
+        cercano a la izquierda y a la derecha; la distancia determina
+        cuántas veces se repite ``\texttt{izquierda}'' o
+        ``\texttt{derecha}''.
+  \item Para ``Once Cifras'': hay $\binom{10}{2} = 45$ formas de partir
+        11 dígitos en 3 partes; iterar sobre todas y quedarse con la
+        suma mínima es la estrategia correcta.
+  \item Los ceros iniciales en una subcadena no son un caso especial:
+        \texttt{stoll("0988")} devuelve 988 automáticamente.
+\end{itemize}
+
+\end{document}
