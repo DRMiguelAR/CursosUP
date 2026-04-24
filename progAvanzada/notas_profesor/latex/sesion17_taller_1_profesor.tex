@@ -1,0 +1,299 @@
+% =============================================================================
+%  Notas del Profesor — Sesión 17: Taller 1 — Resolución de problemas
+%  Programación Avanzada — Universidad Panamericana
+%  Compilar: pdflatex sesion17_taller_1_profesor.tex
+% =============================================================================
+\documentclass[12pt, oneside]{article}
+\usepackage[profesor]{progavanzada}
+
+\begin{document}
+
+\portada{Sesión 17}{Taller 1 — Resolución de problemas}{2026}
+
+\tableofcontents
+\newpage
+
+% =============================================================================
+\section{Objetivos de la sesión}
+% =============================================================================
+
+Al finalizar la sesión el alumno será capaz de:
+
+\begin{enumerate}
+  \item Leer un enunciado de concurso y extraer la condición matemática central.
+  \item Convertir una condición con promedios en aritmética entera
+        (evitar flotantes innecesarios).
+  \item Implementar la reversión de un entero con operaciones de dígitos.
+  \item Enviar una solución a un juez en línea e interpretar el veredicto.
+\end{enumerate}
+
+\begin{notaprofesor}[Duración estimada]
+  90 minutos.  Distribución sugerida:\\
+  10 min — explicación de jueces en línea + dinámica del taller \\
+  35 min — Problema 1 (Paradoja de los promedios) \\
+  35 min — Problema 2 (Ayudando a mi hermanito) \\
+  10 min — cierre: discusión de soluciones y casos esquina \\[4pt]
+  Los alumnos trabajarán en el cuaderno Jupyter
+  (\texttt{sesiones/sesion17\_taller\_1.ipynb}) y enviarán al juez la
+  solución en C++ al terminar.
+\end{notaprofesor}
+
+% =============================================================================
+\section{Dinámica del taller}
+% =============================================================================
+
+\begin{notaprofesor}[Cómo arrancar]
+  \textbf{Preguntas de sondeo (5 min):}
+  \begin{itemize}
+    \item ``¿Alguien ha enviado código a un juez en línea antes?''
+          — Esperar manos; si hay, pedirles que cuenten su experiencia.
+    \item ``Si saco a la persona con el promedio más bajo del salón y la
+          mando a otro salón, ¿qué pasa con el promedio de este salón?''
+          — Respuesta esperada: sube.  ``¿Y con el del otro?''
+          — Depende de si está por debajo del promedio de ese salón.
+          Este es exactamente el problema 1.
+  \end{itemize}
+\end{notaprofesor}
+
+La sesión es \textbf{individual}.  Los alumnos tienen acceso al cuaderno
+Jupyter para probar su código localmente antes de enviar.  Deben obtener
+\texttt{AC} en ambos problemas.
+
+\begin{notaprofesor}[Cuenta omegaUp]
+  Asegúrate de que todos los alumnos tengan cuenta en omegaUp antes de
+  la sesión.  El problema 2 está en:
+  \url{https://www.omegaup.com/arena/problem/La-tarea-de-mi-hermanito/}
+\end{notaprofesor}
+
+\newpage
+
+% =============================================================================
+\section{Problema 1: Paradoja de los promedios}
+% =============================================================================
+
+\subsection{Enunciado completo}
+
+Un chiste conocido dice que si un mal estudiante de Cómputo se cambia a
+Economía, sube el promedio de inteligencia en ambas facultades.
+
+Dado el IQ de todos los estudiantes de dos facultades, determina cuántos
+estudiantes de Cómputo podrían protagonizar el chiste (es decir, cuántos
+harían que \textbf{ambos} promedios suban al cambiar de facultad).
+
+\textbf{Entrada:} primera línea con $T$ casos.  Cada caso precedido por
+línea en blanco.  Cada caso: primera línea con $n$ y $m$ (al menos
+2 estudiantes de Cómputo); las siguientes líneas contienen $n + m$
+enteros positivos (primeros $n$ son Cómputo, los $m$ restantes Economía).
+
+\textbf{Salida:} un entero por caso.
+
+\textbf{Muestra:} $n=5$, $m=5$, Cómputo: 100 101 102 103 104,
+Economía: 98 100 102 99 101.  Salida: 1.
+
+\subsection{Análisis de la solución}
+
+Sea $\bar{c} = \text{sum\_cs}/n$ el promedio de Cómputo y
+$\bar{e} = \text{sum\_ec}/m$ el promedio de Economía.
+
+Un estudiante con IQ $x$ cumple el chiste si y solo si:
+
+\medskip
+\textbf{Condición 1 — sube el promedio de Cómputo al salir:}
+\[
+  \frac{\text{sum\_cs} - x}{n - 1} > \frac{\text{sum\_cs}}{n}
+  \;\Longleftrightarrow\;
+  x \cdot n < \text{sum\_cs}
+  \;\Longleftrightarrow\;
+  x < \bar{c}
+\]
+
+\textbf{Condición 2 — sube el promedio de Economía al entrar:}
+\[
+  \frac{\text{sum\_ec} + x}{m + 1} > \frac{\text{sum\_ec}}{m}
+  \;\Longleftrightarrow\;
+  x \cdot m > \text{sum\_ec}
+  \;\Longleftrightarrow\;
+  x > \bar{e}
+\]
+
+Condición combinada: $\bar{e} < x < \bar{c}$.
+
+\begin{notaprofesor}[Clave de la solución]
+  Si $\bar{c} \leq \bar{e}$, ningún estudiante cumple (el rango está vacío).
+  La verificación entera $x \cdot n < \text{sum\_cs}$ y
+  $x \cdot m > \text{sum\_ec}$ evita comparar doubles.
+  Con IQs hasta $10^4$ y hasta $10^4$ estudiantes, el producto cabe en
+  \texttt{long long}.
+\end{notaprofesor}
+
+\subsection{Verificación con la muestra}
+
+$\text{sum\_cs} = 510$, $\bar{c} = 102$. \quad
+$\text{sum\_ec} = 500$, $\bar{e} = 100$.
+
+\begin{center}
+\begin{tabular}{cccc}
+  \toprule
+  $x$ & $x \cdot 5 < 510$? & $x \cdot 5 > 500$? & ¿Cuenta? \\
+  \midrule
+  100 & 500 < 510 \checkmark & 500 > 500 \texttimes & No \\
+  101 & 505 < 510 \checkmark & 505 > 500 \checkmark & \textbf{Sí} \\
+  102 & 510 < 510 \texttimes & — & No \\
+  103 & 515 < 510 \texttimes & — & No \\
+  104 & 520 < 510 \texttimes & — & No \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+Resultado: \textbf{1}. \checkmark
+
+\subsection{Solución en C++}
+
+\begin{verbatim}
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+    int T;
+    cin >> T;
+    while (T--) {
+        int n, m;
+        cin >> n >> m;
+        vector<long long> cs(n), ec(m);
+        for (auto& x : cs) cin >> x;
+        for (auto& x : ec) cin >> x;
+
+        long long sum_cs = 0, sum_ec = 0;
+        for (auto x : cs) sum_cs += x;
+        for (auto x : ec) sum_ec += x;
+
+        int cnt = 0;
+        for (auto x : cs)
+            if (x * n < sum_cs && x * m > sum_ec)
+                cnt++;
+
+        cout << cnt << "\n";
+    }
+}
+\end{verbatim}
+
+\begin{notaprofesor}[FAQs Problema 1]
+  \textbf{¿Por qué no basta con calcular los promedios como \texttt{double}?}\\
+  Con IQs enteros y promedios exactos la diferencia puede ser 0.5 o menos.
+  La comparación $x < \bar{c}$ con \texttt{double} puede dar falsos positivos
+  o negativos por error de representación.  Con enteros es exacto.
+
+  \medskip
+  \textbf{¿Qué pasa si $n = 2$ y el estudiante que sale es el único que lo
+  haría?}\\
+  No hay caso especial: la condición $x \cdot n < \text{sum\_cs}$ sigue
+  siendo válida para $n \geq 2$.  Al salir quedan $n - 1 \geq 1$ estudiantes,
+  que es un promedio bien definido.
+
+  \medskip
+  \textbf{¿Por qué \texttt{long long}?}\\
+  Si los IQs llegan a $10^4$ y $n$ llega a $10^4$, el producto
+  $x \cdot n$ puede ser $10^8$, que cabe en \texttt{int} (máx.\ $\approx
+  2 \times 10^9$), pero sum\_cs con $10^4$ elementos de valor $10^4$ es
+  $10^8$, que también cabe.  Usar \texttt{long long} es buena práctica
+  defensiva aunque no sea estrictamente necesario aquí.
+\end{notaprofesor}
+
+\newpage
+
+% =============================================================================
+\section{Problema 2: Ayudando a mi hermanito}
+% =============================================================================
+
+\subsection{Enunciado}
+
+Se dan dos números de tres dígitos $A$ y $B$ sin ceros.  Se invierten ambos
+y se devuelve el mayor de los dos \textit{ya invertidos}, escrito en reversa.
+
+\textbf{Ejemplos:}
+\begin{center}
+\begin{tabular}{llll}
+  \toprule
+  $A$ & $B$ & reversa($A$), reversa($B$) & Salida \\
+  \midrule
+  735 & 892 & 537, 298 & 537 \\
+  331 & 341 & 133, 143 & 143 \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Análisis de la solución}
+
+Para un número $n$ de tres dígitos con dígitos $d_1 d_2 d_3$ (centenas,
+decenas, unidades):
+\[
+  \text{rev}(n) = (n \bmod 10) \times 100
+               + \bigl((n / 10) \bmod 10\bigr) \times 10
+               + (n / 100)
+\]
+
+Como $A$ y $B$ no contienen ceros, la reversa de un número de tres dígitos
+siempre es también un número de tres dígitos (no hay ceros que desaparezcan
+al principio).
+
+\begin{notaprofesor}[Clave de la solución]
+  El problema es directo una vez que se identifica la fórmula de reversión.
+  La restricción ``sin ceros'' elimina el único caso especial (cero inicial
+  en la reversa que haría que la salida tuviera menos de tres dígitos).
+  No se necesita \texttt{string}.
+\end{notaprofesor}
+
+\subsection{Solución en C++}
+
+\begin{verbatim}
+#include <iostream>
+using namespace std;
+
+int rev(int n) {
+    return (n % 10) * 100 + ((n / 10) % 10) * 10 + n / 100;
+}
+
+int main() {
+    int A, B;
+    cin >> A >> B;
+    int rA = rev(A), rB = rev(B);
+    cout << (rA > rB ? rA : rB) << "\n";
+}
+\end{verbatim}
+
+\begin{notaprofesor}[FAQs Problema 2]
+  \textbf{¿Por qué no funciona con ceros?}\\
+  Si $A = 300$, su reversa es 003, que como entero es 3 (dos dígitos menos).
+  La salida sería 3 y no 003.  El enunciado garantiza que esto no ocurre.
+
+  \medskip
+  \textbf{Un alumno usa \texttt{string} para invertir.  ¿Es correcto?}\\
+  Sí, también funciona.  La solución con operaciones aritméticas es más
+  eficiente y muestra mejor comprensión de la estructura de dígitos.
+
+  \medskip
+  \textbf{¿Es posible que las reversas sean iguales?}\\
+  El enunciado dice que $A \neq B$.  Pero podría ocurrir que
+  $\text{rev}(A) = \text{rev}(B)$ (e.g.\ $A = 123$, $B = 321$ →
+  ambas reversas son 321 y 123 respectivamente — en realidad no).
+  Más: $A = 129$, $B = 921$ → rev(A) = 921, rev(B) = 129, distintas.
+  En la práctica es muy difícil que coincidan dado que los originales son
+  distintos.  El enunciado no especifica qué hacer en ese caso; podemos
+  asumir que no ocurre.
+\end{notaprofesor}
+
+\newpage
+
+% =============================================================================
+\section{Materiales y recursos}
+% =============================================================================
+
+\begin{itemize}
+  \item \textbf{Cuaderno:} \texttt{sesiones/sesion17\_taller\_1.ipynb}
+  \item \textbf{Notas alumno:} \texttt{notas\_alumno/pdf/sesion17\_taller\_1.pdf}
+  \item \textbf{Problema 2 en omegaUp:}
+        \url{https://www.omegaup.com/arena/problem/La-tarea-de-mi-hermanito/}
+\end{itemize}
+
+\end{document}

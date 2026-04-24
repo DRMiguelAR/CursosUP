@@ -1,0 +1,233 @@
+% =============================================================================
+%  Notas de clase — Sesión 17: Taller 1 — Resolución de problemas
+%  Programación Avanzada — Universidad Panamericana
+%  Compilar: pdflatex sesion17_taller_1.tex
+% =============================================================================
+\documentclass[12pt, oneside]{article}
+\usepackage{progavanzada}
+\usepackage{array}
+
+\begin{document}
+
+\portada{Sesión 17}{Taller 1 — Resolución de problemas}{2026}
+
+\tableofcontents
+\newpage
+
+% =============================================================================
+\section{Los árbitros automáticos}
+% =============================================================================
+
+Antes de que existieran los jueces en línea, los concursos de programación se
+calificaban a mano: un humano ejecutaba tu código, leía la salida y decidía si
+estaba bien.  En 1989, la Universidad de Valladolid montó el primer
+\textbf{juez automático} (\textit{Online Judge}) para sus prácticas de
+algoritmia.  La idea era simple: el juez tiene los casos de prueba correctos;
+tú mandas tu código; él lo compila, lo ejecuta con esos casos y compara la
+salida carácter por carácter.
+
+Hoy existen cientos de jueces: Codeforces, LeetCode, HackerRank, SPOJ,
+y \textbf{omegaUp}, la plataforma mexicana usada en la Olimpiada Mexicana de
+Informática.  El veredicto que ves después de enviar puede ser:
+
+\begin{center}
+\begin{tabular}{ll}
+  \toprule
+  \textbf{Veredicto} & \textbf{Significado} \\
+  \midrule
+  \texttt{AC} — Accepted            & Tu salida es exactamente la esperada \\
+  \texttt{WA} — Wrong Answer        & Tu salida difiere en al menos un carácter \\
+  \texttt{TLE} — Time Limit Exceeded & Tu programa tardó más del límite permitido \\
+  \texttt{RE} — Runtime Error       & Tu programa terminó con error (e.g.\ segfault) \\
+  \texttt{CE} — Compilation Error   & El código no compiló \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\begin{advertencia}
+  El juez compara tu salida \textbf{carácter por carácter}.  Un espacio
+  de más o un salto de línea faltante puede darte \texttt{WA} aunque la
+  lógica sea correcta.  Lee el formato de salida con cuidado.
+\end{advertencia}
+
+% =============================================================================
+\section{Instrucciones del taller}
+% =============================================================================
+
+Esta sesión es trabajo \textbf{individual}.  Tienes dos problemas; el objetivo
+es obtener \texttt{AC} en ambos antes de que termine la clase.
+
+\begin{consejo}
+  \textbf{Flujo recomendado para cada problema:}
+  \begin{enumerate}
+    \item Lee el enunciado completo. No empieces a codificar todavía.
+    \item Resuelve los ejemplos a mano y verifica que entiendes la salida
+          esperada.
+    \item Piensa en la \textit{condición matemática} que determina la respuesta.
+    \item Escribe el algoritmo en pseudocódigo (una oración por paso).
+    \item Implementa en C++, prueba con los ejemplos del enunciado.
+    \item Envía al juez.  Si recibes \texttt{WA}, busca un contraejemplo
+          antes de cambiar código al azar.
+  \end{enumerate}
+\end{consejo}
+
+\newpage
+
+% =============================================================================
+\section{Problema 1: Paradoja de los promedios}
+% =============================================================================
+
+\subsection{Enunciado}
+
+Un chiste conocido en Ciencias de la Computación dice: si un mal estudiante de
+Cómputo se cambia a la facultad de Economía, \textit{sube el promedio de
+inteligencia en ambas facultades al mismo tiempo}.
+
+Dado el IQ de todos los estudiantes de las dos facultades, determina cuántos
+estudiantes de Cómputo podrían protagonizar el chiste.
+
+\textbf{Entrada.}
+La primera línea contiene un entero $T$ — el número de casos de prueba.
+Cada caso de prueba es precedido por una línea en blanco.
+
+Cada caso comienza con dos enteros positivos $n$ y $m$ — el número de
+estudiantes de Cómputo y de Economía, respectivamente.
+El número de estudiantes de Cómputo es al menos 2.
+
+Las siguientes líneas contienen $n + m$ enteros positivos separados por
+espacios: los primeros $n$ son los IQs de los estudiantes de Cómputo;
+los $m$ restantes corresponden a Economía.
+
+\textbf{Salida.}
+Por cada caso de prueba, imprime en una sola línea el número de estudiantes
+de Cómputo que harían que el chiste sea verdad.
+
+\subsection{Ejemplo}
+
+\begin{center}
+\begin{tabular}{ll}
+  \toprule
+  \textbf{Entrada} & \textbf{Salida} \\
+  \midrule
+  \begin{minipage}[t]{4cm}
+    \texttt{1}\\
+    \texttt{}\\
+    \texttt{5 5}\\
+    \texttt{100 101 102 103 104}\\
+    \texttt{98 100 102 99 101}
+  \end{minipage}
+  &
+  \begin{minipage}[t]{4cm}
+    \texttt{1}
+  \end{minipage} \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Análisis}
+
+¿Qué condición debe cumplir un estudiante de Cómputo con IQ $x$ para que
+al cambiar de facultad \textbf{suba el promedio de Cómputo}?
+
+\vspace{3cm}
+
+¿Qué condición debe cumplir el mismo estudiante para que al llegar a Economía
+\textbf{suba el promedio de Economía}?
+
+\vspace{3cm}
+
+Si el promedio de Cómputo es $\bar{c}$ y el de Economía es $\bar{e}$,
+¿en qué rango debe estar $x$ para cumplir \textit{ambas} condiciones
+simultáneamente?
+
+\vspace{2cm}
+
+\begin{recuerda}
+  Comparar con punto flotante puede introducir errores de redondeo.  Si
+  $\bar{c} = \text{sum}(c)/n$, la condición $x < \bar{c}$ es equivalente a
+  $x \cdot n < \text{sum}(c)$ — todo con aritmética entera.
+\end{recuerda}
+
+\subsection{Pseudocódigo}
+
+\vspace{5cm}
+
+\newpage
+
+% =============================================================================
+\section{Problema 2: Ayudando a mi hermanito}
+% =============================================================================
+
+\subsection{Enunciado}
+
+\textbf{(omegaUp: \texttt{La-tarea-de-mi-hermanito})}
+
+Mi hermano está aprendiendo a ubicar números de tres dígitos en la recta
+numérica.  Para ayudarle a practicar, le propongo un juego: le doy dos
+números; él los tiene que leer al revés (de derecha a izquierda) y debe
+decir cuál de los dos, leídos en reversa, es mayor.
+
+Escribe un programa que revise las respuestas de tu hermano.
+
+\textbf{Entrada.}
+Dos números de tres dígitos separados por un espacio, $A$ y $B$.
+$A$ y $B$ no pueden ser iguales y no contienen ceros.
+
+\textbf{Salida.}
+El número más grande de los dos \textit{leídos en reversa}, escrito en
+reversa — exactamente como tu hermano lo debe leer.
+
+\subsection{Ejemplos}
+
+\begin{center}
+\begin{tabular}{ll}
+  \toprule
+  \textbf{Entrada} & \textbf{Salida} \\
+  \midrule
+  \texttt{735 892} & \texttt{537} \\
+  \texttt{331 341} & \texttt{143} \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Análisis}
+
+Verifica a mano los dos ejemplos.  Para cada número de tres dígitos $d_1 d_2 d_3$,
+¿cuál es su reversa en términos de sus dígitos?
+
+\vspace{2cm}
+
+¿Cuál es la fórmula matemática para obtener la reversa de un número $n$ de
+tres dígitos a partir de sus dígitos individuales?
+(\textit{Pista: usa división entera y módulo.})
+
+\vspace{3cm}
+
+¿Hay algún caso especial que considerar dado que los números \textbf{no
+contienen ceros}?
+
+\vspace{2cm}
+
+\subsection{Pseudocódigo}
+
+\vspace{5cm}
+
+\newpage
+
+% =============================================================================
+\section{Resumen de la sesión}
+% =============================================================================
+
+\begin{itemize}
+  \item Un \textbf{juez en línea} califica tu código automáticamente comparando
+        la salida carácter por carácter.
+  \item El veredicto más importante es \textbf{AC} (tu solución es correcta);
+        el más traicionero es \textbf{WA} (la lógica falla en algún caso).
+  \item Para ``Paradoja de los promedios'': la condición es
+        $\bar{e} < x < \bar{c}$, verificada con aritmética entera para
+        evitar errores de punto flotante.
+  \item Para ``Mi hermanito'': revertir un número de tres dígitos sin ceros
+        es una operación de dígitos; no necesitas cadenas de texto.
+\end{itemize}
+
+\end{document}
