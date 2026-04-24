@@ -30,12 +30,14 @@ Al finalizar la sesión el alumno será capaz de:
 \begin{notaprofesor}[Duración estimada]
   90 minutos.  Distribución sugerida:\\
   10 min — explicación de jueces en línea + dinámica del taller \\
-  35 min — Problema 1 (Paradoja de los promedios) \\
-  35 min — Problema 2 (Ayudando a mi hermanito) \\
+  \phantom{00} 8 min — \textbf{Problema 1, Parte 1:} revisión guiada en pizarrón \\
+  \phantom{00}25 min — \textbf{Problema 1, Parte 2:} trabajo en equipo + envío al juez \\
+  \phantom{00} 8 min — \textbf{Problema 2, Parte 1:} revisión guiada en pizarrón \\
+  \phantom{00}29 min — \textbf{Problema 2, Parte 2:} trabajo en equipo + envío al juez \\
   10 min — cierre: discusión de soluciones y casos esquina \\[4pt]
-  Los alumnos trabajarán en el cuaderno Jupyter
-  (\texttt{sesiones/sesion17\_taller\_1.ipynb}) y enviarán al juez la
-  solución en C++ al terminar.
+  Los alumnos trabajan en equipos de dos o tres personas.  Usan el
+  cuaderno Jupyter (\texttt{sesiones/sesion17\_taller\_1.ipynb}) para
+  probar localmente y envían la solución en C++ al juez al terminar.
 \end{notaprofesor}
 
 % =============================================================================
@@ -55,9 +57,30 @@ Al finalizar la sesión el alumno será capaz de:
   \end{itemize}
 \end{notaprofesor}
 
-La sesión es \textbf{individual}.  Los alumnos tienen acceso al cuaderno
-Jupyter para probar su código localmente antes de enviar.  Deben obtener
-\texttt{AC} en ambos problemas.
+Los alumnos trabajan en \textbf{equipos de dos o tres personas}.
+Cada problema tiene dos momentos: primero la revisión guiada en el
+pizarrón (todos atentos, sin código), después el trabajo en equipo.
+
+\begin{notaprofesor}[Parte 1 — Cómo hacer la revisión guiada]
+  El objetivo de la Parte 1 \textbf{no} es enseñar la solución: es
+  mostrar cómo leer un enunciado de concurso y trazar el caso de prueba
+  a mano.  Sigue este guión en el pizarrón:
+  \begin{enumerate}
+    \item \textbf{Lee el enunciado en voz alta} con los alumnos.
+          Detente en cada párrafo y pregunta: ``¿qué nos están dando?'',
+          ``¿qué nos están pidiendo?''.
+    \item \textbf{Escribe la entrada en el pizarrón} tal como aparece
+          en el ejemplo, indicando qué representa cada número
+          (``esta línea tiene $T=1$ caso'', ``aquí $n=5$ y $m=5$'', etc.).
+    \item \textbf{Traza el procesamiento a mano}, paso a paso, usando
+          números concretos (sumas, promedios, comparaciones).
+          Escribe cada operación, no la des por obvia.
+    \item \textbf{Escribe la salida} que se obtiene y verifica que
+          coincide con la del enunciado.
+    \item Pregunta: ``¿qué patrón general ven aquí?''
+          — No respondas todavía; esa es la tarea del equipo en la Parte 2.
+  \end{enumerate}
+\end{notaprofesor}
 
 \begin{notaprofesor}[Cuenta omegaUp]
   Asegúrate de que todos los alumnos tengan cuenta en omegaUp antes de
@@ -89,6 +112,28 @@ enteros positivos (primeros $n$ son Cómputo, los $m$ restantes Economía).
 
 \textbf{Muestra:} $n=5$, $m=5$, Cómputo: 100 101 102 103 104,
 Economía: 98 100 102 99 101.  Salida: 1.
+
+\subsection{Parte 1 — Guía de pizarrón}
+
+\begin{notaprofesor}[Lo que escribes en el pizarrón]
+  Escribe columna izquierda: la entrada.  Columna derecha: las operaciones.
+  \begin{enumerate}
+    \item ``Hay $T = 1$ caso de prueba.''
+    \item ``$n = 5$ estudiantes de Cómputo, $m = 5$ de Economía.''
+    \item ``IQs de Cómputo: 100, 101, 102, 103, 104.
+           Suma $= 510$.  Promedio $= 510/5 = 102$.''
+    \item ``IQs de Economía: 98, 100, 102, 99, 101.
+           Suma $= 500$.  Promedio $= 500/5 = 100$.''
+    \item Para cada estudiante de Cómputo, escribe su IQ y evalúa:\\
+           ``¿Este IQ está \textit{entre} 100 y 102?''
+           (Señala 100, 101, 102, 103, 104 uno por uno.)
+    \item Solo el 101 cae estrictamente entre 100 y 102.
+           ``Por eso la respuesta es \textbf{1}.''
+    \item Pregunta de cierre: ``¿Qué pasa si el promedio de Cómputo
+           fuera igual o menor al de Economía?''
+           — No respondas; déjalo para el equipo.
+  \end{enumerate}
+\end{notaprofesor}
 
 \subsection{Análisis de la solución}
 
@@ -222,6 +267,26 @@ y se devuelve el mayor de los dos \textit{ya invertidos}, escrito en reversa.
   \bottomrule
 \end{tabular}
 \end{center}
+
+\subsection{Parte 1 — Guía de pizarrón}
+
+\begin{notaprofesor}[Lo que escribes en el pizarrón]
+  \begin{enumerate}
+    \item Escribe en el pizarrón: \texttt{735\ \ 892}.
+          ``Estos son los dos números que le doy a mi hermano.''
+    \item ``Él los lee al revés.  ¿Cómo se lee 735 al revés?''
+          — Esperar respuesta del salón: 537.
+    \item Escribe: $735 \to 537$ y $892 \to 298$.
+    \item ``¿Cuál es mayor, 537 o 298?''  — 537.
+    \item ``¿Qué imprimimos?  El mayor \emph{leído en reversa} —
+          es decir, 537, que ya está escrito al revés.  Imprimimos 537.''
+    \item Repite con el segundo ejemplo: $331 \to 133$, $341 \to 143$;
+          mayor: 143; salida: 143.
+    \item Pregunta de cierre: ``¿Cómo sacamos cada dígito de un número
+          de tres dígitos usando código?''
+           — No respondas; es la tarea de la Parte 2.
+  \end{enumerate}
+\end{notaprofesor}
 
 \subsection{Análisis de la solución}
 

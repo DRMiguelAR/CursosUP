@@ -54,20 +54,38 @@ Informática.  El veredicto que ves después de enviar puede ser:
 \section{Instrucciones del taller}
 % =============================================================================
 
-Esta sesión es trabajo \textbf{individual}.  Tienes dos problemas; el objetivo
-es obtener \texttt{AC} en ambos antes de que termine la clase.
+Esta sesión es trabajo en \textbf{equipos de dos o tres personas}.
+Cada problema tiene dos partes:
+
+\begin{description}
+  \item[Parte 1 — Revisión guiada.]
+    El profesor resuelve el caso de prueba del enunciado en el pizarrón.
+    Tu tarea en esta parte es \textbf{poner atención}: observa cómo se
+    lee la entrada línea por línea, qué operaciones se hacen con esos
+    datos y cómo se obtiene exactamente la salida esperada.
+    No abras el cuaderno todavía.
+
+  \item[Parte 2 — Trabajo en equipo.]
+    Con lo observado en la Parte 1, tu equipo encuentra la condición
+    matemática general, escribe el pseudocódigo, implementa en C++ y
+    envía al juez.
+\end{description}
+
+\begin{advertencia}
+  Durante la \textbf{Parte 1} no escribas código ni intentes adelantarte
+  a la solución.  El objetivo es entender \emph{qué} pide el problema,
+  no todavía \emph{cómo} resolverlo para cualquier entrada.
+\end{advertencia}
 
 \begin{consejo}
-  \textbf{Flujo recomendado para cada problema:}
+  \textbf{Flujo de la Parte 2 para cada problema:}
   \begin{enumerate}
-    \item Lee el enunciado completo. No empieces a codificar todavía.
-    \item Resuelve los ejemplos a mano y verifica que entiendes la salida
-          esperada.
-    \item Piensa en la \textit{condición matemática} que determina la respuesta.
+    \item Con el ejemplo ya resuelto, generaliza: ¿qué condición aplica
+          para cualquier entrada?
     \item Escribe el algoritmo en pseudocódigo (una oración por paso).
-    \item Implementa en C++, prueba con los ejemplos del enunciado.
-    \item Envía al juez.  Si recibes \texttt{WA}, busca un contraejemplo
-          antes de cambiar código al azar.
+    \item Implementa en C++ y prueba con el mismo ejemplo del enunciado.
+    \item Envía al juez.  Si recibes \texttt{WA}, construye un
+          contraejemplo antes de cambiar código al azar.
   \end{enumerate}
 \end{consejo}
 
@@ -102,7 +120,14 @@ los $m$ restantes corresponden a Economía.
 Por cada caso de prueba, imprime en una sola línea el número de estudiantes
 de Cómputo que harían que el chiste sea verdad.
 
-\subsection{Ejemplo}
+\subsection{Parte 1 — Revisión guiada}
+
+\begin{advertencia}
+  \textbf{Pon atención al pizarrón.}  El profesor va a leer la entrada
+  línea por línea y a mostrar, paso a paso, cómo obtener la salida
+  \texttt{1} para el siguiente caso de prueba.  Observa qué operaciones
+  se hacen con los números antes de poder contestar.
+\end{advertencia}
 
 \begin{center}
 \begin{tabular}{ll}
@@ -124,7 +149,13 @@ de Cómputo que harían que el chiste sea verdad.
 \end{tabular}
 \end{center}
 
-\subsection{Análisis}
+\textbf{Notas de lo observado en el pizarrón:}
+
+\vspace{3cm}
+
+\subsection{Parte 2 — Trabajo en equipo}
+
+\subsubsection{Análisis}
 
 ¿Qué condición debe cumplir un estudiante de Cómputo con IQ $x$ para que
 al cambiar de facultad \textbf{suba el promedio de Cómputo}?
@@ -148,7 +179,7 @@ simultáneamente?
   $x \cdot n < \text{sum}(c)$ — todo con aritmética entera.
 \end{recuerda}
 
-\subsection{Pseudocódigo}
+\subsubsection{Pseudocódigo}
 
 \vspace{5cm}
 
@@ -177,7 +208,14 @@ $A$ y $B$ no pueden ser iguales y no contienen ceros.
 El número más grande de los dos \textit{leídos en reversa}, escrito en
 reversa — exactamente como tu hermano lo debe leer.
 
-\subsection{Ejemplos}
+\subsection{Parte 1 — Revisión guiada}
+
+\begin{advertencia}
+  \textbf{Pon atención al pizarrón.}  El profesor va a mostrar cómo
+  leer los dos números, qué operación se aplica a cada uno y cómo se
+  decide qué imprimir.  Observa en qué orden llegan los datos y qué
+  tiene que aparecer exactamente en la salida.
+\end{advertencia}
 
 \begin{center}
 \begin{tabular}{ll}
@@ -190,7 +228,13 @@ reversa — exactamente como tu hermano lo debe leer.
 \end{tabular}
 \end{center}
 
-\subsection{Análisis}
+\textbf{Notas de lo observado en el pizarrón:}
+
+\vspace{3cm}
+
+\subsection{Parte 2 — Trabajo en equipo}
+
+\subsubsection{Análisis}
 
 Verifica a mano los dos ejemplos.  Para cada número de tres dígitos $d_1 d_2 d_3$,
 ¿cuál es su reversa en términos de sus dígitos?
@@ -208,7 +252,7 @@ contienen ceros}?
 
 \vspace{2cm}
 
-\subsection{Pseudocódigo}
+\subsubsection{Pseudocódigo}
 
 \vspace{5cm}
 
