@@ -1,0 +1,430 @@
+% =============================================================================
+%  Notas de clase — Sesión 17: MergeSort
+%  Programación Avanzada — Universidad Panamericana
+%  Compilar: pdflatex sesion17_mergesort.tex
+% =============================================================================
+\documentclass[12pt, oneside]{article}
+\usepackage{progavanzada}
+
+\begin{document}
+
+\portada{Sesión 17}{MergeSort}{2026}
+
+\tableofcontents
+\newpage
+
+% =============================================================================
+\section{1945: ordenar 1\,000 tarjetas sin memoria suficiente}
+% =============================================================================
+
+En 1945, John von Neumann trabajaba en el diseño del EDVAC, uno de los primeros
+computadores electrónicos. Se enfrentó a un problema concreto: necesitaba ordenar
+listas de números que no cabían completas en la memoria del computador. La solución
+que inventó: dividir la lista en partes manejables, ordenar cada parte por separado
+en cinta magnética y luego \textit{mezclar} las cintas de dos en dos.
+
+Ese algoritmo —\textbf{MergeSort}— tiene hoy 80 años y sigue siendo
+la base del algoritmo de ordenamiento de Python, Java, y del ordenamiento estable
+de la biblioteca estándar de C++.
+
+\begin{tecnico}[Historia: von Neumann y el primer MergeSort]
+  John von Neumann describió MergeSort en una nota interna de 1945 mientras
+  trabajaba en el Institute for Advanced Study de Princeton. El contexto era
+  puramente práctico: las cintas magnéticas podían leerse en secuencia pero no
+  accederse al azar, así que el único algoritmo viable era uno que mezclara
+  secuencias ya ordenadas.
+  \par\smallskip
+  La prueba de que Merge\-Sort es \textit{óptimo} vino décadas después,
+  con la teoría de la información. Hoy sabemos que ningún algoritmo de
+  ordenamiento basado en comparaciones puede ser asintóticamente más rápido.
+  \par\smallskip
+  \textit{Referencia:} Knuth, D.\,E. (1998). \textit{The Art of Computer
+  Programming, Vol.\,3: Sorting and Searching}, 2.ª\,ed., \S5.2.4.
+  Addison-Wesley.
+\end{tecnico}
+
+% =============================================================================
+\section{La fila del salón}
+% =============================================================================
+
+Ocho estudiantes se paran en fila, cada uno con un número. Queremos ordenarlos.
+
+\begin{center}
+\begin{tabular}{|c|c|c|c|c|c|c|c|}
+\hline
+20 & 31 & 83 & 92 & 14 & 42 & 51 & 63 \\
+\hline
+\end{tabular}
+\end{center}
+
+La estrategia de MergeSort: dividir la fila por la mitad, ordenar cada mitad
+\textit{por el mismo método} y luego unirlas. Aplicamos esto recursivamente hasta
+llegar a filas de una sola persona — que ya están ordenadas por definición.
+
+\begin{center}
+\begin{tabular}{cccccccc}
+  \multicolumn{8}{c}{\texttt{[20, 31, 83, 92, 14, 42, 51, 63]}} \\[4pt]
+  \multicolumn{4}{c}{\texttt{[20, 31, 83, 92]}} &
+  \multicolumn{4}{c}{\texttt{[14, 42, 51, 63]}} \\[4pt]
+  \multicolumn{2}{c}{\texttt{[20, 31]}} &
+  \multicolumn{2}{c}{\texttt{[83, 92]}} &
+  \multicolumn{2}{c}{\texttt{[14, 42]}} &
+  \multicolumn{2}{c}{\texttt{[51, 63]}} \\[4pt]
+  \texttt{[20]} & \texttt{[31]} & \texttt{[83]} & \texttt{[92]} &
+  \texttt{[14]} & \texttt{[42]} & \texttt{[51]} & \texttt{[63]} \\
+\end{tabular}
+\end{center}
+
+Cada \texttt{[x]} es el caso base: una persona sola ya está ordenada. A partir
+de ahí, subimos mezclando pares de filas ordenadas:
+
+\begin{center}
+\begin{tabular}{cccccccc}
+  \texttt{[20]} & \texttt{[31]} & \texttt{[83]} & \texttt{[92]} &
+  \texttt{[14]} & \texttt{[42]} & \texttt{[51]} & \texttt{[63]} \\[4pt]
+  \multicolumn{2}{c}{\texttt{[20, 31]}} &
+  \multicolumn{2}{c}{\texttt{[83, 92]}} &
+  \multicolumn{2}{c}{\texttt{[14, 42]}} &
+  \multicolumn{2}{c}{\texttt{[51, 63]}} \\[4pt]
+  \multicolumn{4}{c}{\texttt{[20, 31, 83, 92]}} &
+  \multicolumn{4}{c}{\texttt{[14, 42, 51, 63]}} \\[4pt]
+  \multicolumn{8}{c}{\texttt{[14, 20, 31, 42, 51, 63, 83, 92]}} \\
+\end{tabular}
+\end{center}
+
+% =============================================================================
+\section{El algoritmo}
+% =============================================================================
+
+MergeSort tiene dos funciones que se llaman mutuamente:
+
+\begin{center}
+\begin{tabular}{lp{9cm}}
+  \toprule
+  \textbf{Función} & \textbf{Responsabilidad} \\
+  \midrule
+  \cpp{mergesort(arr, left, right)} &
+    Divide el subarreglo en dos mitades, ordena cada una recursivamente,
+    y llama a \cpp{merge} para unirlas. \\[4pt]
+  \cpp{merge(arr, left, mid, right)} &
+    Recibe dos mitades ya ordenadas y las fusiona en una sola
+    secuencia ordenada, usando un buffer temporal. \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{La función \texttt{mergesort}}
+
+\begin{codigo}[caption={mergesort: divide y recurre}]
+void mergesort(int* arr, int left, int right) {
+    if (left >= right) return;            // caso base: 0 o 1 elemento
+
+    int mid = (left + right) / 2;
+
+    mergesort(arr, left,    mid);         // ordena mitad izquierda
+    mergesort(arr, mid + 1, right);       // ordena mitad derecha
+    merge    (arr, left, mid, right);     // fusiona las dos mitades
+}
+\end{codigo}
+
+El punto medio se calcula como \cpp{(left + right) / 2}. La mitad izquierda
+cubre los índices \cpp{[left, mid]} y la derecha \cpp{[mid+1, right]}.
+
+\begin{recuerda}
+  El \textbf{caso base} es \cpp{left >= right}, no solo \cpp{left == right}.
+  Si \cpp{left > right} el subarreglo está vacío y tampoco hay nada que hacer.
+  El \cpp{>=} lo cubre todo de forma segura.
+\end{recuerda}
+
+\subsection{La función \texttt{merge}}
+
+Fusionar dos mitades ordenadas requiere un \textbf{buffer temporal}: no podemos
+reubicar elementos en el arreglo original sin sobrescribir valores que todavía
+necesitamos leer.
+
+\begin{codigo}[caption={merge: fusión de dos mitades ordenadas}]
+void merge(int* arr, int left, int mid, int right) {
+    int n = right - left + 1;
+    vector<int> temp(n);          // buffer temporal de tamano exacto
+
+    int i = left, j = mid + 1, k = 0;
+
+    // Compara el frente de cada mitad y toma el menor
+    while (i <= mid && j <= right) {
+        if (arr[i] <= arr[j])
+            temp[k++] = arr[i++];
+        else
+            temp[k++] = arr[j++];
+    }
+
+    // Copia el resto de la mitad que no se agoto
+    while (i <= mid)   temp[k++] = arr[i++];
+    while (j <= right) temp[k++] = arr[j++];
+
+    // Devuelve temp al arreglo original
+    for (int k = 0; k < n; k++)
+        arr[left + k] = temp[k];
+}
+\end{codigo}
+
+\begin{ejemplo}[Traza de merge: \texttt{[20,31,83,92]} y \texttt{[14,42,51,63]}]
+  \begin{center}
+  \begin{tabular}{clll}
+    \toprule
+    \textbf{Paso} & \textbf{Comparación} & \textbf{Acción} & \textbf{temp} \\
+    \midrule
+    1 & $20 \leq 14$? No  & toma 14 & \texttt{[14]} \\
+    2 & $20 \leq 42$? Sí  & toma 20 & \texttt{[14,20]} \\
+    3 & $31 \leq 42$? Sí  & toma 31 & \texttt{[14,20,31]} \\
+    4 & $83 \leq 42$? No  & toma 42 & \texttt{[14,20,31,42]} \\
+    5 & $83 \leq 51$? No  & toma 51 & \texttt{[14,20,31,42,51]} \\
+    6 & $83 \leq 63$? No  & toma 63 & \texttt{[14,20,31,42,51,63]} \\
+    7 & Der. agotada        & copia 83,92 & \texttt{[14,20,31,42,51,63,83,92]} \\
+    \bottomrule
+  \end{tabular}
+  \end{center}
+\end{ejemplo}
+
+\subsection{Paso por referencia: el contrato de la API}
+
+Las firmas de ambas funciones son un ejemplo de diseño de API mediante paso por
+referencia:
+
+\begin{codigo}
+void mergesort(int* arr, int left, int right)
+void merge    (int* arr, int left, int mid, int right)
+\end{codigo}
+
+\begin{center}
+\begin{tabular}{lll}
+  \toprule
+  \textbf{Parámetro} & \textbf{Tipo} & \textbf{Significado} \\
+  \midrule
+  \cpp{arr}   & \cpp{int*} & Referencia al arreglo — se modifica directamente \\
+  \cpp{left}  & \cpp{int}  & Inicio del subarreglo actual (por valor: solo se lee) \\
+  \cpp{right} & \cpp{int}  & Fin del subarreglo actual (por valor: solo se lee) \\
+  \cpp{mid}   & \cpp{int}  & Punto de división (por valor: solo se lee) \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+En ningún momento se copia el arreglo. Todas las llamadas recursivas trabajan sobre
+el \textbf{mismo bloque de memoria}. El tipo del parámetro comunica la intención:
+\cpp{int*} significa ``voy a modificar esto''; \cpp{int} significa ``solo lo leo''.
+
+% =============================================================================
+\section{¿Cuánto tarda MergeSort?}
+% =============================================================================
+
+\subsection{Análisis informal}
+
+El árbol de llamadas tiene $\log_2 n$ niveles. En cada nivel se procesan los
+$n$ elementos exactamente una vez (repartidos entre las distintas llamadas a
+\cpp{merge} de ese nivel). Total:
+
+\[
+  T(n) = n \cdot \log_2 n \quad \Rightarrow \quad \mathcal{O}(n \log n)
+\]
+
+A diferencia de Bubble Sort (\(\mathcal{O}(n^2)\)), MergeSort con $n=10^6$
+elementos requiere \emph{veinte millones} de operaciones en lugar de
+\emph{un billón}.
+
+\begin{center}
+\begin{tabular}{lrrrr}
+  \toprule
+  \textbf{Algoritmo} & $n=100$ & $n=10^3$ & $n=10^6$ & $n=10^9$ \\
+  \midrule
+  Bubble Sort \(\mathcal{O}(n^2)\)    &
+    10\,000 & 1\,000\,000 & $10^{12}$ & $10^{18}$ \\
+  MergeSort \(\mathcal{O}(n \log n)\) &
+    700 & 10\,000 & $2\times 10^7$ & $3\times 10^{10}$ \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Complejidad en todos los casos}
+
+MergeSort siempre divide por la mitad, sin importar los datos de entrada.
+Por eso tiene la misma complejidad en el peor, promedio y mejor caso:
+\(\mathcal{O}(n \log n)\) en los tres.
+
+% =============================================================================
+\section{¿Puede existir un algoritmo más rápido?}
+% =============================================================================
+
+Esta es una de las preguntas más hermosas de la informática teórica, y tiene
+una respuesta definitiva: \textbf{no}. Ningún algoritmo de ordenamiento basado
+en comparaciones puede ser asintóticamente más rápido que $\mathcal{O}(n \log n)$.
+
+\subsection{El argumento de la información}
+
+¿Cuántas formas distintas hay de ordenar $n$ elementos? La respuesta es $n!$
+(\textit{n factorial}): para $n = 8$, son $8! = 40\,320$ posibles órdenes.
+
+Cuando el algoritmo hace una comparación ($a \leq b$?), el resultado puede ser
+verdadero o falso: separa el espacio de posibilidades en \textbf{dos mitades}.
+Para distinguir entre $n!$ posibilidades usando preguntas de sí/no se necesitan
+al menos:
+
+\[
+  \log_2(n!) \text{ comparaciones}
+\]
+
+Por la \textbf{aproximación de Stirling} ($\log_2(n!) \approx n \log_2 n - n
+\log_2 e$):
+
+\[
+  \log_2(n!) = \Theta(n \log n)
+\]
+
+Cualquier algoritmo de ordenamiento por comparaciones necesita, en el peor caso,
+$\Omega(n \log n)$ comparaciones. MergeSort usa exactamente $\Theta(n \log n)$:
+\textbf{es óptimo}.
+
+\begin{consejo}
+  Hay algoritmos de ordenamiento más rápidos que \(\mathcal{O}(n \log n)\), como
+  \textbf{Counting Sort} o \textbf{Radix Sort}, pero no funcionan por comparaciones.
+  Explotan propiedades específicas de los datos (por ejemplo, que los números están
+  acotados en un rango). Si los datos son enteros entre 0 y 1\,000, Counting Sort
+  ordena en $\mathcal{O}(n)$ — pero falla si los datos son cadenas arbitrarias.
+  MergeSort funciona con cualquier dato que pueda compararse.
+\end{consejo}
+
+\begin{tecnico}[El límite inferior fue probado por Knuth]
+  David Knuth formalizó el límite inferior $\Omega(n \log n)$ para ordenamiento
+  por comparaciones en el Volumen 3 de \textit{The Art of Computer Programming}
+  (1973), usando árboles de decisión. La demostración completa usa la altura mínima
+  de un árbol binario con al menos $n!$ hojas.
+  \par\smallskip
+  \textit{Referencia:} Knuth, D.\,E. (1998). \textit{TAOCP}, Vol.\,3, \S5.3.1.
+\end{tecnico}
+
+% =============================================================================
+\section{Comparación con otros algoritmos}
+% =============================================================================
+
+\begin{center}
+\begin{tabular}{lccccc}
+  \toprule
+  \textbf{Algoritmo} & \textbf{Mejor caso} & \textbf{Caso medio} &
+  \textbf{Peor caso} & \textbf{Memoria extra} & \textbf{Estable} \\
+  \midrule
+  Bubble Sort    & $\mathcal{O}(n)$       & $\mathcal{O}(n^2)$     & $\mathcal{O}(n^2)$     & $\mathcal{O}(1)$      & Sí \\
+  Selection Sort & $\mathcal{O}(n^2)$     & $\mathcal{O}(n^2)$     & $\mathcal{O}(n^2)$     & $\mathcal{O}(1)$      & No \\
+  Insertion Sort & $\mathcal{O}(n)$       & $\mathcal{O}(n^2)$     & $\mathcal{O}(n^2)$     & $\mathcal{O}(1)$      & Sí \\
+  \textbf{MergeSort}& $\mathcal{O}(n \log n)$ & $\mathcal{O}(n \log n)$ & $\mathcal{O}(n \log n)$ & $\mathcal{O}(n)$ & \textbf{Sí} \\
+  QuickSort      & $\mathcal{O}(n \log n)$ & $\mathcal{O}(n \log n)$ & $\mathcal{O}(n^2)$    & $\mathcal{O}(\log n)$ & No \\
+  HeapSort       & $\mathcal{O}(n \log n)$ & $\mathcal{O}(n \log n)$ & $\mathcal{O}(n \log n)$ & $\mathcal{O}(1)$    & No \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{¿MergeSort es el mejor?}
+
+\textbf{Depende del contexto.}
+
+\begin{itemize}
+  \item \textbf{Peor caso garantizado}: MergeSort y HeapSort son los únicos que
+    garantizan $\mathcal{O}(n \log n)$ siempre. QuickSort puede degradarse a
+    $\mathcal{O}(n^2)$ con entradas adversas (como un arreglo ya ordenado con
+    pivote en el primer elemento).
+
+  \item \textbf{Velocidad práctica en RAM}: QuickSort suele ser más rápido en
+    la práctica porque accede a la memoria en patrones \textit{cache-friendly}
+    (localidad de referencia). MergeSort salta entre la mitad izquierda y la
+    derecha, causando más \textit{cache misses}.
+
+  \item \textbf{Estabilidad}: MergeSort preserva el orden relativo de elementos
+    iguales (si el alumno A y el alumno B tienen la misma calificación y A estaba
+    antes que B, A sigue antes después de ordenar). Esto importa en bases de datos
+    y aplicaciones donde el orden original tiene significado.
+
+  \item \textbf{Ordenamiento externo}: cuando los datos no caben en RAM (archivos
+    de terabytes), MergeSort es imbatible. Se cargan trozos, se ordenan en memoria,
+    y se mezclan las secuencias resultantes en disco — exactamente lo que von Neumann
+    resolvió con cintas magnéticas.
+\end{itemize}
+
+\begin{tecnico}[TimSort: el sucesor práctico de MergeSort]
+  \textbf{TimSort} es el algoritmo que usa Python (\texttt{list.sort()}),
+  Java (\texttt{Arrays.sort} para objetos) y la biblioteca estándar de C++
+  (\texttt{std::stable\_sort}). Fue diseñado por Tim Peters en 2002.
+  \par\smallskip
+  La idea: en la práctica, los arreglos reales casi nunca son completamente
+  aleatorios — tienen ``runs'' (subsecuencias ya ordenadas). TimSort detecta
+  esos runs, los extiende con Insertion Sort hasta un tamaño mínimo, y los
+  fusiona con el algoritmo de MergeSort. Obtiene $\mathcal{O}(n)$ en el mejor
+  caso (arreglo ya ordenado) y $\mathcal{O}(n \log n)$ en el peor.
+  \par\smallskip
+  \textit{Referencia:} Peters, T. (2002). ``[Python-Dev] Sorting''.
+  \url{https://bugs.python.org/issue4255}\\
+  Artículo descriptivo: \url{https://en.wikipedia.org/wiki/Timsort}
+\end{tecnico}
+
+\begin{ejemplo}[MergeSort en la vida real: \texttt{git merge}]
+  El comando \texttt{git merge} que une ramas de código tiene una lógica análoga
+  a MergeSort: toma dos secuencias de cambios (commits) ya ordenadas por fecha
+  y las fusiona en una sola historia coherente, resolviendo conflictos cuando
+  los mismos archivos fueron modificados en ambas ramas. No es el mismo algoritmo,
+  pero el patrón de ``fusionar dos secuencias ordenadas'' está en el corazón de
+  cómo Git maneja la historia del código.
+\end{ejemplo}
+
+% =============================================================================
+\section{Ejercicios}
+% =============================================================================
+
+\subsection*{Ejercicio 1 — Traza manual}
+
+Aplica MergeSort al arreglo \texttt{[5, 3, 8, 1, 4, 2, 7, 6]} a mano (lápiz
+y papel). Dibuja el árbol de divisiones y la secuencia de fusiones, mostrando
+el estado del arreglo después de cada llamada a \cpp{merge}.
+
+\subsection*{Ejercicio 2 — Contar comparaciones}
+
+Modifica la función \cpp{merge} para que cuente el número de comparaciones
+(\cpp{arr[i] <= arr[j]}) realizadas. Luego modifica \cpp{mergesort} para
+acumular ese conteo y al final imprime cuántas comparaciones se hicieron en
+total para el arreglo de 8 elementos.
+
+\noindent¿Coincide con la predicción teórica de $n \log_2 n = 8 \times 3 = 24$?
+
+\subsection*{Ejercicio 3 — Orden descendente}
+
+Modifica \cpp{merge} para que el resultado quede en orden \textbf{descendente}.
+¿Cuántas líneas de código cambiaste? ¿Qué te dice eso sobre el diseño del algoritmo?
+
+\subsection*{Ejercicio 4 — MergeSort genérico con comparador}
+
+Modifica las firmas de \cpp{merge} y \cpp{mergesort} para que acepten un
+parámetro \cpp{bool(*cmp)(int, int)} — un apuntador a función comparadora,
+igual que hicimos con Bubble Sort. Verifica que con \cpp{cmp = [](int a, int b)
+\{ return a <= b; \}} el resultado es ascendente y con \cpp{a >= b} es
+descendente, sin cambiar el cuerpo de las funciones.
+
+% =============================================================================
+\section{Resumen}
+% =============================================================================
+
+\begin{recuerda}
+\begin{itemize}
+  \item MergeSort divide el arreglo hasta llegar a subarreglos de 1 elemento
+        (\textbf{caso base}), luego los fusiona de abajo hacia arriba.
+  \item \textbf{Complejidad}: $\mathcal{O}(n \log n)$ en todos los casos —
+        el mejor, el promedio y el peor.
+  \item \textbf{Memoria extra}: $\mathcal{O}(n)$ para el buffer temporal en
+        \cpp{merge}.
+  \item \textbf{Estable}: preserva el orden relativo de elementos iguales.
+  \item Es \textbf{óptimo}: ningún algoritmo de comparaciones puede hacerlo
+        mejor (prueba del límite inferior $\Omega(n \log n)$).
+  \item QuickSort es más rápido en la práctica (cache), pero $\mathcal{O}(n^2)$
+        en el peor caso. MergeSort garantiza $\mathcal{O}(n \log n)$ siempre.
+  \item TimSort (Python, Java, \cpp{std::stable\_sort}) es MergeSort adaptado
+        para arreglos reales con runs ya ordenados.
+  \item \cpp{int* arr} en la firma significa \textit{paso por referencia}:
+        la función modifica el arreglo original sin copiarlo.
+\end{itemize}
+\end{recuerda}
+
+\end{document}

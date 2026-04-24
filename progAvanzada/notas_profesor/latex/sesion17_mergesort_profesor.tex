@@ -1,0 +1,426 @@
+% =============================================================================
+%  Notas del Profesor — Sesión 17: MergeSort
+%  Programación Avanzada — Universidad Panamericana
+%  Compilar: pdflatex sesion17_mergesort_profesor.tex
+% =============================================================================
+\documentclass[12pt, oneside]{article}
+\usepackage[profesor]{progavanzada}
+
+\begin{document}
+
+\portada{Sesión 17}{MergeSort}{2026}
+
+\tableofcontents
+\newpage
+
+% =============================================================================
+\section{Objetivos de la sesión}
+% =============================================================================
+
+Al finalizar la sesión el alumno será capaz de:
+
+\begin{enumerate}
+  \item Explicar el patrón divide y vencerás con sus propias palabras.
+  \item Identificar el caso base y el caso recursivo de MergeSort.
+  \item Implementar \cpp{merge} y \cpp{mergesort} en C++ con paso por referencia.
+  \item Justificar por qué la complejidad es $\mathcal{O}(n \log n)$.
+  \item Argumentar (sin demostración formal) por qué no puede existir un algoritmo
+        de comparaciones más rápido.
+  \item Comparar MergeSort con QuickSort y elegir el adecuado según el contexto.
+\end{enumerate}
+
+\begin{notaprofesor}[Duración estimada]
+  90 minutos. Distribución sugerida:\\
+  15 min — actividad física con los alumnos (la fila) \\
+  10 min — hook histórico + la pregunta del límite inferior \\
+  20 min — explicación del algoritmo: árbol de llamadas + merge \\
+  15 min — análisis de complejidad + tabla comparativa \\
+  30 min — implementación guiada en el cuaderno Jupyter \\
+  \textit{Los ejercicios quedan como tarea.}
+\end{notaprofesor}
+
+% =============================================================================
+\section{Prerrequisitos}
+% =============================================================================
+
+\begin{itemize}
+  \item Recursión: caso base, caso recursivo, call stack (sesión 11)
+  \item Apuntadores y arrays como parámetros (sesión 14)
+  \item Paso por referencia; diseño de API con \cpp{int*} (sesión 15)
+  \item Bubble Sort con comparador parametrizado (sesión 15--16)
+\end{itemize}
+
+\begin{notaprofesor}
+  Los alumnos que tengan dificultades con la recursión lo notarán en la traza
+  del árbol de llamadas. Una señal de alerta: si el alumno no puede predecir
+  en qué orden se ejecutan las dos llamadas recursivas, detenerse y repasar
+  el call stack con un ejemplo pequeño (\cpp{mergesort(arr, 0, 1)}) antes
+  de continuar.
+\end{notaprofesor}
+
+% =============================================================================
+\section{La actividad física — La fila del salón}
+% =============================================================================
+
+\subsection{Preparación (antes de clase)}
+
+Prepara 8 tarjetas con los números \textbf{20, 31, 83, 92, 14, 42, 51, 63}.
+Repártelas al azar entre ocho voluntarios cuando empiece la clase.
+
+\subsection{Desarrollo}
+
+\begin{enumerate}
+  \item Pide a los 8 voluntarios que se paren en fila en el centro del salón
+        \textit{en el orden en que recibieron sus tarjetas} (desordenados).
+
+  \item Pregunta: ``¿Cómo los ordenamos?'' Acepta ideas. Luego di: ``Vamos a
+        usar la misma estrategia que inventó von Neumann en 1945.''
+
+  \item Divide la fila físicamente por la mitad: los 4 de la izquierda se
+        separan de los 4 de la derecha.
+
+  \item Divide cada grupo de 4 en dos grupos de 2. Luego cada grupo de 2 en
+        dos individuos. Ahora hay 8 filas de 1 persona.
+
+  \item Pregunta: ``¿Está ordenada una fila de una sola persona?'' La respuesta
+        es sí — eso es el caso base.
+
+  \item Guía la fusión de dos individuos en un par ordenado: el de menor número
+        se coloca a la izquierda. Repite con todos los pares.
+
+  \item Fusiona los pares en grupos de 4 ordenados, comparando los frentes de
+        cada fila. Usa la metáfora: ``El de frente de cada fila se presentan,
+        y el menor entra primero.''
+
+  \item Fusiona las dos filas de 4 en la fila final de 8, ordenada.
+\end{enumerate}
+
+\begin{notaprofesor}[Puntos clave de la actividad]
+  \textbf{¿Cuánto tardó?} Con 8 personas, 3 rondas de fusión. Con 16, habrían
+  sido 4 rondas. Con 1\,024 personas, solo 10 rondas. Haz que los alumnos
+  calculen $\log_2(8) = 3$ en el momento — ahí nace la intuición de $n \log n$.
+  \par\smallskip
+  \textbf{Señal de que la actividad funcionó:} los alumnos deben poder
+  describir solos el algoritmo en palabras antes de ver el código.
+  Pide a uno que lo describa: si lo logra, la actividad cumplió su propósito.
+\end{notaprofesor}
+
+% =============================================================================
+\section{Secuencia de clase}
+% =============================================================================
+
+\subsection{Hook histórico (10 min)}
+
+Después de la actividad, conecta con von Neumann: ``Lo que acaban de hacer
+lo inventó John von Neumann en 1945, no con personas sino con cintas magnéticas.
+La limitación no era velocidad sino memoria: los datos no cabían en RAM.''
+
+Planta la pregunta que motivará la sección de complejidad:
+``¿Podemos hacer algo mejor que $n \log n$? ¿O hay un límite físico?''
+No respondas todavía.
+
+\begin{notaprofesor}[Pregunta de arranque — Límite inferior]
+  ``Si tengo $n$ elementos completamente desordenados, ¿cuántas preguntas
+  de sí/no necesito para saber su orden correcto?''\\
+  Respuesta esperada: los alumnos dirán $n$, $n-1$, $n^2$... Nadie dirá
+  $\log(n!)$. Eso está bien — es lo que vas a demostrar.\\
+  Contraejemplo útil: ``Si tienes dos cartas boca abajo, ¿cuántas comparaciones
+  necesitas para ordenarlas?'' (1). ``¿Y con tres?'' (hasta 3). ``¿Y con $n$?''
+  — deja que la discusión lleve a la intuición de que crece con $n$.
+\end{notaprofesor}
+
+\subsection{El algoritmo (20 min)}
+
+Dibuja el árbol de llamadas en el pizarrón para el arreglo de 8 elementos.
+Construye la función \cpp{mergesort} en vivo, primero el esqueleto (caso base
+y las dos llamadas recursivas), luego agrega \cpp{merge}.
+
+Para \cpp{merge}, traza manualmente la primera fusión
+(\texttt{[20]} y \texttt{[31]}) antes de escribir el código. El patrón
+``compara los dos frentes, toma el menor'' debe quedar claro antes de verlo
+como código.
+
+\begin{notaprofesor}[Error muy frecuente: olvidar copiar temp de vuelta]
+  El error más común en la implementación de \cpp{merge} es olvidar el
+  último \cpp{for} que copia \cpp{temp} de regreso a \cpp{arr}. El alumno
+  escribe el merge en \cpp{temp} correctamente, pero \cpp{arr} no cambia.
+  \par\smallskip
+  Ejercicio preventivo: antes de escribir el código, pregunta: ``¿Dónde
+  está el resultado de merge — en \cpp{temp} o en \cpp{arr}?'' Fuerza la
+  respuesta \textit{en \cpp{arr}}, y luego pregunta cómo se logra eso.
+\end{notaprofesor}
+
+\begin{notaprofesor}[Error frecuente 2: índices incorrectos en merge]
+  El segundo error más común es usar \cpp{j = mid} en lugar de
+  \cpp{j = mid + 1} al inicializar el índice de la mitad derecha.
+  Resultado: el elemento en \cpp{arr[mid]} se procesa dos veces.
+  \par\smallskip
+  Pregunta de verificación antes de ejecutar: ``¿Qué cubre la mitad
+  izquierda? ¿Y la derecha?'' Espera que el alumno diga
+  \cpp{[left, mid]} y \cpp{[mid+1, right]} con los corchetes correctos.
+\end{notaprofesor}
+
+\subsection{Complejidad y límite inferior (15 min)}
+
+Con el árbol del pizarrón todavía visible, pregunta cuántos niveles tiene
+(3 para 8 elementos). Cuántos elementos se procesan en cada nivel (8 en
+total, repartidos). Multiplica: $3 \times 8 = 24 \approx n \log n$.
+
+Para el límite inferior: plantea el argumento de las permutaciones.
+``¿Cuántas formas hay de ordenar 3 cartas?'' (6 = 3!). ``¿Cuántas preguntas
+de sí/no necesitamos para distinguir 6 casos?'' ($\log_2 6 \approx 2.58$,
+redondeado a 3). Extiende: $n!$ permutaciones, $\log_2(n!)$ preguntas mínimo.
+
+No es necesario demostrar la aproximación de Stirling — basta con que
+los alumnos vean que $\log(n!)$ y $n \log n$ son del mismo orden para
+valores concretos ($n=8$: $\log(8!) = \log(40320) \approx 15.3$;
+$8 \log 8 = 24$).
+
+\subsection{Comparación y debate (dentro de los 15 min anteriores)}
+
+Presenta la tabla comparativa brevemente. Lanza la pregunta:
+``¿MergeSort es el mejor?'' y permite que los alumnos argumenten.
+Guía hacia la conclusión: \textit{depende del contexto}.
+
+\begin{notaprofesor}[Pregunta de sondeo — MergeSort vs QuickSort]
+  ``Si MergeSort garantiza $\mathcal{O}(n \log n)$ y QuickSort puede ser
+  $\mathcal{O}(n^2)$, ¿por qué \texttt{std::sort} usa QuickSort?''\\
+  Respuesta: QuickSort tiene mejor \textit{localidad de referencia} — accede
+  a memoria contigua más seguido, lo que lo hace más amigable con la caché del
+  CPU. En la práctica, ese efecto supera la diferencia teórica de complejidad.
+  \cpp{std::stable\_sort} sí usa MergeSort porque la estabilidad la requieren.
+\end{notaprofesor}
+
+\subsection{Implementación en el cuaderno (30 min)}
+
+Deja que los alumnos implementen \cpp{merge} solos primero (10 min).
+Si el grupo se atasca, da la pista del índice \cpp{k}: ``Piensa en \cpp{k}
+como el cursor en \cpp{temp} — avanza cada vez que insertas un elemento.''
+
+Luego \cpp{mergesort} (5 min — es más corta). Finalmente la celda de prueba.
+
+\begin{notaprofesor}[Demo en vivo opcional — version con traza]
+  Si el tiempo lo permite, agrega una versión de \cpp{mergesort} que imprime
+  el estado del arreglo antes de cada llamada a \cpp{merge}. Los alumnos
+  pueden ver cómo el arreglo se va ordenando ``de abajo hacia arriba''.
+  Esta versión es excelente para despejar confusiones sobre el orden de ejecución.
+
+  \begin{codigo}
+  void mergesort_traza(int* arr, int left, int right, int nivel = 0) {
+      if (left >= right) return;
+      int mid = (left + right) / 2;
+      mergesort_traza(arr, left,    mid, nivel + 1);
+      mergesort_traza(arr, mid + 1, right, nivel + 1);
+
+      for (int i = 0; i < nivel; i++) cout << "  ";
+      cout << "merge [" << left << "," << right << "]: ";
+      merge(arr, left, mid, right);
+      for (int i = left; i <= right; i++) cout << arr[i] << " ";
+      cout << endl;
+  }
+  \end{codigo}
+\end{notaprofesor}
+
+% =============================================================================
+\section{Errores conceptuales frecuentes}
+% =============================================================================
+
+\begin{notaprofesor}[FAQ y errores comunes]
+
+\textbf{1. ``¿Por qué necesitamos el buffer temporal? ¿No podemos ordenar
+in-place?''}\\
+La fusión in-place es posible pero tiene complejidad $\mathcal{O}(n \log^2 n)$
+y es mucho más difícil de implementar. El buffer de $\mathcal{O}(n)$ es el
+trade-off estándar. Para sistemas con memoria muy restringida (embedded)
+existe HeapSort que ordena in-place en $\mathcal{O}(n \log n)$.
+
+\vspace{0.6em}
+\textbf{2. ``¿El \cpp{vector<int> temp(n)} no es muy costoso de crear en
+cada llamada?''}\\
+En la práctica, los compiladores modernos optimizan allocations pequeños y
+frecuentes. Sin embargo, es una observación válida: la versión de producción
+de MergeSort pre-aloca el buffer una sola vez en la función principal y lo
+pasa como parámetro a todas las llamadas. Este es un buen ejercicio de diseño
+de API: agregar un parámetro \cpp{int* temp} a \cpp{merge}.
+
+\vspace{0.6em}
+\textbf{3. ``¿Por qué los índices y no copias del subarreglo?''}\\
+Copiar el subarreglo en cada llamada recursiva usaría $\mathcal{O}(n \log n)$
+de memoria adicional en lugar de $\mathcal{O}(n)$. Los índices \cpp{left} y
+\cpp{right} delimitan el trabajo sin mover datos.
+
+\vspace{0.6em}
+\textbf{4. Confundir la recursión de MergeSort con la de factorial}\\
+En factorial, la llamada recursiva \textit{depende} del resultado de la llamada
+anterior. En MergeSort, las dos llamadas recursivas son \textit{independientes
+entre sí} — se podría ejecutarlas en paralelo. Esto hace a MergeSort
+paralelizable de forma natural (MapReduce, por ejemplo, es MergeSort distribuido).
+
+\vspace{0.6em}
+\textbf{5. ``¿Por qué QuickSort es $\mathcal{O}(n^2)$ en el peor caso?''}\\
+Si el pivote elegido es siempre el mínimo o el máximo, la partición deja
+un lado con $n-1$ elementos y el otro vacío — el árbol de llamadas degenera
+en una lista lineal. Con 8 elementos ordenados y pivote en la posición 0:
+$7 + 6 + 5 + \ldots + 1 = 28$ comparaciones en lugar de ~24.
+
+\end{notaprofesor}
+
+% =============================================================================
+\section{Soluciones a los ejercicios}
+% =============================================================================
+
+\subsection{Ejercicio 1 — Traza manual de \texttt{[5,3,8,1,4,2,7,6]}}
+
+\begin{center}
+\begin{tabular}{clc}
+  \toprule
+  \textbf{Nivel} & \textbf{Subarreglos} & \textbf{Acción} \\
+  \midrule
+  0 & \texttt{[5,3,8,1,4,2,7,6]} & divide \\
+  1 & \texttt{[5,3,8,1]} \quad \texttt{[4,2,7,6]} & divide \\
+  2 & \texttt{[5,3]} \texttt{[8,1]} \quad \texttt{[4,2]} \texttt{[7,6]} & divide \\
+  3 & \texttt{[5][3][8][1][4][2][7][6]} & caso base \\
+  2 & \texttt{[3,5]} \texttt{[1,8]} \quad \texttt{[2,4]} \texttt{[6,7]} & merge pares \\
+  1 & \texttt{[1,3,5,8]} \quad \texttt{[2,4,6,7]} & merge grupos \\
+  0 & \texttt{[1,2,3,4,5,6,7,8]} & merge final \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Ejercicio 2 — Contar comparaciones}
+
+\begin{codigo}
+int comparaciones = 0;   // variable global
+
+void merge(int* arr, int left, int mid, int right) {
+    int n = right - left + 1;
+    vector<int> temp(n);
+    int i = left, j = mid + 1, k = 0;
+    while (i <= mid && j <= right) {
+        comparaciones++;   // contamos aqui
+        if (arr[i] <= arr[j]) temp[k++] = arr[i++];
+        else                  temp[k++] = arr[j++];
+    }
+    while (i <= mid)   temp[k++] = arr[i++];
+    while (j <= right) temp[k++] = arr[j++];
+    for (int k = 0; k < n; k++) arr[left + k] = temp[k];
+}
+\end{codigo}
+
+Para 8 elementos: 17 comparaciones en el arreglo \texttt{\{20,31,83,92,14,42,51,63\}}
+(varía según el orden; el máximo teórico para $n=8$ es $n\log_2 n - n + 1 = 17$).
+
+\begin{notaprofesor}
+  La predicción $n \log n = 24$ es una cota superior, no el valor exacto.
+  El número real de comparaciones de MergeSort es entre $n/2 \cdot \log n$
+  y $n \log n - n + 1$ dependiendo de los datos. Para el arreglo dado, el
+  resultado será $\leq 17$.
+\end{notaprofesor}
+
+\subsection{Ejercicio 3 — Orden descendente}
+
+Solo cambia la condición en \cpp{merge}:
+\begin{codigo}
+if (arr[i] >= arr[j])   // era <=
+    temp[k++] = arr[i++];
+else
+    temp[k++] = arr[j++];
+\end{codigo}
+
+Una línea cambiada. Refleja que el \textbf{criterio de ordenamiento} está
+encapsulado en una sola comparación.
+
+\subsection{Ejercicio 4 — MergeSort con comparador}
+
+\begin{codigo}
+void merge(int* arr, int left, int mid, int right,
+           bool(*cmp)(int, int)) {
+    int n = right - left + 1;
+    vector<int> temp(n);
+    int i = left, j = mid + 1, k = 0;
+    while (i <= mid && j <= right) {
+        if (cmp(arr[i], arr[j])) temp[k++] = arr[i++];
+        else                     temp[k++] = arr[j++];
+    }
+    while (i <= mid)   temp[k++] = arr[i++];
+    while (j <= right) temp[k++] = arr[j++];
+    for (int k = 0; k < n; k++) arr[left + k] = temp[k];
+}
+
+void mergesort(int* arr, int left, int right,
+               bool(*cmp)(int, int)) {
+    if (left >= right) return;
+    int mid = (left + right) / 2;
+    mergesort(arr, left,    mid,   cmp);
+    mergesort(arr, mid + 1, right, cmp);
+    merge    (arr, left, mid, right, cmp);
+}
+
+// Uso:
+// mergesort(arr, 0, 7, [](int a, int b){ return a <= b; });
+\end{codigo}
+
+% =============================================================================
+\section{Conexiones con temas posteriores}
+% =============================================================================
+
+\begin{itemize}
+  \item \textbf{Sesiones 18--20} — Memoria dinámica: el \cpp{vector<int> temp(n)}
+    en \cpp{merge} es una introducción suave a la alocación dinámica.
+    La versión con \cpp{new int[n]} / \cpp{delete[] temp} es equivalente.
+  \item \textbf{Sesiones 21--25} — Plantillas (\cpp{template<typename T>}):
+    MergeSort genérico que ordena cualquier tipo con un comparador.
+  \item \textbf{Concurrencia} (tema avanzado): las dos llamadas recursivas de
+    \cpp{mergesort} son independientes — se pueden ejecutar en paralelo con
+    \cpp{std::thread} o \cpp{std::async}. MergeSort paralelo es uno de los
+    ejemplos clásicos de algoritmos paralelos.
+  \item \textbf{STL}: \cpp{std::merge} (fusiona dos rangos ordenados en un
+    tercero), \cpp{std::inplace\_merge} y \cpp{std::stable\_sort} son
+    MergeSort en la biblioteca estándar.
+\end{itemize}
+
+% =============================================================================
+\section{Material de la sesión}
+% =============================================================================
+
+\begin{itemize}
+  \item \textbf{Cuaderno:} \texttt{sesiones/sesion17\_mergesort.ipynb}
+  \item \textbf{Notas alumno:} \texttt{notas\_alumno/pdf/sesion17\_mergesort.pdf}
+  \item \textbf{Material:} 8 tarjetas con números
+        \texttt{\{20,31,83,92,14,42,51,63\}}
+\end{itemize}
+
+% =============================================================================
+\section{Rúbrica de ejercicios}
+% =============================================================================
+
+\begin{center}
+\begin{tabular}{p{6.5cm}cc}
+  \toprule
+  \textbf{Criterio} & \textbf{Puntos} & \textbf{Evidencia} \\
+  \midrule
+  \multicolumn{3}{l}{\textit{Ejercicio 1 — Traza manual}} \\
+  \quad Árbol de divisiones correcto             & 5 & 3 niveles, 8 hojas \\
+  \quad Fusiones en orden correcto               & 5 & de abajo hacia arriba \\
+  \midrule
+  \multicolumn{3}{l}{\textit{Ejercicio 2 — Contar comparaciones}} \\
+  \quad Variable global o parámetro de conteo    & 4 & contador incrementado \\
+  \quad Contador solo en el \cpp{while} mixto    & 3 & no en los \cpp{while} de cola \\
+  \quad Resultado impreso correctamente          & 3 & valor $\leq n \log n$ \\
+  \midrule
+  \multicolumn{3}{l}{\textit{Ejercicio 3 — Orden descendente}} \\
+  \quad Una sola línea cambiada                  & 5 & solo la condición de \cpp{merge} \\
+  \quad Resultado correcto                       & 5 & arreglo en orden inverso \\
+  \midrule
+  \multicolumn{3}{l}{\textit{Ejercicio 4 — Comparador parametrizado}} \\
+  \quad Firma correcta con \cpp{bool(*cmp)(int,int)} & 5 & ambas funciones actualizadas \\
+  \quad Funciona con lambda ascendente           & 3 & resultado correcto \\
+  \quad Funciona con lambda descendente          & 3 & resultado correcto \\
+  \quad Sin cambios en el cuerpo del algoritmo   & 4 & solo la condición usa \cpp{cmp} \\
+  \midrule
+  \textbf{Total}                                 & \textbf{45} & \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\end{document}
