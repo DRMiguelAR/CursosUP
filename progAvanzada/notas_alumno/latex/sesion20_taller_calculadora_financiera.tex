@@ -8,6 +8,38 @@
 \usepackage{array}
 \usepackage{booktabs}
 
+% ── Estilo de listados para firmas de funciones ───────────────────────────────
+\definecolor{lst@green} {rgb}{0,   0.6, 0   }
+\definecolor{lst@gray}  {rgb}{0.5, 0.5, 0.5 }
+\definecolor{lst@purple}{rgb}{0.58,0,   0.82}
+\definecolor{lst@beige} {rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{firmas}{
+    backgroundcolor  = \color{lst@beige},
+    commentstyle     = \color{lst@green}\itshape,
+    keywordstyle     = \color{magenta}\bfseries,
+    numberstyle      = \tiny\color{lst@gray},
+    stringstyle      = \color{lst@purple},
+    basicstyle       = \ttfamily\small,
+    breakatwhitespace= false,
+    breaklines       = true,
+    captionpos       = b,
+    keepspaces       = true,
+    numbers          = left,
+    numbersep        = 5pt,
+    showspaces       = false,
+    showstringspaces = false,
+    showtabs         = false,
+    tabsize          = 2,
+    frame            = single,
+    framesep         = 4pt,
+    rulecolor        = \color{dummies@yellow},
+    xleftmargin      = 14pt,
+    framexleftmargin = 10pt,
+    aboveskip        = 0.8em,
+    belowskip        = 0.8em,
+}
+
 \begin{document}
 
 \portada{Sesión 20}{Taller 3 — Calculadora financiera}{2026}
@@ -31,14 +63,19 @@
 \section{Objetivo}
 % =============================================================================
 
-Construirás una \textbf{calculadora financiera de consola} en C++ organizada
-como un proyecto de múltiples archivos.  El programa presentará un menú
-numerado, leerá los datos del usuario, ejecutará el cálculo elegido y
-mostrará el resultado con dos decimales de precisión.
-
-El proyecto tiene \textbf{cuatro archivos de módulo obligatorios} más
-\texttt{main.cpp}, y debe compilarse con un \texttt{Makefile} que use
-variables y compile por etapas (\texttt{.cpp} → \texttt{.o} → ejecutable).
+\begin{enumerate}
+  \item Construirás una \textbf{calculadora financiera de consola} en C++.
+  \item El programa mostrará un \textbf{menú numerado} con siete opciones.
+  \item Leerá los datos del usuario por teclado para cada operación.
+  \item Ejecutará el cálculo seleccionado y mostrará el resultado
+        con \textbf{dos decimales} de precisión.
+  \item El código estará organizado en \textbf{cuatro módulos obligatorios}
+        más \texttt{main.cpp}, cada uno con su \texttt{.h} y su
+        \texttt{.cpp}.
+  \item El proyecto se compilará con un \textbf{Makefile} que use variables
+        y compile por etapas
+        (\texttt{.cpp} $\to$ \texttt{.o} $\to$ ejecutable).
+\end{enumerate}
 
 % =============================================================================
 \section{Archivos del proyecto}
@@ -47,87 +84,91 @@ variables y compile por etapas (\texttt{.cpp} → \texttt{.o} → ejecutable).
 % ─── 2.1 ──────────────────────────────────────────────────────────────────────
 \subsection{main.cpp}
 
-Contiene únicamente la función \texttt{main}.  Su responsabilidad es llamar
-a \texttt{mostrar\_menu()} en un bucle y despachar la opción elegida hasta
-que el usuario seleccione salir.  No contiene lógica de cálculo ni de
-presentación.
+Contiene únicamente la función \texttt{main}.  Su responsabilidad:
+
+\begin{enumerate}
+  \item Llamar a \texttt{mostrar\_menu()} en un bucle.
+  \item Despachar la opción elegida a la función de interfaz correspondiente.
+  \item Terminar el bucle cuando el usuario seleccione salir.
+\end{enumerate}
+
+No contiene lógica de cálculo ni de presentación.
 
 % ─── 2.2 ──────────────────────────────────────────────────────────────────────
 \subsection{matematicas.h / matematicas.cpp}
 
-Funciones matemáticas de apoyo usadas por el módulo financiero.  No contiene
-lógica financiera.
+Funciones matemáticas de apoyo para el módulo financiero.
+No contiene lógica financiera.
 
-\begin{verbatim}
+\begin{lstlisting}[style=firmas, language=C++]
 #pragma once
 
-// Eleva base a la potencia exp (exp >= 0) sin usar <cmath>
+// Eleva base a la potencia exp (exp >= 0); sin usar pow() de <cmath>
 double potencia(double base, int exp);
 
-// Devuelve el pct% de valor  (e.g. porcentaje(500, 16) -> 80.0)
+// Retorna el pct% de valor.  Ej: porcentaje(500, 16) devuelve 80.0
 double porcentaje(double valor, double pct);
 
 // Redondea val a exactamente dos decimales
 double redondear(double val);
-\end{verbatim}
+\end{lstlisting}
 
 % ─── 2.3 ──────────────────────────────────────────────────────────────────────
 \subsection{financiero.h / financiero.cpp}
 
-Una función por cada funcionalidad de la calculadora.  Este módulo
-\textbf{solo calcula}: no lee de \texttt{cin} ni escribe en \texttt{cout}.
+Una función por cada funcionalidad de la calculadora.
+Este módulo \textbf{solo calcula}: nunca usa \texttt{cin} ni \texttt{cout}.
 
-\begin{verbatim}
+\begin{lstlisting}[style=firmas, language=C++]
 #pragma once
 
-// F1 — Interés simple
-//   Retorna el monto final M = capital + intereses
+// F1 - interes simple
+//   Retorna el monto final M = capital + I
 double interes_simple(double capital, double tasa, double tiempo);
 
-// F2 — Interés compuesto
+// F2 - interes compuesto
 //   Retorna el monto final M = capital * (1 + tasa)^periodos
 double interes_compuesto(double capital, double tasa, int periodos);
 
-// F3 — Calcular IVA
+// F3 - calcular IVA
 //   Retorna el monto del IVA = precio * tasa
 double calcular_iva(double precio, double tasa);
 
-// F4 — Desglosar IVA
-//   Retorna el precio sin IVA = precio_con_iva / (1 + tasa)
+// F4 - desglosar IVA
+//   Retorna el precio base = precio_con_iva / (1 + tasa)
 double desglosar_iva(double precio_con_iva, double tasa);
 
-// F5 — Cuenta de restaurante
+// F5 - cuenta de restaurante
 //   Retorna el pago por adulto
-//   Escribe en total   : subtotal + propina
-//   Escribe en pago_n  : pago por nino (mitad del adulto)
+//   Escribe en total  : subtotal + propina
+//   Escribe en pago_n : pago por nino (mitad del adulto)
 double cuenta_restaurante(double subtotal, double pct_propina,
                           int adultos, int ninos,
                           double& total, double& pago_n);
 
-// F6 — Descuento comercial
+// F6 - descuento comercial
 //   Retorna el precio final = precio * (1 - pct/100)
 double descuento(double precio, double pct_descuento);
 
-// F7 — Conversion de divisas
+// F7 - conversion de divisas
 //   Retorna monto * tipo_cambio
 double convertir_divisas(double monto, double tipo_cambio);
-\end{verbatim}
+\end{lstlisting}
 
 % ─── 2.4 ──────────────────────────────────────────────────────────────────────
 \subsection{interfaz.h / interfaz.cpp}
 
 Toda la interacción con el usuario: menú, lectura de datos y presentación
-de resultados.  Llama a las funciones de \texttt{financiero.h} para obtener
-los valores.  No realiza cálculos directamente.
+de resultados.  Llama a las funciones de \texttt{financiero.h}; no realiza
+cálculos directamente.
 
-\begin{verbatim}
+\begin{lstlisting}[style=firmas, language=C++]
 #pragma once
 
-// Muestra el menu principal y retorna la opcion elegida (1-7, 0 = salir)
+// Muestra el menu y retorna la opcion elegida (1-7, 0 = salir)
 int mostrar_menu();
 
-// Lee los datos necesarios, llama a la funcion financiera
-// correspondiente y muestra el resultado formateado
+// Lee los datos, llama a la funcion financiera y muestra el resultado
 void ejecutar_interes_simple();
 void ejecutar_interes_compuesto();
 void ejecutar_iva();
@@ -135,36 +176,34 @@ void ejecutar_desglosar_iva();
 void ejecutar_restaurante();
 void ejecutar_descuento();
 void ejecutar_divisas();
-\end{verbatim}
+\end{lstlisting}
 
 \begin{recuerda}
   La separación es estricta: \texttt{financiero.cpp} nunca usa
   \texttt{cout} ni \texttt{cin}.  \texttt{interfaz.cpp} nunca implementa
-  fórmulas matemáticas.  Cualquier función de \texttt{interfaz} que
-  calcule un resultado directamente, en lugar de llamar a \texttt{financiero},
-  está mal organizada.
+  fórmulas.  Cualquier función de \texttt{interfaz} que calcule un resultado
+  directamente, en lugar de llamar a \texttt{financiero}, está mal organizada.
 \end{recuerda}
 
 \subsection{Makefile}
 
-El \texttt{Makefile} debe:
+El \texttt{Makefile} debe cumplir los siguientes requisitos:
 
-\begin{itemize}
+\begin{enumerate}
   \item Usar variables \texttt{CXX}, \texttt{CXXFLAGS},
         \texttt{TARGET} y \texttt{SRCS} (u \texttt{OBJS}).
   \item Compilar cada \texttt{.cpp} a un \texttt{.o} por separado.
-  \item Enlazar todos los \texttt{.o} para producir el ejecutable.
+  \item Enlazar todos los \texttt{.o} para generar el ejecutable.
   \item Tener un objetivo \texttt{clean} que elimine los artefactos
         de compilación.
-\end{itemize}
+\end{enumerate}
 
 % =============================================================================
 \section{Plan de pruebas}
 % =============================================================================
 
 Verifica tu implementación con los siguientes valores antes de tomar las
-capturas de pantalla.  Si tu programa produce los resultados de la columna
-derecha, la lógica es correcta.
+capturas de pantalla.
 
 \begin{center}
 \begin{tabular}{lp{5.2cm}p{4.8cm}}
@@ -199,8 +238,8 @@ derecha, la lógica es correcta.
 \end{center}
 
 \begin{advertencia}
-  Las funciones F3 y F4 son inversas entre sí.  Aplicar F3 sobre \$500
-  da \$580; aplicar F4 sobre \$580 debe devolver exactamente \$500.
+  Las funciones F3 y F4 son inversas entre sí: aplicar F3 sobre \$500
+  da \$580, y aplicar F4 sobre \$580 debe devolver exactamente \$500.
   Si no ocurre así, hay un error en alguna de las dos.
 \end{advertencia}
 
@@ -214,17 +253,15 @@ El código fuente no se entrega; las capturas son la evidencia.
 El PDF debe contener, en este orden:
 
 \begin{enumerate}
-  \item \textbf{Captura del Makefile.}  Muestra el contenido de tu
-        \texttt{Makefile} con \texttt{cat Makefile}.
-
-  \item \textbf{Captura de compilación.}  Muestra la ejecución de
-        \texttt{make} desde cero (después de \texttt{make clean}),
-        sin errores ni advertencias.
-
+  \item \textbf{Captura del Makefile.}
+        Muestra el contenido de tu \texttt{Makefile}
+        con \texttt{cat Makefile}.
+  \item \textbf{Captura de compilación.}
+        Muestra la ejecución de \texttt{make} desde cero
+        (después de \texttt{make clean}), sin errores ni advertencias.
   \item \textbf{Siete capturas de funcionalidad} (una por función).
         Cada captura debe mostrar la opción del menú seleccionada,
         los datos ingresados y el resultado impreso.
-
   \item Para al menos \textbf{tres} de las siete funcionalidades,
         incluye \textbf{dos capturas distintas} con datos diferentes
         para demostrar que el programa no solo funciona con los
@@ -269,7 +306,7 @@ La diferencia es que la tuya correrá en la terminal y no costará 100 dólares.
   calculadoras no están permitidas.
   \par\smallskip
   \textit{Referencia:} CFA Institute. (2024). \textit{CFA Program
-  Approved Calculators}. cfa\-institute.org
+  Approved Calculators}. cfainstitute.org
 \end{tecnico}
 
 % =============================================================================
@@ -285,7 +322,7 @@ siempre sobre el capital original, sin importar cuánto tiempo haya pasado.
 \textbf{Variables:}
 \begin{itemize}
   \item $C$ — capital inicial
-  \item $r$ — tasa de interés por período (como decimal: 5\,\% → 0.05)
+  \item $r$ — tasa de interés por período como decimal (5\,\% → 0.05)
   \item $t$ — número de períodos
 \end{itemize}
 
@@ -329,7 +366,7 @@ $M$ es el monto final; $G$ es la ganancia total.
 
 \begin{ejemplo}[Capital \$1\,000, tasa 5\,\%, 3 períodos]
   \[
-    M = 1{,}000 \times (1.05)^{3} = 1{,}000 \times 1.157625 = 1{,}157.63
+    M = 1{,}000 \times (1.05)^{3} = 1{,}157.63
     \qquad
     G = 157.63
   \]
@@ -346,17 +383,17 @@ En México la tasa general es 16\,\%.
 \textbf{Variables:}
 \begin{itemize}
   \item $p$ — precio sin IVA
-  \item $t$ — tasa de IVA (decimal; 16\,\% → 0.16)
+  \item $t$ — tasa de IVA como decimal (16\,\% → 0.16)
 \end{itemize}
 
 \[
   \text{IVA} = p \times t
   \qquad
-  p_{\text{total}} = p \times (1 + t)
+  p_{\text{total}} = p + \text{IVA}
 \]
 
-Tu función retorna el IVA.  El llamador calcula el total como
-$p_{\text{total}} = p + \text{IVA}$ para mostrarlo.
+Tu función retorna el IVA.  El llamador calcula $p_{\text{total}} = p + \text{IVA}$
+para mostrarlo.
 
 \begin{ejemplo}[Precio \$500, tasa 16\,\%]
   \[
@@ -369,8 +406,8 @@ $p_{\text{total}} = p + \text{IVA}$ para mostrarlo.
 % ─── F4 ───────────────────────────────────────────────────────────────────────
 \subsection{F4 — Desglosar IVA}
 
-A veces un precio \textit{ya incluye} el IVA y necesitas saber cuánto
-es impuesto y cuánto es precio base.  Es la operación inversa de F3.
+A veces un precio \textit{ya incluye} el IVA y necesitas saber cuánto es
+impuesto y cuánto es precio base.  Es la operación inversa de F3.
 
 \textbf{Variables:}
 \begin{itemize}
@@ -398,7 +435,7 @@ $\text{IVA} = p_T - p_{\text{base}}$ para mostrarlo.
 % ─── F5 ───────────────────────────────────────────────────────────────────────
 \subsection{F5 — Cuenta de restaurante}
 
-Se calcula el total de una cuenta (subtotal más propina) y se divide entre
+Se calcula el total de la cuenta (subtotal más propina) y se divide entre
 los comensales.  Los niños pagan \textbf{la mitad} de lo que paga un adulto.
 
 \textbf{Variables:}
@@ -414,18 +451,17 @@ los comensales.  Los niños pagan \textbf{la mitad} de lo que paga un adulto.
   T = s + \text{propina}
 \]
 
-Sea $x$ el pago por adulto.  Cada niño paga $x/2$:
+Sea $x$ el pago por adulto y $x/2$ el pago por niño:
 
 \[
-  n_a \cdot x \;+\; n_n \cdot \frac{x}{2} = T
+  n_a \cdot x + n_n \cdot \frac{x}{2} = T
   \;\;\Longrightarrow\;\;
   x = \frac{T}{\;n_a + \dfrac{n_n}{2}\;}
   \qquad
   x_n = \frac{x}{2}
 \]
 
-Tu función retorna $x$ (pago por adulto) y escribe $T$ y $x_n$ en los
-parámetros de salida.
+Tu función retorna $x$ y escribe $T$ y $x_n$ en los parámetros de salida.
 
 \begin{ejemplo}[Subtotal \$480, propina 15\,\%, 2 adultos, 1 niño]
   \begin{align*}
@@ -433,7 +469,7 @@ parámetros de salida.
     T &= 480 + 72 = 552 \\
     x &= \frac{552}{2 + 0.5} = \frac{552}{2.5} = 220.80 \\
     x_n &= \frac{220.80}{2} = 110.40 \\
-    \text{Verificación:}\;& 2 \times 220.80 + 1 \times 110.40 = 552 \;\checkmark
+    \text{Verif.:}\;& 2(220.80) + 1(110.40) = 441.60 + 110.40 = 552 \;\checkmark
   \end{align*}
 \end{ejemplo}
 
@@ -452,8 +488,8 @@ parámetros de salida.
   p_f = p_0 - \text{ahorro}
 \]
 
-Tu función retorna $p_f$.  El llamador calcula el ahorro como
-$\text{ahorro} = p_0 - p_f$ para mostrarlo.
+Tu función retorna $p_f$.  El llamador calcula $\text{ahorro} = p_0 - p_f$
+para mostrarlo.
 
 \begin{ejemplo}[Precio \$800, descuento 25\,\%]
   \[
@@ -484,9 +520,9 @@ $\text{ahorro} = p_0 - p_f$ para mostrarlo.
 \end{ejemplo}
 
 \begin{consejo}
-  Para la dirección inversa (MXN → USD), el usuario ingresa el recíproco:
-  $tc = 1 / 17.50 \approx 0.0571$.  Tu función no necesita casos especiales;
-  la misma fórmula funciona en cualquier dirección.
+  Para la dirección inversa (MXN $\to$ USD) el usuario ingresa el recíproco:
+  $tc = 1/17.50 \approx 0.0571$.  La misma fórmula funciona en cualquier
+  dirección.
 \end{consejo}
 
 \end{document}
