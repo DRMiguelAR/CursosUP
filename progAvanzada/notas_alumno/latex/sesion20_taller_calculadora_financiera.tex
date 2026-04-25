@@ -101,7 +101,7 @@ No contiene lógica financiera.
 // Eleva base a la potencia exp (exp >= 0); sin usar pow() de <cmath>
 double potencia(double base, int exp);
 
-// Retorna el pct% de valor.  Ej: porcentaje(500, 16) devuelve 80.0
+// Retorna el pct% de valor
 double porcentaje(double valor, double pct);
 
 // Redondea val a exactamente dos decimales
@@ -118,35 +118,35 @@ Este módulo \textbf{solo calcula}: nunca usa \texttt{cin} ni \texttt{cout}.
 #pragma once
 
 // F1 - interes simple
-//   Retorna el monto final M = capital + I
+//   Retorna el monto final (consulta Parte II para la formula)
 double interes_simple(double capital, double tasa, double tiempo);
 
 // F2 - interes compuesto
-//   Retorna el monto final M = capital * (1 + tasa)^periodos
+//   Retorna el monto final (consulta Parte II para la formula)
 double interes_compuesto(double capital, double tasa, int periodos);
 
 // F3 - calcular IVA
-//   Retorna el monto del IVA = precio * tasa
+//   Retorna el monto del IVA (consulta Parte II para la formula)
 double calcular_iva(double precio, double tasa);
 
 // F4 - desglosar IVA
-//   Retorna el precio base = precio_con_iva / (1 + tasa)
+//   Retorna el precio base sin IVA (consulta Parte II para la formula)
 double desglosar_iva(double precio_con_iva, double tasa);
 
 // F5 - cuenta de restaurante
 //   Retorna el pago por adulto
-//   Escribe en total  : subtotal + propina
-//   Escribe en pago_n : pago por nino (mitad del adulto)
+//   Escribe en total  : monto total de la cuenta
+//   Escribe en pago_n : pago por nino
 double cuenta_restaurante(double subtotal, double pct_propina,
                           int adultos, int ninos,
                           double& total, double& pago_n);
 
 // F6 - descuento comercial
-//   Retorna el precio final = precio * (1 - pct/100)
+//   Retorna el precio final con descuento aplicado (consulta Parte II para la formula)
 double descuento(double precio, double pct_descuento);
 
 // F7 - conversion de divisas
-//   Retorna monto * tipo_cambio
+//   Retorna el equivalente en la moneda destino (consulta Parte II para la formula)
 double convertir_divisas(double monto, double tipo_cambio);
 \end{lstlisting}
 
