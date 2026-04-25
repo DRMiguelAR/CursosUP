@@ -95,7 +95,7 @@ campos o calcular calendarios.
   \textit{partes segundas} (segundos). Esos nombres llegan hasta hoy.\\
   \textit{Referencia:} Neugebauer, O. \textit{The Exact Sciences in Antiquity}.
   Dover, 1969.
-\end{tecnico}
+\end{consejo}
 
 % -----------------------------------------------------------------------------
 \subsection{La propuesta de la base 12}
@@ -169,7 +169,7 @@ Cada posición vale el \textbf{doble} de la posición a su derecha
 (potencias de 2).
 
 \begin{center}
-\begin{tabular}{cccccccc}
+\begin{tabular}{ccccccccc}
   \toprule
   \textbf{Posición} & 7 & 6 & 5 & 4 & 3 & 2 & 1 & 0 \\
   \textbf{Valor}    & $2^7$ & $2^6$ & $2^5$ & $2^4$ & $2^3$ & $2^2$ & $2^1$ & $2^0$ \\
@@ -262,7 +262,7 @@ Cada posición vale el \textbf{óctuple} de la posición a su derecha
 $2498_{10} = 4702_8$. \checkmark
 \end{ejemplo}
 
-\subsection{Octal ↔ Binario: la relación directa}
+\subsection{Octal $\leftrightarrow$ Binario: la relación directa}
 
 3 bits representan exactamente los valores 0–7.
 Por eso convertir entre octal y binario es inmediato: sustituye cada dígito
@@ -371,8 +371,8 @@ Agrupa de derecha a izquierda en bloques de 4 bits y reemplaza.
   \midrule
   Cualquier base → decimal & Suma pesos posicionales  & $\sum d_i \times b^i$ \\
   Decimal → cualquier base & Divisiones sucesivas por $b$ & Leer restos de abajo arriba \\
-  Binario ↔ octal           & Grupos de 3 bits            & Directo, sin pasar por decimal \\
-  Binario ↔ hexadecimal     & Grupos de 4 bits            & Directo, sin pasar por decimal \\
+  Binario $\leftrightarrow$ octal           & Grupos de 3 bits            & Directo, sin pasar por decimal \\
+  Binario $\leftrightarrow$ hexadecimal     & Grupos de 4 bits            & Directo, sin pasar por decimal \\
   \bottomrule
 \end{tabular}
 \end{center}
@@ -422,8 +422,8 @@ por lo que cualquier número que lleve esos dígitos se lo salta.
   \item \textbf{Binario → decimal:} suma los pesos posicionales donde hay un~1.
   \item \textbf{Decimal → base $b$:} divide repetidamente entre $b$
         y lee los restos de abajo hacia arriba.
-  \item \textbf{Binario ↔ octal:} grupos de 3 bits. \quad
-        \textbf{Binario ↔ hex:} grupos de 4 bits.
+  \item \textbf{Binario $\leftrightarrow$ octal:} grupos de 3 bits. \quad
+        \textbf{Binario $\leftrightarrow$ hex:} grupos de 4 bits.
   \item Hexadecimal existe para escribir binario de forma compacta;
         es la notación más usada en programación de bajo nivel.
 \end{itemize}
