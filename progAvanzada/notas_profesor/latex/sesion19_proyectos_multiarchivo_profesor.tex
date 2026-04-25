@@ -1,0 +1,786 @@
+% =============================================================================
+%  Notas del Profesor — Sesión 19: Proyectos de múltiples archivos
+%  Programación Avanzada — Universidad Panamericana
+%  Compilar: pdflatex sesion19_proyectos_multiarchivo_profesor.tex
+% =============================================================================
+\documentclass[12pt, oneside]{article}
+\usepackage[profesor]{progavanzada}
+\usepackage{array}
+
+\begin{document}
+
+\portada{Sesión 19}{Proyectos de múltiples archivos}{2026}
+
+\tableofcontents
+\newpage
+
+% =============================================================================
+\section{Objetivos de la sesión}
+% =============================================================================
+
+Al finalizar la sesión el alumno será capaz de:
+
+\begin{enumerate}
+  \item Explicar la diferencia entre declaración y definición en C++ y por
+        qué los headers contienen solo declaraciones.
+  \item Escribir un archivo \texttt{.h} correcto con guard de inclusión.
+  \item Describir los dos pasos de compilación (\texttt{.cpp} → \texttt{.o}
+        → ejecutable) y el rol del enlazador.
+  \item Escribir un \texttt{Makefile} básico partiendo de la línea de
+        compilación directa y evolucionarlo con variables.
+  \item Crear un \texttt{CMakeLists.txt} mínimo y seguir el flujo
+        \textit{out-of-source build}.
+  \item Leer un proyecto de varios módulos e identificar el grafo de
+        dependencias entre archivos.
+\end{enumerate}
+
+\begin{notaprofesor}[Duración estimada]
+  90 minutos.  Distribución sugerida:\\[2pt]
+  \begin{tabular}{rl}
+    10 min & gancho histórico + preguntas de arranque \\
+    15 min & headers: declaración vs.\ definición, guards \\
+    20 min & demo en vivo: compilar por etapas con \texttt{g++} \\
+           & + la línea que no para de crecer \\
+    25 min & Make: del Makefile mínimo a las variables \\
+    15 min & CMake: \texttt{CMakeLists.txt} y flujo de trabajo \\
+     5 min & proyecto de personas + asignación de ejercicios \\
+  \end{tabular}\\[4pt]
+  Los alumnos siguen la demo en el cuaderno Jupyter
+  (\texttt{sesiones/sesion19\_proyectos\_multiarchivo.ipynb}).
+  Los ejercicios se terminan en casa.
+\end{notaprofesor}
+
+% =============================================================================
+\section{Prerrequisitos}
+% =============================================================================
+
+\begin{itemize}
+  \item Compilar y ejecutar un programa de un solo archivo con \texttt{g++}
+        (sesiones 1--2).
+  \item Funciones: declaración y llamada (sesión 4).
+  \item Apuntadores y arrays como parámetros (sesión 14).
+  \item Familiaridad básica con terminal: \texttt{ls}, \texttt{cd},
+        \texttt{cat}, redirección.
+\end{itemize}
+
+\begin{notaprofesor}
+  Esta sesión no requiere recursión ni conocimiento de STL.  Es intencionalmente
+  accesible: el arco conceptual va de ``un archivo'' a ``varios archivos'', y todo
+  el herramental (headers, \texttt{.o}, Make, CMake) es motivado por ese problema.
+  \par\smallskip
+  Señal de alerta en la demo: si un alumno no recuerda cómo compilar con
+  \texttt{g++}, detenerse brevemente en los flags más comunes (\texttt{-o},
+  \texttt{-Wall}, \texttt{-std=c++17}) antes de agregar \texttt{-c}.
+\end{notaprofesor}
+
+% =============================================================================
+\section{Arranque y preguntas de sondeo}
+% =============================================================================
+
+\begin{notaprofesor}[Preguntas de arranque (10 min)]
+  \textbf{1.\ ``¿Cuántos archivos tiene el proyecto más grande que han escrito?''}\\
+  Respuesta esperada: uno.  Si alguien dice más, pedirle que explique cómo
+  lo organizó.  Seguir con: ``¿cómo saben en cuál archivo está la función
+  que necesitan?''
+
+  \medskip
+  \textbf{2.\ ``Si tienen un archivo de 2\,000 líneas y cambian una función
+  de 3 líneas, ¿qué tiene que hacer la computadora?''}\\
+  Respuesta esperada: recompilar todo.  Seguir con: ``¿y si pudiéramos
+  recompilar solo esa función?'' — eso es lo que aprenderemos hoy.
+
+  \medskip
+  \textbf{3.\ ``¿Cómo creen que funciona el kernel de Linux, que tiene más
+  de 30 millones de líneas?''}\\
+  Respuesta esperada: muchos archivos.  Dato de gancho: el kernel tiene
+  $\approx$70\,000 archivos \texttt{.c} y su \texttt{Makefile} tiene miles
+  de líneas.  Sin herramientas de gestión de compilación sería imposible
+  de mantener.
+\end{notaprofesor}
+
+% =============================================================================
+\section{Declaración versus definición}
+% =============================================================================
+
+\subsection{Explicación central}
+
+La distinción es sencilla pero se confunde con frecuencia:
+
+\begin{itemize}
+  \item \textbf{Declaración:} le dice al compilador que algo \textit{existe}
+        y cuál es su forma (tipo de retorno, parámetros).  No genera código
+        ejecutable.  Se puede repetir cuantas veces sea necesario.
+  \item \textbf{Definición:} proporciona el cuerpo.  Solo puede aparecer
+        \textbf{una vez} en todo el programa (\textbf{ODR}: \textit{One Definition Rule}).
+\end{itemize}
+
+\begin{notaprofesor}[Analogía recomendada: el índice del libro]
+  ``Una \textit{declaración} es como el índice de un libro: te dice que
+  existe el capítulo 5 y en qué página está.  La \textit{definición} es
+  el capítulo completo.  Puedes imprimir el índice mil veces (en cada
+  archivo que lo necesite), pero el capítulo completo solo existe una vez.''
+  \par\smallskip
+  Esta analogía funciona bien para motivar el patrón
+  \texttt{.h} = declaraciones, \texttt{.cpp} = definiciones.
+\end{notaprofesor}
+
+\subsection{Guards de inclusión}
+
+\begin{notaprofesor}[Demo recomendada: error sin guard (5 min)]
+  Crear un \texttt{funciones.h} sin guard que declare \texttt{void saludar(char*);}.
+  En \texttt{main.cpp}, incluirlo dos veces:
+\begin{verbatim}
+#include "funciones.h"
+#include "funciones.h"   // segunda inclusion deliberada
+\end{verbatim}
+  Con solo declaraciones no ocurre ningún error (las declaraciones se pueden
+  repetir).  Ahora poner una definición en el header:
+\begin{verbatim}
+void saludar(char* n) { cout << "Hola " << n; }
+\end{verbatim}
+  Compilar y mostrar el error:
+\begin{verbatim}
+error: redefinition of 'void saludar(char*)'
+\end{verbatim}
+  Agregar el guard y demostrar que desaparece.  Luego quitar la definición del
+  header (regla: solo declaraciones) y verificar que tampoco hay error sin guard.
+  \par\smallskip
+  \textbf{Por qué vale la pena hacer esto:} los alumnos recuerdan el guard
+  porque lo ven solucionar un error concreto, no porque alguien les dijo que
+  lo pusieran.
+\end{notaprofesor}
+
+\begin{notaprofesor}[FAQ: \texttt{\#pragma once} vs.\ guard manual]
+  \textbf{¿Cuál es mejor?}\\
+  \texttt{\#pragma once} es más simple y elimina el riesgo de escribir mal
+  el nombre de la macro (error clásico: \texttt{FUNCIONES\_H} en el
+  \texttt{\#ifndef} y \texttt{FUNCIONES\_HH} en el \texttt{\#define}).
+  El guard manual es el estándar ISO histórico (aparece en todos los
+  tutoriales y código existente).  Para este curso, ambas formas son
+  aceptables.
+
+  \medskip
+  \textbf{¿Puede un \texttt{.h} contener definiciones?}\\
+  Sí, en dos casos: funciones \texttt{inline} y plantillas (\textit{templates}).
+  Ambos tienen reglas especiales en la ODR que permiten múltiples
+  definiciones idénticas.  Para este curso, la regla simple es:
+  solo declaraciones en el \texttt{.h}.
+\end{notaprofesor}
+
+% =============================================================================
+\section{Compilación por etapas}
+% =============================================================================
+
+\subsection{Demo en vivo: los dos pasos}
+
+\begin{notaprofesor}[Guión de la demo (15 min)]
+  Trabaja con los archivos de \texttt{materialInicial/sesion19/}
+  (\texttt{main.cpp}, \texttt{funciones.h}, \texttt{funciones.cpp}).
+
+  \begin{enumerate}
+    \item Mostrar los tres archivos con \texttt{cat} o en el editor.
+    \item Compilar solo \texttt{funciones.cpp}:
+\begin{verbatim}
+g++ -c funciones.cpp -o funciones.o
+ls -lh funciones.o
+\end{verbatim}
+    \item Intentar ejecutar el \texttt{.o} directamente:
+\begin{verbatim}
+./funciones.o
+\end{verbatim}
+          Da error — no es un ejecutable.  Preguntar: ``¿qué falta?''
+          El punto de entrada (\texttt{main}).  Eso es exactamente lo
+          que aporta el enlazador.
+    \item Opcional: \texttt{nm --demangle funciones.o} para mostrar los
+          símbolos definidos (\texttt{T}) en el objeto.
+    \item Compilar \texttt{main.cpp}:
+\begin{verbatim}
+g++ -c main.cpp -o main.o
+nm --demangle main.o | grep saludar
+\end{verbatim}
+          Señalar que \texttt{saludar} aparece como \texttt{U}
+          (\textit{undefined}) en \texttt{main.o}: está declarada pero
+          no definida ahí.
+    \item Enlazar:
+\begin{verbatim}
+g++ main.o funciones.o -o programa
+./programa
+\end{verbatim}
+    \item Modificar \texttt{funciones.cpp} (cambiar el mensaje).
+          Mostrar que solo hay que recompilar ese archivo:
+\begin{verbatim}
+g++ -c funciones.cpp -o funciones.o
+g++ main.o funciones.o -o programa
+./programa
+\end{verbatim}
+          \texttt{main.o} no se volvió a compilar.  Preguntar:
+          ``¿por qué no necesitamos recompilar \texttt{main.o}?''
+  \end{enumerate}
+\end{notaprofesor}
+
+\subsection{La línea que no para de crecer}
+
+\begin{notaprofesor}[Transición clave: motivar Make (5 min)]
+  Después de la demo, mostrar cómo se ve la línea de compilación para el
+  proyecto de personas (6 módulos):
+\begin{verbatim}
+g++ -std=c++17 -Wall -Wextra -o programa \
+    main.cpp auxiliar.cpp obtener_datos.cpp \
+    mate.cpp buscar.cpp
+\end{verbatim}
+  Preguntar: ``¿Qué pasa cuando el proyecto tenga 20 archivos?  ¿O cuando
+  necesitemos agregar \texttt{-O2} para optimización?  ¿O linkear una
+  librería externa?''  Mostrar la versión inflada:
+\begin{verbatim}
+g++ -std=c++17 -Wall -Wextra -O2 -I./include \
+    -I./lib/json/include \
+    main.cpp auxiliar.cpp obtener_datos.cpp    \
+    mate.cpp buscar.cpp graficas.cpp reportes.cpp \
+    -L./lib -ljson -lm -o programa
+\end{verbatim}
+  Pausa.  ``Hay una solución mejor.  Se llama \texttt{Makefile}.''
+  \par\smallskip
+  \textbf{Por qué funciona esta transición:} el alumno ya vivió la incomodidad
+  de la línea larga durante la demo.  La motivación es visceral, no abstracta.
+\end{notaprofesor}
+
+\begin{notaprofesor}[FAQ: compilación]
+  \textbf{¿Qué es un ``error de enlace'' (\textit{linker error})?}\\
+  Ocurre cuando el linker no encuentra la definición de algo declarado.
+  El mensaje típico es:
+\begin{verbatim}
+undefined reference to `saludar(char*)'
+\end{verbatim}
+  Causa más común: olvidar incluir un \texttt{.cpp} en el comando de enlace.
+
+  \medskip
+  \textbf{¿Por qué el \texttt{.h} no se compila directamente?}\\
+  El \texttt{.h} no contiene definiciones; el preprocesador lo copia
+  textualmente en cada \texttt{.cpp} que lo incluye.  Técnicamente puedes
+  hacer \texttt{g++ -c funciones.h}, pero genera un objeto vacío o inútil.
+
+  \medskip
+  \textbf{¿Qué significa el flag \texttt{-I./include}?}\\
+  Le dice al compilador dónde buscar headers adicionales.  Sin ese flag,
+  \texttt{\#include "json.hpp"} fallaría si el archivo no está en el
+  directorio actual.
+\end{notaprofesor}
+
+% =============================================================================
+\section{Make: del Makefile mínimo a las variables}
+% =============================================================================
+
+\subsection{Secuencia de escritura en vivo}
+
+\begin{notaprofesor}[Guión de la demo de Make (25 min)]
+  Escribe el Makefile en vivo, paso a paso.  No muestres el resultado final
+  de entrada — la evolución gradual es el punto pedagógico central de esta sesión.
+
+  \medskip
+  \textbf{Paso 1 — Solo la línea de compilación (5 min)}
+
+  Crear \texttt{Makefile} con el editor y escribir:
+\begin{verbatim}
+programa:
+	g++ -std=c++17 -Wall -Wextra -o programa \
+	    main.cpp auxiliar.cpp obtener_datos.cpp \
+	    mate.cpp buscar.cpp
+\end{verbatim}
+  Ejecutar \texttt{make}.  Preguntar: ``¿Qué ganamos respecto al comando
+  directo?''  Respuesta: no tenemos que \textit{recordar} ni \textit{teclear}
+  la línea — solo \texttt{make}.
+  \par\smallskip
+  Señalar el Tab antes del comando.  Borrar el Tab, reemplazar con espacios
+  y ejecutar de nuevo para provocar el error:
+\begin{verbatim}
+Makefile:2: *** missing separator.  Stop.
+\end{verbatim}
+  Restaurar el Tab.
+
+  \medskip
+  \textbf{Paso 2 — Variable para el compilador (3 min)}
+
+  Agregar \texttt{CXX = g++} arriba y sustituir en el comando.  Preguntar:
+  ``¿Por qué es útil poner el compilador en una variable?''  Si alguien
+  trabaja con \texttt{clang++} o necesita cross-compilar, solo cambia una
+  línea.
+
+  \medskip
+  \textbf{Paso 3 — Variable para los flags (3 min)}
+
+  Agregar \texttt{CXXFLAGS = -std=c++17 -Wall -Wextra}.  Enfatizar: cuando
+  el proyecto crezca y se necesite agregar \texttt{-O2} o \texttt{-g},
+  se edita solo \texttt{CXXFLAGS}, no cada regla.
+
+  \medskip
+  \textbf{Paso 4 — Variables para archivos y target (4 min)}
+
+  Agregar \texttt{TARGET} y \texttt{SRCS}:
+\begin{verbatim}
+CXX      = g++
+CXXFLAGS = -std=c++17 -Wall -Wextra
+TARGET   = programa
+SRCS     = main.cpp auxiliar.cpp obtener_datos.cpp \
+           mate.cpp buscar.cpp
+
+$(TARGET): $(SRCS)
+	$(CXX) $(CXXFLAGS) $(SRCS) -o $(TARGET)
+\end{verbatim}
+  Preguntar: ``Ahora quiero agregar \texttt{graficas.cpp}.  ¿Qué línea
+  toco?''  Solo \texttt{SRCS}.
+
+  \medskip
+  \textbf{Paso 5 — Introducir OBJS y recompilación selectiva (10 min)}
+
+  Ejecutar \texttt{make} dos veces seguidas para mostrar que la segunda
+  vez recompila todo aunque nada cambió.  Preguntar: ``¿Cómo podría Make
+  saber que ya está compilado?''  Llevar hacia la idea de fechas y archivos
+  intermedios.
+
+  Evolucionar a la versión con \texttt{OBJS}:
+\begin{verbatim}
+OBJS = main.o auxiliar.o obtener_datos.o mate.o buscar.o
+
+$(TARGET): $(OBJS)
+	$(CXX) $(OBJS) -o $(TARGET)
+
+%.o: %.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+clean:
+	rm -f $(OBJS) $(TARGET)
+\end{verbatim}
+  Ejecutar \texttt{make}.  Luego:
+\begin{verbatim}
+touch auxiliar.cpp    # simula una edición en auxiliar.cpp
+make
+\end{verbatim}
+  Mostrar que solo \texttt{auxiliar.o} se recompila.  Luego:
+\begin{verbatim}
+touch persona.h       # simula un cambio en el header compartido
+make
+\end{verbatim}
+  Mostrar que Make \textit{no} detecta esto sin dependencias explícitas
+  de headers — solo reenlaza el ejecutable.  Decir: ``¿Es correcto?  No.
+  Pero Fix completo con dependencias de headers es para el ejercicio.''
+  (El alumno lo resuelve en el ejercicio 2.)
+  \par\smallskip
+  Terminar con \texttt{make clean} y verificar que desaparecen los artefactos.
+\end{notaprofesor}
+
+\subsection{Makefile completo de referencia}
+
+\begin{verbatim}
+CXX      = g++
+CXXFLAGS = -std=c++17 -Wall -Wextra
+TARGET   = programa
+SRCS     = main.cpp auxiliar.cpp obtener_datos.cpp mate.cpp buscar.cpp
+OBJS     = $(SRCS:.cpp=.o)
+
+$(TARGET): $(OBJS)
+	$(CXX) $(OBJS) -o $(TARGET)
+
+%.o: %.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+clean:
+	rm -f $(OBJS) $(TARGET)
+\end{verbatim}
+
+\begin{notaprofesor}[FAQ: Make]
+  \textbf{Error ``missing separator'':}\\
+  El comando empieza con espacios, no con Tab.  En VS Code se ve igual
+  visualmente; decir a los alumnos que abran el archivo en \texttt{cat -A}
+  para ver los caracteres ocultos (\texttt{\^{}I} = Tab, espacios = espacios).
+
+  \medskip
+  \textbf{¿Por qué no usar simplemente \texttt{g++ *.cpp} siempre?}\\
+  Funciona para compilar, pero recompila \textit{todo} en cada invocación.
+  En proyectos de 100+ archivos con 5+ minutos de compilación, es inaceptable.
+
+  \medskip
+  \textbf{¿Qué significa \texttt{\$(SRCS:.cpp=.o)}?}\\
+  Es una sustitución de texto en Make: reemplaza la extensión \texttt{.cpp}
+  por \texttt{.o} en cada elemento de \texttt{SRCS}.  Equivale a escribir
+  \texttt{OBJS = main.o auxiliar.o ...} a mano.
+
+  \medskip
+  \textbf{¿Cómo agrego dependencias de headers?}\\
+  Declarando el \texttt{.o} como objetivo con sus \texttt{.h} como
+  dependencias:
+\begin{verbatim}
+auxiliar.o: auxiliar.cpp auxiliar.h persona.h
+\end{verbatim}
+  Con esto, si \texttt{persona.h} cambia, Make recompila \texttt{auxiliar.o}.
+  Sin esta línea, Make no lo sabe.  (Esto es el ejercicio 2.)
+
+  \medskip
+  \textbf{¿Hace Make algo con \texttt{clean}?}\\
+  \texttt{clean} no es una regla especial de Make — es solo un objetivo
+  sin archivo correspondiente.  Make lo ejecuta cuando escribes
+  \texttt{make clean}.  La convención del nombre es universal.
+\end{notaprofesor}
+
+% =============================================================================
+\section{CMake}
+% =============================================================================
+
+\begin{notaprofesor}[Demo de CMake (15 min)]
+  \begin{enumerate}
+    \item Crear \texttt{CMakeLists.txt} en el directorio del proyecto:
+\begin{verbatim}
+cmake_minimum_required(VERSION 3.10)
+project(MiProyecto VERSION 1.0)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED True)
+add_executable(programa
+    main.cpp
+    auxiliar.cpp
+    obtener_datos.cpp
+    mate.cpp
+    buscar.cpp
+)
+\end{verbatim}
+    \item Crear el directorio de build y configurar:
+\begin{verbatim}
+mkdir build && cd build
+cmake ..
+\end{verbatim}
+          Señalar los archivos generados: \texttt{Makefile},
+          \texttt{CMakeCache.txt}, \texttt{CMakeFiles/}.
+    \item Compilar y ejecutar:
+\begin{verbatim}
+make
+./programa
+\end{verbatim}
+    \item Regresar al directorio fuente (\texttt{cd ..}) y mostrar que
+          está limpio: solo \texttt{CMakeLists.txt}, los \texttt{.cpp}
+          y los \texttt{.h}.  Ningún \texttt{.o} ni \texttt{Makefile}
+          generado ensucia el directorio de código.
+    \item Preguntar: ``¿qué poner en \texttt{.gitignore}?''
+          Respuesta: \texttt{build/}.
+  \end{enumerate}
+\end{notaprofesor}
+
+\begin{notaprofesor}[FAQ: CMake]
+  \textbf{¿Para qué sirve \texttt{cmake\_minimum\_required}?}\\
+  Protege contra versiones antiguas de CMake que no soporten las funciones
+  usadas en el archivo.  Buena práctica: poner la versión mínima real que
+  necesita el proyecto.
+
+  \medskip
+  \textbf{¿Ninja vs.\ Make en CMake?}\\
+  \texttt{cmake -GNinja ..} genera archivos Ninja en lugar de Makefile.
+  Ninja es más rápido en proyectos grandes (mejor paralelismo).
+  Para este curso, Make es suficiente.
+
+  \medskip
+  \textbf{¿Cómo agrego flags de compilación en CMake?}\\
+\begin{verbatim}
+target_compile_options(programa PRIVATE -Wall -Wextra)
+\end{verbatim}
+  O globalmente con \texttt{add\_compile\_options(-Wall)}.
+
+  \medskip
+  \textbf{``Prefiero no usar \texttt{mkdir build / cd build}, ¿hay otra forma?''}\\
+  Sí: \texttt{cmake -B build} desde el directorio raíz genera el build
+  en \texttt{build/} sin necesidad de \texttt{cd}.  Luego
+  \texttt{cmake --build build} compila sin entrar al directorio.
+  Más cómodo en proyectos donde se abre el editor en la raíz.
+
+  \medskip
+  \textbf{¿Cuándo usar Make y cuándo CMake?}\\
+  Make: proyecto propio que solo se usará en Linux/Mac, equipo pequeño,
+  simplicidad máxima.  CMake: proyecto que debe funcionar en Windows,
+  que se integrará con un IDE (CLion, VS, etc.), o que crecerá a más de
+  un par de directorios.  La industria usa CMake casi universalmente en
+  proyectos C++ modernos.
+\end{notaprofesor}
+
+% =============================================================================
+\section{Proyecto ejemplo: sistema de personas}
+% =============================================================================
+
+\begin{notaprofesor}[Advertencia sobre el código de proyecto1]
+  El código en \texttt{materialInicial/sesion19/proyecto1/} tiene inconsistencias
+  que conviene conocer antes de la sesión.  El objetivo es usar el proyecto para
+  \textit{leer} el grafo de dependencias, no para compilarlo.
+
+  \begin{itemize}
+    \item \textbf{Firmas inconsistentes en \texttt{buscar.h} vs.\ \texttt{buscar.cpp}:}
+          el header declara tres parámetros en algunas funciones pero la
+          implementación usa dos.  Código refactorizado a medias.
+    \item \textbf{Funciones duplicadas:} \texttt{buscar.cpp} contiene
+          implementaciones de \texttt{promedio\_edades} y
+          \texttt{promedio\_salarios} que ya están en \texttt{mate.cpp}.
+          Si se enlazan juntos, falla con error de ODR.
+    \item \textbf{Include incorrecto en \texttt{main.cpp}:}
+          incluye \texttt{"obtener.h"} pero el archivo se llama
+          \texttt{obtener\_datos.h}.
+  \end{itemize}
+
+  \textbf{Sugerencia:} mostrar el grafo de inclusiones en el pizarrón
+  y señalar por qué \texttt{persona.h} está en el centro.  Si se quiere
+  compilar en clase, corregir los errores antes.
+\end{notaprofesor}
+
+% =============================================================================
+\section{Errores frecuentes}
+% =============================================================================
+
+\begin{notaprofesor}[Errores más comunes de los alumnos]
+
+  \textbf{1.\ Poner definiciones en el header.}\\
+  Síntoma: el proyecto compila bien si solo \texttt{main.cpp} incluye el
+  \texttt{.h}, pero falla al enlazar con un segundo \texttt{.cpp}.
+  Error: \texttt{multiple definition of `f()'}.\\
+  Remedio: mover la definición al \texttt{.cpp}; en el \texttt{.h}
+  dejar solo la declaración.
+
+  \vspace{0.5em}
+  \textbf{2.\ Olvidar el Tab en el Makefile.}\\
+  Error: \texttt{Makefile:N: *** missing separator.  Stop.}\\
+  Remedio: el comando de la regla \textit{siempre} empieza con Tab.
+  En VS Code, verificar que el archivo no esté en modo ``Indent with
+  spaces''.
+
+  \vspace{0.5em}
+  \textbf{3.\ No incluir el \texttt{.h} propio en el \texttt{.cpp}.}\\
+  Síntoma: el \texttt{.cpp} compila solo, pero al enlazar con \texttt{main.cpp}
+  (que sí incluye el \texttt{.h}) el linker reporta que las firmas no coinciden.
+  Remedio: el primer \texttt{\#include} en cualquier \texttt{.cpp} debe ser
+  su propio \texttt{.h}.  Esto hace que el compilador verifique que la
+  declaración y la definición son consistentes.
+
+  \vspace{0.5em}
+  \textbf{4.\ Usar \texttt{<>} para headers propios.}\\
+  Síntoma: \texttt{fatal error: funciones.h: No such file or directory}.\\
+  Remedio: headers del proyecto van con \texttt{""}, no con \texttt{<>}.
+
+  \vspace{0.5em}
+  \textbf{5.\ Olvidar agregar el \texttt{.cpp} al Makefile o CMakeLists.}\\
+  Síntoma: el código compila pero hay errores de enlace para funciones del
+  módulo nuevo.\\
+  Remedio: todo \texttt{.cpp} que define funciones usadas por otros debe
+  aparecer en la lista de fuentes del sistema de compilación.
+
+\end{notaprofesor}
+
+% =============================================================================
+\section{Soluciones a los ejercicios}
+% =============================================================================
+
+\begin{notaprofesor}[Ejercicio 1 — Evolución del Makefile]
+  El alumno debe mostrar cuatro versiones sucesivas del Makefile.
+
+  \textbf{Versión 1 — Solo la línea de compilación:}
+\begin{verbatim}
+programa:
+	g++ -std=c++17 -Wall -Wextra -o programa \
+	    main.cpp funciones.cpp
+\end{verbatim}
+
+  \textbf{Versión 2 — Agrega \texttt{CXX}:}
+\begin{verbatim}
+CXX = g++
+
+programa:
+	$(CXX) -std=c++17 -Wall -Wextra -o programa \
+	    main.cpp funciones.cpp
+\end{verbatim}
+
+  \textbf{Versión 3 — Agrega \texttt{CXXFLAGS} y \texttt{TARGET}:}
+\begin{verbatim}
+CXX      = g++
+CXXFLAGS = -std=c++17 -Wall -Wextra
+TARGET   = programa
+
+$(TARGET):
+	$(CXX) $(CXXFLAGS) -o $(TARGET) main.cpp funciones.cpp
+\end{verbatim}
+
+  \textbf{Versión 4 — Agrega \texttt{SRCS}:}
+\begin{verbatim}
+CXX      = g++
+CXXFLAGS = -std=c++17 -Wall -Wextra
+TARGET   = programa
+SRCS     = main.cpp funciones.cpp
+
+$(TARGET): $(SRCS)
+	$(CXX) $(CXXFLAGS) $(SRCS) -o $(TARGET)
+\end{verbatim}
+
+  Criterio de evaluación: cada versión debe ser funcional (compilar el
+  proyecto) y mostrar un avance claro respecto a la anterior.
+\end{notaprofesor}
+
+\begin{notaprofesor}[Ejercicio 2 — Observar recompilación]
+  \textbf{Modificar \texttt{funciones.cpp}:}\\
+  Make recompila \texttt{funciones.o} y reenlaza el ejecutable.
+  \texttt{main.o} no se toca porque su fecha es más reciente que la de
+  \texttt{main.cpp}.
+
+  \medskip
+  \textbf{Modificar \texttt{funciones.h}:}\\
+  Con el Makefile de la sección 5 (que tiene la regla patrón pero
+  \textit{no} declara dependencias de headers explícitas), Make \textbf{no}
+  detecta el cambio en \texttt{funciones.h} porque ningún \texttt{.o}
+  lo lista como dependencia.  Solo recompila si el \texttt{.o}
+  correspondiente es más nuevo que el \texttt{.h}, lo cual no siempre ocurre.
+
+  Para que funcione correctamente, hay que agregar:
+\begin{verbatim}
+main.o:      main.cpp funciones.h
+funciones.o: funciones.cpp funciones.h
+\end{verbatim}
+  Ahora si \texttt{funciones.h} cambia, Make recompila \textbf{ambos} objetos.
+\end{notaprofesor}
+
+\begin{notaprofesor}[Ejercicio 3 — Doble definición]
+  \textbf{Mismo archivo:}
+\begin{verbatim}
+void f() {}
+void f() {}   // error: redefinition of 'void f()'
+\end{verbatim}
+  Error de \textit{compilación}.  El compilador lo detecta antes de enlazar.
+
+  \medskip
+  \textbf{Archivos distintos:} si \texttt{a.cpp} y \texttt{b.cpp} definen
+  ambos \texttt{void f() \{\}}, cada archivo compila sin error,
+  pero al enlazar:
+\begin{verbatim}
+error: multiple definition of `f()'
+\end{verbatim}
+  Error de \textit{enlace}.  El linker detecta la violación de la ODR.
+  Este es el tipo de error que tendría el \texttt{proyecto1} al enlazar
+  \texttt{mate.o} y \texttt{buscar.o} (duplican la definición de
+  \texttt{promedio\_edades}).
+\end{notaprofesor}
+
+\begin{notaprofesor}[Ejercicio 4 — Módulo \texttt{estadisticas}]
+  \textbf{estadisticas.h:}
+\begin{verbatim}
+#ifndef ESTADISTICAS_H
+#define ESTADISTICAS_H
+#include "persona.h"
+
+double salario_maximo(Persona arr[], int n);
+
+#endif
+\end{verbatim}
+
+  \textbf{estadisticas.cpp:}
+\begin{verbatim}
+#include "estadisticas.h"
+
+double salario_maximo(Persona arr[], int n) {
+    double max = arr[0].salario;
+    for (int i = 1; i < n; i++)
+        if (arr[i].salario > max) max = arr[i].salario;
+    return max;
+}
+\end{verbatim}
+
+  \textbf{Makefile — agregar a \texttt{SRCS}:}
+\begin{verbatim}
+SRCS = main.cpp auxiliar.cpp obtener_datos.cpp \
+       mate.cpp buscar.cpp estadisticas.cpp
+\end{verbatim}
+
+  \textbf{CMakeLists.txt — agregar a \texttt{add\_executable}:}
+\begin{verbatim}
+add_executable(programa
+    ...
+    estadisticas.cpp
+)
+\end{verbatim}
+\end{notaprofesor}
+
+\begin{notaprofesor}[Ejercicio 5 — \texttt{make} vs.\ \texttt{make clean}]
+  \textbf{\texttt{make}}: construye los objetivos cuyas dependencias
+  son más recientes que ellos mismos, o los que no existen aún.
+
+  \textbf{\texttt{make clean}}: ejecuta \texttt{rm -f \$(OBJS) \$(TARGET)}.
+  Elimina todos los artefactos.  Útil cuando:
+  \begin{itemize}
+    \item Se cambia un flag de compilación (\texttt{CXXFLAGS}).  Make no
+          detecta cambios en variables, solo en fechas de archivos.
+    \item Se quiere verificar que el proyecto compila desde cero
+          (``compilación limpia'').
+    \item Los archivos \texttt{.o} son de una plataforma diferente
+          (por ejemplo, se copió el proyecto de otro sistema).
+  \end{itemize}
+\end{notaprofesor}
+
+% =============================================================================
+\section{Conexiones con temas posteriores}
+% =============================================================================
+
+\begin{itemize}
+  \item \textbf{Programación orientada a objetos} — Las clases en C++
+    viven naturalmente en módulos: \texttt{Persona.h} / \texttt{Persona.cpp}.
+    El patrón que ven hoy (declaración en \texttt{.h}, definición en
+    \texttt{.cpp}) es exactamente el que usarán para cada clase del curso OOP.
+  \item \textbf{Librerías estáticas y dinámicas} — Los archivos \texttt{.o}
+    que se producen hoy son los bloques que se empaquetan en una librería
+    (\texttt{.a} estática o \texttt{.so}/\texttt{.dll} dinámica).
+  \item \textbf{Header-only libraries} — Muchas librerías modernas de C++
+    (Eigen, nlohmann/json, stb) son solo un \texttt{.h}.  Explotan la
+    excepción \texttt{inline}/templates de la ODR para no requerir un
+    \texttt{.cpp}.  El alumno ya tiene los conceptos para entender por qué
+    eso es posible.
+  \item \textbf{Compilación incremental en CI/CD} — Los sistemas de
+    integración continua (GitHub Actions, GitLab CI) usan Make o CMake
+    para recompilar solo lo cambiado en cada PR.  El tiempo de pipeline
+    se reduce por el mismo principio de fechas que vieron hoy.
+\end{itemize}
+
+% =============================================================================
+\section{Rúbrica de ejercicios}
+% =============================================================================
+
+\begin{center}
+\begin{tabular}{p{7cm}cc}
+  \toprule
+  \textbf{Criterio} & \textbf{Puntos} & \textbf{Evidencia} \\
+  \midrule
+  \multicolumn{3}{l}{\textit{Ejercicio 1 — Evolución del Makefile}} \\
+  \quad Versión 1 funcional (solo línea)           & 5 & \texttt{make} produce ejecutable \\
+  \quad Versiones 2--4 muestran evolución clara    & 5 & variables correctas, uso de \texttt{\$(VAR)} \\
+  \midrule
+  \multicolumn{3}{l}{\textit{Ejercicio 2 — Observar recompilación}} \\
+  \quad Identifica correctamente qué recompila     & 5 & con y sin dependencia de header \\
+  \quad Explica por qué \texttt{.h} no se detecta & 5 & dependencias explícitas son necesarias \\
+  \midrule
+  \multicolumn{3}{l}{\textit{Ejercicio 3 — Doble definición}} \\
+  \quad Distingue error de compilación vs.\ enlace & 5 & mensaje de error correcto en cada caso \\
+  \quad Explica con la ODR                         & 5 & referencia a la regla \\
+  \midrule
+  \multicolumn{3}{l}{\textit{Ejercicio 4 — Módulo estadisticas}} \\
+  \quad Guard correcto en el header                & 4 & nombre consistente \\
+  \quad \texttt{.cpp} incluye su propio \texttt{.h}& 3 & primera línea del \texttt{.cpp} \\
+  \quad Agregado a Makefile y CMakeLists.txt       & 3 & en ambos lugares \\
+  \midrule
+  \multicolumn{3}{l}{\textit{Ejercicio 5 — make vs.\ make clean}} \\
+  \quad Diferencia correcta                        & 5 & qué hace cada uno \\
+  \quad Menciona el caso de cambio de flag         & 5 & Make no detecta cambios en variables \\
+  \midrule
+  \textbf{Total}                                   & \textbf{50} & \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+% =============================================================================
+\section{Materiales y recursos}
+% =============================================================================
+
+\begin{itemize}
+  \item \textbf{Cuaderno:}
+        \texttt{sesiones/sesion19\_proyectos\_multiarchivo.ipynb}
+  \item \textbf{Notas alumno:}
+        \texttt{notas\_alumno/pdf/sesion19\_proyectos\_multiarchivo.pdf}
+  \item \textbf{Material inicial:}
+        \texttt{materialInicial/sesion19/} (proyecto mínimo y proyecto1)
+\end{itemize}
+
+\end{document}

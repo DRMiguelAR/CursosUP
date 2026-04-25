@@ -1,0 +1,615 @@
+% =============================================================================
+%  Notas de clase — Sesión 19: Proyectos de múltiples archivos
+%  Programación Avanzada — Universidad Panamericana
+%  Compilar: pdflatex sesion19_proyectos_multiarchivo.tex
+% =============================================================================
+\documentclass[12pt, oneside]{article}
+\usepackage{progavanzada}
+\usepackage{array}
+
+\begin{document}
+
+\portada{Sesión 19}{Proyectos de múltiples archivos}{2026}
+
+\tableofcontents
+\newpage
+
+% =============================================================================
+\section{1976: el bug que no era un bug}
+% =============================================================================
+
+En 1976, Stuart Feldman trabajaba en los Laboratorios Bell cuando un colega
+pasó horas depurando un programa que juró haber corregido.  El problema no
+estaba en el código: el ejecutable había sido compilado desde una versión
+\textit{antigua} del fuente.  Alguien había editado el archivo, pero nadie
+había vuelto a compilar.
+
+Feldman decidió que las computadoras debían rastrear qué archivos habían
+cambiado y recompilar solo lo necesario.  En semanas escribió
+\textbf{Make}, la herramienta que desde entonces acompaña a todos los
+proyectos de software en Unix.  Casi cincuenta años después, todavía la
+usamos.
+
+\begin{tecnico}[Historia: Make y el origen de los gestores de construcción]
+  Stuart Feldman inventó Make en 1976 en Bell Labs.  Su diseño refleja la
+  filosofía Unix: una sola herramienta que hace una cosa bien y se compone
+  con otras.
+  \par\smallskip
+  Décadas después surgieron alternativas: \textbf{CMake} (1999) para
+  proyectos multiplataforma, \textbf{Ninja} (2012) para velocidad extrema
+  en proyectos grandes (Chromium, LLVM), y \textbf{Bazel} (2015, Google)
+  para repositorios monolíticos de millones de líneas.
+  \par\smallskip
+  \textit{Referencia:} Feldman, S.\,I. (1979). ``Make — A Program for
+  Maintaining Computer Programs.'' \textit{Software: Practice and
+  Experience}, 9(4), 255–265.
+\end{tecnico}
+
+% =============================================================================
+\section{El problema: cuando un archivo no alcanza}
+% =============================================================================
+
+Empieza un proyecto con 50 líneas.  Un mes después tiene 500; un semestre
+después, 5\,000.  Editar y recompilar un solo archivo gigante tiene varios
+costos:
+
+\begin{itemize}
+  \item \textbf{Lectura:} buscar una función entre miles de líneas es lento.
+  \item \textbf{Colaboración:} dos personas no pueden editar el mismo archivo
+        sin conflictos de versión.
+  \item \textbf{Compilación:} cambiar una función obliga a recompilar todo el
+        programa, aunque el cambio no afecte al resto.
+  \item \textbf{Reutilización:} no puedes usar tus funciones en otro proyecto
+        sin copiar el archivo completo.
+\end{itemize}
+
+La solución es dividir el código en \textbf{módulos}: unidades independientes
+que se pueden escribir, compilar y reutilizar por separado.
+
+% =============================================================================
+\section{Archivos de cabecera: el contrato entre módulos}
+% =============================================================================
+
+\subsection{Declaración versus definición}
+
+Cada módulo existe en dos archivos:
+
+\begin{description}
+  \item[\texttt{modulo.h}] Contiene las \textbf{declaraciones}: le dice al
+    compilador qué funciones y tipos \textit{existen} y cuál es su forma.
+    No hay código ejecutable.
+  \item[\texttt{modulo.cpp}] Contiene las \textbf{definiciones}: cómo
+    funcionan esas funciones.  Incluye su propio \texttt{.h} para que el
+    compilador verifique que la definición coincide con la declaración.
+\end{description}
+
+\textbf{funciones.h} — solo declaraciones:
+\begin{verbatim}
+void saludar(char*);
+int  sumar(int, int);
+int  restar(int, int);
+\end{verbatim}
+
+\textbf{funciones.cpp} — definiciones (incluye su propio \texttt{.h}):
+\begin{verbatim}
+#include "funciones.h"
+void saludar(char* n) { cout << "Hola " << n << endl; }
+int  sumar(int a, int b) { return a + b; }
+int  restar(int a, int b) { return a - b; }
+\end{verbatim}
+
+La regla de C++ que gobierna esto se llama \textbf{ODR} (\textit{One
+Definition Rule}): puedes \textit{declarar} algo cuantas veces quieras,
+pero solo puedes \textit{definirlo} una vez en todo el programa.
+
+\subsection{Guards de inclusión}
+
+¿Qué pasa si \texttt{main.cpp} incluye \texttt{funciones.h} directamente
+\textbf{y} también incluye \texttt{auxiliar.h}, que a su vez incluye
+\texttt{funciones.h}?  El preprocesador copiaría el contenido de
+\texttt{funciones.h} dos veces, produciendo un error de redefinición.
+
+Los \textbf{guards de inclusión} lo evitan:
+
+\begin{verbatim}
+#ifndef FUNCIONES_H   // Si la macro no existe...
+#define FUNCIONES_H   // ...crearla (primera inclusión)
+
+void saludar(char*);
+int  sumar(int, int);
+int  restar(int, int);
+
+#endif                // Fin del bloque protegido
+\end{verbatim}
+
+La segunda vez que el preprocesador encuentra \verb|#include "funciones.h"|,
+la macro \texttt{FUNCIONES\_H} ya existe y salta todo el contenido.
+
+\begin{consejo}
+  La alternativa moderna es escribir \cpp{\#pragma once} como primera
+  línea del \texttt{.h}.  Todos los compiladores actuales la soportan
+  y es más simple que el guard manual.  Ambas formas son correctas.
+\end{consejo}
+
+\subsection{\texttt{<>} vs. \texttt{""}}
+
+\begin{center}
+\begin{tabular}{lll}
+  \toprule
+  \textbf{Sintaxis} & \textbf{Busca en} & \textbf{Usar para} \\
+  \midrule
+  \cpp{\#include <vector>}       & Rutas del sistema          & Librería estándar y paquetes instalados \\
+  \cpp{\#include "funciones.h"}  & Directorio actual primero  & Tus propios archivos \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+Regla simple: si el archivo lo escribiste tú, usa \texttt{""}; si viene
+con el compilador o una librería externa, usa \texttt{<>}.
+
+% =============================================================================
+\section{Compilación por etapas}
+% =============================================================================
+
+\subsection{Los dos pasos del compilador}
+
+Cuando escribes \texttt{g++ main.cpp funciones.cpp -o programa}, en
+realidad ocurren dos pasos distintos:
+
+\begin{center}
+\begin{tabular}{lll}
+  \toprule
+  \textbf{Paso} & \textbf{Entrada} & \textbf{Salida} \\
+  \midrule
+  1.\ Compilar  & \texttt{main.cpp}      & \texttt{main.o}      \\
+                & \texttt{funciones.cpp} & \texttt{funciones.o} \\
+  \midrule
+  2.\ Enlazar   & \texttt{main.o} + \texttt{funciones.o} & \texttt{programa} \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+El \textbf{compilador} traduce cada \texttt{.cpp} a código máquina de
+forma independiente, produciendo un \textbf{archivo objeto} (\texttt{.o}).
+El \textbf{enlazador} (\textit{linker}) conecta esos objetos: cuando
+\texttt{main.o} llama a \texttt{saludar}, el linker busca en
+\texttt{funciones.o} dónde está esa función y resuelve la referencia.
+
+\subsection{Comandos individuales}
+
+\begin{verbatim}
+# Paso 1: compilar cada .cpp por separado (genera .o, no enlaza)
+g++ -c funciones.cpp -o funciones.o
+g++ -c main.cpp       -o main.o
+
+# Paso 2: enlazar todos los .o en un ejecutable
+g++ main.o funciones.o -o programa
+\end{verbatim}
+
+\begin{recuerda}
+  La bandera \texttt{-c} le dice a \texttt{g++} que solo compile
+  (no enlace).  Sin \texttt{-c}, intenta compilar y enlazar todo lo que
+  reciba.
+\end{recuerda}
+
+\subsection{Una línea de compilación que no para de crecer}
+
+Un proyecto de dos archivos es manejable.  Pero imagina el proyecto de
+personas que veremos al final de esta sesión: seis módulos, cada uno con
+su \texttt{.h} y su \texttt{.cpp}.  La línea de compilación queda así:
+
+\begin{verbatim}
+g++ -std=c++17 -Wall -Wextra -o programa \
+    main.cpp auxiliar.cpp obtener_datos.cpp \
+    mate.cpp buscar.cpp
+\end{verbatim}
+
+Y eso es solo al inicio.  Cuando el proyecto crezca y necesites flags
+adicionales, rutas de include o librerías externas:
+
+\begin{verbatim}
+g++ -std=c++17 -Wall -Wextra -O2 -I./include \
+    -I./lib/json/include \
+    main.cpp auxiliar.cpp obtener_datos.cpp    \
+    mate.cpp buscar.cpp graficas.cpp reportes.cpp \
+    -L./lib -ljson -lm -o programa
+\end{verbatim}
+
+Cada vez que cambies un archivo tienes que recordar y volver a escribir
+todo eso.  Cada vez que agregues un \texttt{.cpp} tienes que buscarlo
+en la línea y añadirlo en el lugar correcto.
+
+Hay una solución mejor.
+
+% =============================================================================
+\section{Make: automatizar la compilación}
+% =============================================================================
+
+\subsection{Un primer Makefile: solo la línea de compilación}
+
+Un \texttt{Makefile} es un archivo de texto que le dice a Make qué
+comandos ejecutar para construir tu programa.  La forma más básica es
+simplemente envolver la línea de compilación en una \textbf{regla}:
+
+\begin{verbatim}
+programa:
+	g++ -std=c++17 -Wall -Wextra -o programa \
+	    main.cpp auxiliar.cpp obtener_datos.cpp \
+	    mate.cpp buscar.cpp
+\end{verbatim}
+
+Con esto, en lugar de recordar y teclear la línea larga, solo escribes:
+
+\begin{verbatim}
+make
+\end{verbatim}
+
+Make busca el archivo llamado \texttt{Makefile} en el directorio actual,
+lee la primera regla y ejecuta el comando.
+
+\begin{advertencia}
+  El comando dentro de una regla debe comenzar con un carácter de
+  \textbf{tabulación} (Tab), no con espacios.  Es el error más común al
+  escribir Makefiles: la mayoría de editores muestran ambos igual, pero
+  Make los distingue y falla si encuentra espacios.
+\end{advertencia}
+
+La estructura de cualquier regla es siempre la misma:
+
+\begin{verbatim}
+objetivo: dependencias
+<TAB>   comando para construir el objetivo
+\end{verbatim}
+
+\textbf{objetivo} es el nombre del archivo que se quiere generar.
+\textbf{dependencias} son los archivos que necesita para generarlo.
+Por ahora las dejamos vacías; las completaremos pronto.
+
+\subsection{Variables: el compilador y sus flags}
+
+Repetir \texttt{g++} y las flags en cada regla es un problema: si cambias
+de compilador o decides agregar un flag nuevo, tienes que modificar cada
+línea.  Las \textbf{variables} de Make resuelven esto.
+
+Primero extraemos el compilador:
+
+\begin{verbatim}
+CXX = g++
+
+programa:
+	$(CXX) -std=c++17 -Wall -Wextra -o programa \
+	    main.cpp auxiliar.cpp obtener_datos.cpp \
+	    mate.cpp buscar.cpp
+\end{verbatim}
+
+Luego los flags:
+
+\begin{verbatim}
+CXX      = g++
+CXXFLAGS = -std=c++17 -Wall -Wextra
+
+programa:
+	$(CXX) $(CXXFLAGS) -o programa \
+	    main.cpp auxiliar.cpp obtener_datos.cpp \
+	    mate.cpp buscar.cpp
+\end{verbatim}
+
+Para usar el valor de una variable se escribe \texttt{\$(NOMBRE)}.
+Make sustituye el valor antes de ejecutar el comando.
+
+\subsection{Variables: la lista de archivos y el nombre del ejecutable}
+
+El mismo principio aplica a la lista de fuentes y al nombre del ejecutable:
+
+\begin{verbatim}
+CXX      = g++
+CXXFLAGS = -std=c++17 -Wall -Wextra
+TARGET   = programa
+SRCS     = main.cpp auxiliar.cpp obtener_datos.cpp \
+           mate.cpp buscar.cpp
+
+$(TARGET): $(SRCS)
+	$(CXX) $(CXXFLAGS) $(SRCS) -o $(TARGET)
+\end{verbatim}
+
+Ahora agregar un módulo nuevo es editar solo la variable \texttt{SRCS}.
+Cambiar el nombre del ejecutable es editar solo \texttt{TARGET}.
+
+\begin{ejemplo}[Agregar un módulo nuevo]
+  El proyecto crece y necesitas un módulo \texttt{graficas.cpp}.
+  Con el Makefile anterior solo cambias una línea:
+  \begin{verbatim}
+SRCS = main.cpp auxiliar.cpp obtener_datos.cpp \
+       mate.cpp buscar.cpp graficas.cpp
+  \end{verbatim}
+  La próxima vez que corras \texttt{make}, el comando completo ya
+  incluirá \texttt{graficas.cpp} automáticamente.
+\end{ejemplo}
+
+\subsection{Dependencias y archivos objeto}
+
+El Makefile anterior todavía tiene un problema: recompila \textit{todos}
+los fuentes cada vez que cambias cualquier cosa.  Si modificas solo
+\texttt{buscar.cpp}, Make vuelve a compilar \texttt{main.cpp},
+\texttt{auxiliar.cpp} y los demás aunque no los tocaste.
+
+La solución es declarar cada \texttt{.o} como objetivo separado, con sus
+propias dependencias:
+
+\begin{verbatim}
+CXX      = g++
+CXXFLAGS = -std=c++17 -Wall -Wextra
+TARGET   = programa
+OBJS     = main.o auxiliar.o obtener_datos.o mate.o buscar.o
+
+$(TARGET): $(OBJS)
+	$(CXX) $(OBJS) -o $(TARGET)
+
+main.o: main.cpp auxiliar.h obtener_datos.h mate.h buscar.h
+	$(CXX) $(CXXFLAGS) -c main.cpp
+
+auxiliar.o: auxiliar.cpp auxiliar.h persona.h
+	$(CXX) $(CXXFLAGS) -c auxiliar.cpp
+
+obtener_datos.o: obtener_datos.cpp obtener_datos.h persona.h auxiliar.h
+	$(CXX) $(CXXFLAGS) -c obtener_datos.cpp
+
+mate.o: mate.cpp mate.h persona.h
+	$(CXX) $(CXXFLAGS) -c mate.cpp
+
+buscar.o: buscar.cpp buscar.h persona.h
+	$(CXX) $(CXXFLAGS) -c buscar.cpp
+
+clean:
+	rm -f $(OBJS) $(TARGET)
+\end{verbatim}
+
+Las dependencias de cada \texttt{.o} incluyen los \texttt{.h} que ese
+módulo utiliza, no solo su propio \texttt{.cpp}.  Si cambias
+\texttt{persona.h} (por ejemplo, agregas un campo), Make recompila todos
+los módulos que dependen de él.
+
+\subsection{Cómo decide Make qué recompilar}
+
+Make compara la \textbf{fecha de modificación} de cada objetivo con la de
+sus dependencias.  Si alguna dependencia es más reciente que el objetivo,
+lo reconstruye; si no, no hace nada.
+
+\begin{verbatim}
+# Solo cambias buscar.cpp:
+$ make
+g++ -std=c++17 -Wall -Wextra -c buscar.cpp      # solo este
+g++ main.o auxiliar.o obtener_datos.o mate.o \
+    buscar.o -o programa                         # reenlaza
+\end{verbatim}
+
+\texttt{main.o}, \texttt{auxiliar.o} y los demás no se tocan: sus fechas
+son más recientes que sus fuentes.  En proyectos con cientos de archivos,
+esto reduce el tiempo de compilación de minutos a segundos.
+
+\subsection{Regla patrón: evitar la repetición}
+
+Escribir una regla distinta para cada \texttt{.cpp} es tedioso.  Una
+\textbf{regla patrón} lo generaliza:
+
+\begin{verbatim}
+# Cualquier .o se construye desde el .cpp con el mismo nombre
+%.o: %.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+\end{verbatim}
+
+Las variables automáticas \texttt{\$<} y \texttt{\$@} son especiales de Make:
+
+\begin{center}
+\begin{tabular}{ll}
+  \toprule
+  \textbf{Variable} & \textbf{Significado} \\
+  \midrule
+  \texttt{\$@} & El objetivo actual (\texttt{buscar.o}) \\
+  \texttt{\$<} & La primera dependencia (\texttt{buscar.cpp}) \\
+  \texttt{\$\^{}} & Todas las dependencias \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+Con la regla patrón, el Makefile completo queda mucho más corto:
+
+\begin{verbatim}
+CXX      = g++
+CXXFLAGS = -std=c++17 -Wall -Wextra
+TARGET   = programa
+SRCS     = main.cpp auxiliar.cpp obtener_datos.cpp mate.cpp buscar.cpp
+OBJS     = $(SRCS:.cpp=.o)
+
+$(TARGET): $(OBJS)
+	$(CXX) $(OBJS) -o $(TARGET)
+
+%.o: %.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+clean:
+	rm -f $(OBJS) $(TARGET)
+\end{verbatim}
+
+La notación \texttt{\$(SRCS:.cpp=.o)} le pide a Make que sustituya
+\texttt{.cpp} por \texttt{.o} en cada nombre de \texttt{SRCS}: es
+equivalente a escribir \texttt{OBJS = main.o auxiliar.o ...} a mano.
+
+% =============================================================================
+\section{CMake: multiplataforma y sin repetición}
+% =============================================================================
+
+\subsection{¿Por qué CMake si ya tenemos Make?}
+
+Make funciona perfectamente en Linux y Mac.  Pero en Windows la sintaxis
+de las terminales es diferente (\texttt{rm} no existe, las rutas usan
+\texttt{\textbackslash} en lugar de \texttt{/}), y los Makefiles escritos
+en Linux no funcionan ahí sin modificaciones.
+
+\textbf{CMake} resuelve esto: describes tu proyecto una sola vez en un
+archivo llamado \texttt{CMakeLists.txt} y CMake genera, en cada
+plataforma, el sistema de compilación nativo.
+
+\begin{center}
+\begin{tabular}{ll}
+  \toprule
+  \textbf{Plataforma} & \textbf{CMake genera} \\
+  \midrule
+  Linux / Mac        & \texttt{Makefile} \\
+  Windows            & Proyecto de Visual Studio (\texttt{.sln}) \\
+  Cualquiera (opcional) & Archivos Ninja (más rápido que Make) \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Un \texttt{CMakeLists.txt} mínimo}
+
+\begin{verbatim}
+cmake_minimum_required(VERSION 3.10)
+
+project(MiProyecto VERSION 1.0)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED True)
+
+add_executable(programa
+    main.cpp
+    auxiliar.cpp
+    obtener_datos.cpp
+    mate.cpp
+    buscar.cpp
+)
+\end{verbatim}
+
+Es más verboso que el Makefile, pero no tiene ninguna sintaxis
+dependiente del sistema operativo.  El mismo \texttt{CMakeLists.txt}
+funciona en Linux, Mac y Windows sin cambios.
+
+\subsection{Flujo de trabajo}
+
+CMake separa el código fuente de los archivos de compilación mediante
+un \textbf{build fuera de la fuente} (\textit{out-of-source build}):
+
+\begin{verbatim}
+mkdir build   # crear directorio de compilación
+cd build
+cmake ..      # generar el Makefile (lee CMakeLists.txt del directorio padre)
+make          # compilar
+./programa    # ejecutar
+\end{verbatim}
+
+Los archivos generados (\texttt{.o}, \texttt{Makefile}, etc.) quedan en
+\texttt{build/} y \textbf{no se suben al repositorio}.  Para empezar de
+cero basta con borrar la carpeta \texttt{build/} y repetir el proceso.
+
+\begin{consejo}
+  Agrega \texttt{build/} a tu \texttt{.gitignore} para que git nunca
+  lo rastree.  Solo \texttt{CMakeLists.txt} y los archivos fuente deben
+  vivir en el repositorio.
+\end{consejo}
+
+% =============================================================================
+\section{Proyecto ejemplo: sistema de personas}
+% =============================================================================
+
+El directorio \texttt{materialInicial/sesion19/proyecto1/} tiene un
+proyecto real con siete archivos.  La siguiente tabla muestra qué
+responsabilidad tiene cada módulo:
+
+\begin{center}
+\begin{tabular}{lp{9cm}}
+  \toprule
+  \textbf{Módulo} & \textbf{Responsabilidad} \\
+  \midrule
+  \texttt{persona.h}             & Define la estructura \texttt{Persona} (nombre, apellidos, edad, salario).  Sin lógica. \\
+  \texttt{auxiliar.h/.cpp}       & Genera nombres y apellidos aleatorios de listas predefinidas. \\
+  \texttt{obtener\_datos.h/.cpp} & Construye un arreglo de \texttt{Persona} con datos generados. \\
+  \texttt{mate.h/.cpp}           & Calcula promedios de edad y salario. \\
+  \texttt{buscar.h/.cpp}         & Ordena y filtra arreglos de \texttt{Persona}. \\
+  \texttt{main.cpp}              & Orquesta todo: genera datos, calcula y muestra resultados. \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+El grafo de inclusión muestra por qué \texttt{persona.h} está en el
+centro: todos los módulos trabajan con el tipo \texttt{Persona}, así que
+todos lo incluyen.
+
+\begin{verbatim}
+              main.cpp
+             /   |   \
+     buscar.h  mate.h  obtener_datos.h
+        |         |          |
+    persona.h persona.h  persona.h
+                            |
+                        auxiliar.h
+\end{verbatim}
+
+Los guards de inclusión en \texttt{persona.h} garantizan que, aunque
+aparezca cuatro veces en la cadena de inclusiones, el preprocesador solo
+la procese una vez.
+
+% =============================================================================
+\section{Ejercicios}
+% =============================================================================
+
+\begin{enumerate}
+
+  \item Dado el proyecto mínimo (\texttt{main.cpp}, \texttt{funciones.h},
+        \texttt{funciones.cpp}), escribe el \texttt{Makefile} más simple
+        posible: una sola regla con la línea de compilación directa (sin
+        variables).  Luego evoluciona ese Makefile agregando
+        \texttt{CXX}, \texttt{CXXFLAGS}, \texttt{TARGET} y \texttt{SRCS}
+        paso a paso.
+
+  \item Con el Makefile final de la sección anterior (usando
+        \texttt{OBJS} y la regla patrón), modifica \texttt{funciones.cpp}
+        y ejecuta \texttt{make}.  ¿Qué archivos recompila y cuáles omite?
+        Repite el experimento modificando solo \texttt{funciones.h}.
+        ¿Cambia el resultado?
+
+  \item ¿Qué ocurre si defines una función dos veces en el mismo
+        \texttt{.cpp}?  ¿Y si la defines en dos \texttt{.cpp} distintos
+        que se enlazan juntos?  Prueba ambos casos y explica el mensaje
+        de error en cada uno.
+
+  \item Crea un nuevo módulo \texttt{estadisticas.h} /
+        \texttt{estadisticas.cpp} para el proyecto de personas con la
+        función \cpp{double salario\_maximo(Persona arr[], int n)}.
+        Incluye el guard de inclusión correcto, agrégalo a \texttt{SRCS}
+        en el Makefile, y escribe la línea equivalente en
+        \texttt{CMakeLists.txt}.
+
+  \item ¿Cuál es la diferencia entre \texttt{make} y \texttt{make clean}?
+        ¿Cuándo conviene ejecutar \texttt{clean} antes de recompilar?
+
+\end{enumerate}
+
+% =============================================================================
+\section*{Resumen}
+% =============================================================================
+
+\begin{itemize}
+  \item Dividir el código en módulos (\texttt{.h} + \texttt{.cpp}) mejora
+        la legibilidad, la colaboración y la velocidad de compilación.
+  \item El \textbf{archivo de cabecera} contiene declaraciones (el
+        \textit{qué}); el \textbf{archivo de implementación} contiene
+        definiciones (el \textit{cómo}).
+  \item Los \textbf{guards de inclusión} (\cpp{\#ifndef}/\cpp{\#define}/\cpp{\#endif}
+        o \cpp{\#pragma once}) evitan que el mismo \texttt{.h} se procese
+        más de una vez.
+  \item La compilación tiene dos pasos: \textbf{compilar}
+        (\texttt{.cpp} → \texttt{.o}) y \textbf{enlazar}
+        (\texttt{.o} → ejecutable).
+  \item Separar los pasos permite recompilar solo los módulos que cambiaron.
+  \item Un \textbf{Makefile} puede empezar tan simple como una sola regla
+        con la línea de compilación, y evolucionar con variables
+        (\texttt{CXX}, \texttt{CXXFLAGS}, \texttt{SRCS}, \texttt{OBJS})
+        conforme el proyecto crece.
+  \item \textbf{Make} automatiza la recompilación: compara fechas de
+        modificación y reconstruye solo lo que cambió.
+  \item \textbf{CMake} genera el sistema de compilación adecuado para cada
+        plataforma a partir de un \texttt{CMakeLists.txt} portátil.
+\end{itemize}
+
+\end{document}
