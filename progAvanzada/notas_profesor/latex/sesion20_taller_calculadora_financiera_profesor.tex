@@ -1,0 +1,538 @@
+% =============================================================================
+%  Notas del Profesor — Sesión 20: Taller 3 — Calculadora Financiera
+%  Programación Avanzada — Universidad Panamericana
+%  Compilar: pdflatex sesion20_taller_calculadora_financiera_profesor.tex
+% =============================================================================
+\documentclass[12pt, oneside]{article}
+\usepackage[profesor]{progavanzada}
+\usepackage{array}
+\usepackage{booktabs}
+
+\begin{document}
+
+\portada{Sesión 20}{Taller 3 — Calculadora financiera}{2026}
+
+\tableofcontents
+\newpage
+
+% =============================================================================
+\section{Objetivos de la sesión}
+% =============================================================================
+
+Al finalizar el taller el alumno habrá:
+
+\begin{enumerate}
+  \item Implementado un proyecto de consola en C++ distribuido en cuatro
+        módulos (\texttt{matematicas}, \texttt{financiero},
+        \texttt{interfaz}, \texttt{main}).
+  \item Practicado la separación de responsabilidades: cálculo vs.\ interfaz.
+  \item Escrito un \texttt{Makefile} con variables que compile por etapas
+        (\texttt{.cpp} $\to$ \texttt{.o} $\to$ ejecutable).
+  \item Verificado su implementación contra la tabla de pruebas de la
+        especificación.
+\end{enumerate}
+
+\begin{notaprofesor}[Duración estimada]
+  90 minutos.  Distribución sugerida:\\[2pt]
+  \begin{tabular}{rl}
+    5 min  & presentar el taller, resolver dudas de la especificación \\
+    10 min & repaso rápido de estructura de archivos y Makefile \\
+    60 min & trabajo individual (o por parejas, a criterio del profesor) \\
+    15 min & verificación con tabla de pruebas y cierre \\
+  \end{tabular}\\[4pt]
+  A diferencia de las sesiones de teoría, aquí el profesor circula y
+  atiende dudas.  No hay exposición frontal sostenida.
+  Esta sesión \textbf{no tiene cuaderno Jupyter}: el trabajo es
+  exclusivamente en terminal y editor de texto.
+\end{notaprofesor}
+
+% =============================================================================
+\section{Prerrequisitos}
+% =============================================================================
+
+\begin{itemize}
+  \item Proyectos de múltiples archivos y Makefile (sesión~19).
+  \item Parámetros de salida por referencia (sesión~15).
+  \item Operaciones aritméticas básicas en C++ (sesión~2).
+\end{itemize}
+
+\begin{notaprofesor}[Señal de alerta]
+  Si un alumno no recuerda cómo escribir el Makefile, remitirlo a las
+  notas de la sesión~19 antes de guiarlo verbalmente.  El Makefile de
+  referencia está en la sección~\ref{sec:makefile} de estas notas.
+\end{notaprofesor}
+
+% =============================================================================
+\section{Arranque: preguntas de sondeo}
+% =============================================================================
+
+\begin{notaprofesor}[Preguntas de arranque (5 min)]
+  \textbf{1.\ ``¿Para qué sirve un módulo que solo calcula, sin
+  \texttt{cout} ni \texttt{cin}?''}\\
+  Respuesta esperada: se puede reutilizar y probar de forma independiente;
+  se puede cambiar la interfaz (terminal, GUI, web) sin tocar la lógica
+  de negocio.
+
+  \medskip
+  \textbf{2.\ ``¿Qué diferencia hay entre interés simple y compuesto?''}\\
+  Respuesta esperada: en simple el interés siempre se calcula sobre el
+  capital original; en compuesto el interés de cada período se acumula
+  al capital y genera interés nuevo.  Si nadie lo sabe, no explicar
+  todavía: dejar que lo descubran en la Parte~II de sus notas.
+
+  \medskip
+  \textbf{3.\ ``¿Cuántos \texttt{.cpp} va a tener tu proyecto?''}\\
+  Respuesta esperada: cuatro — \texttt{main.cpp}, \texttt{matematicas.cpp},
+  \texttt{financiero.cpp} e \texttt{interfaz.cpp}.  Si un alumno responde
+  ``uno'', señalarle la sección~2 de las notas del alumno.
+\end{notaprofesor}
+
+% =============================================================================
+\section{Solución: módulo \texttt{matematicas}}
+% =============================================================================
+
+\begin{notaprofesor}[matematicas.cpp — solución de referencia]
+  Las tres funciones son sencillas.  El error más común es usar
+  \texttt{pow()} de \texttt{<cmath>} en \texttt{potencia}; la
+  especificación lo prohíbe explícitamente.
+
+\begin{codigo}
+#include "matematicas.h"
+#include <cmath>    // round()
+
+double potencia(double base, int exp) {
+    double r = 1.0;
+    for (int i = 0; i < exp; i++)
+        r *= base;
+    return r;
+}
+
+double porcentaje(double valor, double pct) {
+    return valor * (pct / 100.0);
+}
+
+double redondear(double val) {
+    return round(val * 100.0) / 100.0;
+}
+\end{codigo}
+
+  \begin{itemize}
+    \item \texttt{potencia(b,~0)} devuelve \texttt{1.0} sin código especial:
+          el ciclo no ejecuta ninguna iteración.
+    \item \texttt{porcentaje(500,~16)} devuelve \texttt{80.0}.
+          Error frecuente: olvidar dividir entre~100, obteniendo \texttt{8000.0}.
+    \item \texttt{redondear} necesita \texttt{<cmath>}.  Si el alumno
+          omite el \texttt{\#include}, el error señalará \texttt{matematicas.cpp},
+          no \texttt{financiero.cpp}.
+  \end{itemize}
+\end{notaprofesor}
+
+% =============================================================================
+\section{Solución: módulo \texttt{financiero}}
+% =============================================================================
+
+\begin{notaprofesor}[financiero.cpp — solución de referencia]
+  Este módulo incluye \texttt{matematicas.h} para usar \texttt{potencia}
+  y \texttt{porcentaje}.  La violación más grave que puede cometer un
+  alumno aquí es agregar \texttt{cout} o \texttt{cin}.
+
+\begin{codigo}
+#include "financiero.h"
+#include "matematicas.h"
+
+double interes_simple(double capital, double tasa, double tiempo) {
+    return capital * (1.0 + (tasa / 100.0) * tiempo);
+}
+
+double interes_compuesto(double capital, double tasa, int periodos) {
+    return capital * potencia(1.0 + tasa / 100.0, periodos);
+}
+
+double calcular_iva(double precio, double tasa) {
+    return porcentaje(precio, tasa);
+}
+
+double desglosar_iva(double precio_con_iva, double tasa) {
+    return precio_con_iva / (1.0 + tasa / 100.0);
+}
+
+double cuenta_restaurante(double subtotal, double pct_propina,
+                          int adultos, int ninos,
+                          double& total, double& pago_n) {
+    double propina = porcentaje(subtotal, pct_propina);
+    total          = subtotal + propina;
+    double pago_a  = total / (adultos + ninos / 2.0);
+    pago_n         = pago_a / 2.0;
+    return pago_a;
+}
+
+double descuento(double precio, double pct_descuento) {
+    return precio - porcentaje(precio, pct_descuento);
+}
+
+double convertir_divisas(double monto, double tipo_cambio) {
+    return monto * tipo_cambio;
+}
+\end{codigo}
+\end{notaprofesor}
+
+\begin{notaprofesor}[Trampa clásica: \texttt{ninos / 2} vs.\ \texttt{ninos / 2.0}]
+  En \texttt{cuenta\_restaurante} el divisor es
+  $n_a + n_n / 2$.  Si el alumno escribe \texttt{ninos / 2}
+  y \texttt{ninos} es \texttt{int}, la división es entera: con
+  1~niño, \texttt{1 / 2 = 0}.  El niño no cuenta para dividir la cuenta.
+
+  La prueba de la tabla (2 adultos, 1 niño) expone el bug de inmediato:
+  el pago por adulto sale \$276.00 en lugar de \$220.80.
+
+  Corrección: \texttt{ninos / 2.0} fuerza la división real.
+\end{notaprofesor}
+
+\begin{notaprofesor}[FAQ: módulo \texttt{financiero}]
+  \textbf{``¿La tasa entra como~5 o como~0.05?''}\\
+  Como~\texttt{5}: el usuario teclea~5 para~5\,\%.  La conversión a
+  decimal se hace dentro de la función (\texttt{tasa / 100.0}).
+
+  \medskip
+  \textbf{``¿F3 y F4 deberían dar el mismo número si uso la salida de
+  una como entrada de la otra?''}\\
+  Sí.  \texttt{calcular\_iva(500, 16) = 80} → total = 580.
+  \texttt{desglosar\_iva(580, 16) = 500}.  Si no cuadra, el error
+  suele estar en F4: confundir \texttt{precio / tasa} con
+  \texttt{precio / (1 + tasa)}.
+
+  \medskip
+  \textbf{``¿\texttt{interes\_simple} retorna el interés o el monto?''}\\
+  El \textbf{monto final} ($M = C + I$).  El llamador en
+  \texttt{interfaz} calcula $I = M - C$ para mostrarlo al usuario.
+
+  \medskip
+  \textbf{``¿Necesito incluir \texttt{matematicas.h} en
+  \texttt{financiero.h}?''}\\
+  No.  \texttt{financiero.h} solo declara las firmas de las funciones
+  financieras; no llama a nada de \texttt{matematicas}.  La dependencia
+  está en \texttt{financiero.cpp}, que es el que implementa las llamadas.
+\end{notaprofesor}
+
+% =============================================================================
+\section{Solución: módulo \texttt{interfaz}}
+% =============================================================================
+
+\begin{notaprofesor}[interfaz.cpp — solución de referencia]
+  Las funciones de interfaz necesitan \texttt{<iomanip>} para
+  \texttt{setprecision}.  El estilo de presentación (columnas, etiquetas)
+  queda a criterio del alumno; lo importante es que los números salgan
+  con dos decimales y que la opción seleccionada sea visible en la captura.
+
+\begin{codigo}
+#include "interfaz.h"
+#include "financiero.h"
+#include <iostream>
+#include <iomanip>
+using namespace std;
+
+int mostrar_menu() {
+    cout << "\n=== Calculadora Financiera ===\n"
+         << " 1. Interes simple\n"
+         << " 2. Interes compuesto\n"
+         << " 3. Calcular IVA\n"
+         << " 4. Desglosar IVA\n"
+         << " 5. Cuenta de restaurante\n"
+         << " 6. Descuento comercial\n"
+         << " 7. Conversion de divisas\n"
+         << " 0. Salir\n"
+         << "Opcion: ";
+    int op;
+    cin >> op;
+    return op;
+}
+
+void ejecutar_interes_simple() {
+    double capital, tasa, tiempo;
+    cout << "Capital inicial:     "; cin >> capital;
+    cout << "Tasa de interes (%): "; cin >> tasa;
+    cout << "Periodos:            "; cin >> tiempo;
+    double monto = interes_simple(capital, tasa, tiempo);
+    cout << fixed << setprecision(2)
+         << "Interes generado: $" << (monto - capital) << "\n"
+         << "Monto final:      $" << monto              << "\n";
+}
+
+void ejecutar_interes_compuesto() {
+    double capital, tasa;
+    int    periodos;
+    cout << "Capital inicial:     "; cin >> capital;
+    cout << "Tasa de interes (%): "; cin >> tasa;
+    cout << "Periodos:            "; cin >> periodos;
+    double monto = interes_compuesto(capital, tasa, periodos);
+    cout << fixed << setprecision(2)
+         << "Ganancia:    $" << (monto - capital) << "\n"
+         << "Monto final: $" << monto              << "\n";
+}
+
+void ejecutar_iva() {
+    double precio, tasa;
+    cout << "Precio sin IVA:  "; cin >> precio;
+    cout << "Tasa de IVA (%): "; cin >> tasa;
+    double iva = calcular_iva(precio, tasa);
+    cout << fixed << setprecision(2)
+         << "IVA:   $" << iva             << "\n"
+         << "Total: $" << (precio + iva)  << "\n";
+}
+
+void ejecutar_desglosar_iva() {
+    double precio_total, tasa;
+    cout << "Precio con IVA:  "; cin >> precio_total;
+    cout << "Tasa de IVA (%): "; cin >> tasa;
+    double base = desglosar_iva(precio_total, tasa);
+    cout << fixed << setprecision(2)
+         << "Precio base: $" << base                     << "\n"
+         << "IVA:         $" << (precio_total - base)    << "\n";
+}
+
+void ejecutar_restaurante() {
+    double subtotal, pct_propina;
+    int    adultos, ninos;
+    cout << "Subtotal de la cuenta: "; cin >> subtotal;
+    cout << "Propina (%):           "; cin >> pct_propina;
+    cout << "Adultos:               "; cin >> adultos;
+    cout << "Ninos:                 "; cin >> ninos;
+    double total, pago_n;
+    double pago_a = cuenta_restaurante(subtotal, pct_propina,
+                                       adultos, ninos,
+                                       total, pago_n);
+    cout << fixed << setprecision(2)
+         << "Propina:     $" << (total - subtotal) << "\n"
+         << "Total:       $" << total               << "\n"
+         << "Pago adulto: $" << pago_a              << "\n"
+         << "Pago nino:   $" << pago_n              << "\n";
+}
+
+void ejecutar_descuento() {
+    double precio, pct;
+    cout << "Precio original: "; cin >> precio;
+    cout << "Descuento (%):   "; cin >> pct;
+    double precio_f = descuento(precio, pct);
+    cout << fixed << setprecision(2)
+         << "Ahorro:       $" << (precio - precio_f) << "\n"
+         << "Precio final: $" << precio_f             << "\n";
+}
+
+void ejecutar_divisas() {
+    double monto, tc;
+    cout << "Monto a convertir: "; cin >> monto;
+    cout << "Tipo de cambio:    "; cin >> tc;
+    cout << fixed << setprecision(2)
+         << "Equivalente: " << convertir_divisas(monto, tc) << "\n";
+}
+\end{codigo}
+
+  \begin{itemize}
+    \item \texttt{fixed << setprecision(2)} se aplica una sola vez
+          y afecta todos los \texttt{cout} posteriores.  Los alumnos
+          a veces se sorprenden de que el segundo número también salga
+          con dos decimales — es el comportamiento esperado.
+    \item El cálculo \texttt{monto - capital} ocurre en
+          \texttt{interfaz.cpp}, no en \texttt{financiero.cpp}.
+          Esto es correcto: \texttt{financiero} retorna el monto final
+          e \texttt{interfaz} deriva el interés para el usuario.
+    \item Las etiquetas y el formato visual (columnas, símbolos de
+          pesos) quedan a criterio del alumno.  Lo que se evalúa
+          es que los valores numéricos sean correctos con
+          dos decimales.
+  \end{itemize}
+\end{notaprofesor}
+
+% =============================================================================
+\section{Solución: \texttt{main.cpp}}
+% =============================================================================
+
+\begin{notaprofesor}[main.cpp — solución de referencia]
+  \texttt{main.cpp} solo incluye \texttt{interfaz.h}.  No toca
+  \texttt{financiero.h} ni \texttt{matematicas.h} directamente.
+
+\begin{codigo}
+#include "interfaz.h"
+#include <iostream>
+using namespace std;
+
+int main() {
+    int opcion;
+    do {
+        opcion = mostrar_menu();
+        switch (opcion) {
+            case 1: ejecutar_interes_simple();    break;
+            case 2: ejecutar_interes_compuesto(); break;
+            case 3: ejecutar_iva();               break;
+            case 4: ejecutar_desglosar_iva();     break;
+            case 5: ejecutar_restaurante();       break;
+            case 6: ejecutar_descuento();         break;
+            case 7: ejecutar_divisas();           break;
+            case 0: cout << "Hasta luego.\n";     break;
+            default: cout << "Opcion no valida.\n"; break;
+        }
+    } while (opcion != 0);
+    return 0;
+}
+\end{codigo}
+\end{notaprofesor}
+
+% =============================================================================
+\section{Makefile de referencia}
+\label{sec:makefile}
+% =============================================================================
+
+\begin{notaprofesor}[Makefile — solución de referencia]
+\begin{verbatim}
+CXX      = g++
+CXXFLAGS = -std=c++17 -Wall -Wextra
+TARGET   = calculadora
+SRCS     = main.cpp matematicas.cpp financiero.cpp interfaz.cpp
+OBJS     = $(SRCS:.cpp=.o)
+
+$(TARGET): $(OBJS)
+	$(CXX) $(OBJS) -o $(TARGET)
+
+%.o: %.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+clean:
+	rm -f $(OBJS) $(TARGET)
+\end{verbatim}
+
+  La sustitución \texttt{\$(SRCS:.cpp=.o)} genera \texttt{OBJS}
+  automáticamente.  Si un alumno prefiere listar los \texttt{.o}
+  explícitamente, también es válido mientras compile en dos etapas.
+\end{notaprofesor}
+
+% =============================================================================
+\section{Errores frecuentes}
+% =============================================================================
+
+\begin{notaprofesor}[Errores más comunes]
+
+  \textbf{1.\ \texttt{cout}/\texttt{cin} en \texttt{financiero.cpp}.}\\
+  Síntoma: el programa funciona, pero la separación está rota.\\
+  Cómo detectarlo: preguntar ``¿dónde usas \texttt{cout}?''.
+  Si señala \texttt{financiero.cpp}, pedirle que mueva todo
+  el I/O a \texttt{interfaz.cpp}.
+
+  \vspace{0.4em}
+  \textbf{2.\ División entera en F5.}\\
+  Síntoma: F5 con 2 adultos y 1~niño da pago adulto \$276.00
+  en lugar de \$220.80.\\
+  Causa: \texttt{ninos / 2} (entero) en lugar de \texttt{ninos / 2.0}.
+
+  \vspace{0.4em}
+  \textbf{3.\ Tasa sin dividir entre 100.}\\
+  Síntoma: F1 con capital~1000, tasa~5, tiempo~3 da 16\,000
+  en lugar de 1\,150.\\
+  Causa: \texttt{capital * tasa * tiempo} en lugar de
+  \texttt{capital * (tasa / 100.0) * tiempo}.
+
+  \vspace{0.4em}
+  \textbf{4.\ Fórmula de F4 incorrecta.}\\
+  Síntoma: F4(580, 16) da $\approx$497.41 en lugar de 500.00.\\
+  Causa: \texttt{precio / tasa} en lugar de
+  \texttt{precio / (1.0 + tasa / 100.0)}.\\
+  Verificación rápida: F3 y F4 deben ser inversas entre sí.
+
+  \vspace{0.4em}
+  \textbf{5.\ Olvidar \texttt{fixed << setprecision(2)}.}\\
+  Síntoma: resultados con muchos decimales o en notación científica.\\
+  Corrección: \texttt{cout << fixed << setprecision(2) << valor}.
+  Recordar incluir \texttt{<iomanip>}.
+
+  \vspace{0.4em}
+  \textbf{6.\ Tab sustituido por espacios en el Makefile.}\\
+  Error: \texttt{Makefile:N: *** missing separator.~~ Stop.}\\
+  Remedio: el comando de cada regla empieza con Tab.  En VS Code,
+  verificar que el modo de indentación del archivo sea Tabs.
+
+  \vspace{0.4em}
+  \textbf{7.\ \texttt{potencia} implementada con \texttt{pow()}.}\\
+  La especificación prohíbe usar \texttt{pow()} en \texttt{potencia}.
+  Pedirle al alumno que la implemente con un ciclo.
+
+\end{notaprofesor}
+
+% =============================================================================
+\section{Rúbrica de evaluación}
+% =============================================================================
+
+La entrega es un PDF con capturas de pantalla de la terminal.
+El código fuente no se entrega.
+
+\begin{center}
+\begin{tabular}{p{8cm}cc}
+  \toprule
+  \textbf{Criterio} & \textbf{Pts.} & \textbf{Evidencia} \\
+  \midrule
+  \multicolumn{3}{l}{\textit{Makefile (captura de \texttt{cat Makefile})}} \\
+  \quad Variables \texttt{CXX}, \texttt{CXXFLAGS}, \texttt{TARGET}, \texttt{SRCS}
+      & 8  & presentes y usadas \\
+  \quad Compilación por etapas (\texttt{.cpp} $\to$ \texttt{.o} $\to$ ejecutable)
+      & 7  & regla patrón \texttt{\%.o} visible \\
+  \midrule
+  \multicolumn{3}{l}{\textit{Compilación limpia}} \\
+  \quad \texttt{make clean} + \texttt{make} sin errores ni advertencias
+      & 10 & captura de terminal \\
+  \midrule
+  \multicolumn{3}{l}{\textit{Funcionalidades (7 funciones $\times$ 8 pts)}} \\
+  \quad F1 — Interés simple      & 8 & opción, datos y resultado visibles \\
+  \quad F2 — Interés compuesto   & 8 & ídem \\
+  \quad F3 — Calcular IVA        & 8 & ídem \\
+  \quad F4 — Desglosar IVA       & 8 & ídem \\
+  \quad F5 — Cuenta restaurante  & 8 & ídem \\
+  \quad F6 — Descuento comercial & 8 & ídem \\
+  \quad F7 — Conversión divisas  & 8 & ídem \\
+  \midrule
+  \multicolumn{3}{l}{\textit{Casos adicionales}} \\
+  \quad $\geq 3$ funciones con 2 capturas distintas c/u
+      & 9  & datos diferentes a los de la tabla de pruebas \\
+  \midrule
+  \textbf{Total} & \textbf{100} & \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\begin{notaprofesor}[Criterios de descuento]
+  \begin{itemize}
+    \item Advertencias de \texttt{-Wall -Wextra} en la captura de
+          compilación: $-3$~pts de la sección ``compilación limpia''.
+    \item F3 y F4 inconsistentes entre sí (F3 $\circ$ F4 $\neq$
+          identidad): $-8$~pts de F4.
+    \item Makefile sin regla \texttt{clean}: $-3$~pts.
+  \end{itemize}
+\end{notaprofesor}
+
+% =============================================================================
+\section{Conexiones con temas posteriores}
+% =============================================================================
+
+\begin{itemize}
+  \item \textbf{Orientación a objetos} — El módulo \texttt{financiero}
+        es un candidato natural para convertirse en una clase
+        \texttt{Calculadora}: los métodos serían exactamente estas
+        funciones.  El alumno ya escribió la interfaz pública de la clase
+        sin saberlo.
+  \item \textbf{Pruebas unitarias} — Un módulo que solo calcula, sin I/O,
+        es trivialmente testeable.  La separación practicada hoy es el
+        prerequisito para poder escribir pruebas automatizadas.
+  \item \textbf{Librerías} — Si \texttt{matematicas.o} y
+        \texttt{financiero.o} se empaquetaran en un \texttt{.a}, cualquier
+        otro programa podría usar las funciones sin recompilarlas.
+        El mismo patrón siguen todas las librerías de C++.
+\end{itemize}
+
+% =============================================================================
+\section{Materiales}
+% =============================================================================
+
+\begin{itemize}
+  \item \textbf{Notas alumno:}
+        \texttt{notas\_alumno/pdf/sesion20\_taller\_calculadora\_financiera.pdf}
+  \item Esta sesión no tiene cuaderno Jupyter.
+\end{itemize}
+
+\end{document}
