@@ -1,0 +1,559 @@
+% =============================================================================
+%  Notas de clase — Sesión 20: Taller — Calculadora Financiera
+%  Programación Avanzada — Universidad Panamericana
+%  Compilar: pdflatex sesion20_taller_calculadora_financiera.tex
+% =============================================================================
+\documentclass[12pt, oneside]{article}
+\usepackage{progavanzada}
+\usepackage{array}
+\usepackage{booktabs}
+
+\begin{document}
+
+\portada{Sesión 20}{Taller 3 — Calculadora financiera}{2026}
+
+\tableofcontents
+\newpage
+
+% =============================================================================
+\section{La calculadora más vendida de la historia}
+% =============================================================================
+
+En 1981, Hewlett-Packard lanzó la \textbf{HP-12C}: una calculadora del tamaño
+de un bolsillo diseñada para profesionales de las finanzas.  Cuarenta y cinco
+años después sigue fabricándose y vendiéndose, lo que la convierte en el
+modelo de calculadora con mayor longevidad en la historia.  Hoy cuesta entre
+70 y 100 dólares.  Corredores de bolsa, actuarios y analistas financieros la
+llevan en el saco porque cumple una función muy concreta: calcular intereses,
+flujos de efectivo y valores presentes sin perder tiempo arrancando una
+laptop.
+
+La HP-12C no tiene nada mágico.  Sus funciones más usadas son exactamente
+las que implementarás en este taller: interés compuesto, valor del dinero en
+el tiempo, y operaciones cotidianas como IVA y propinas.  La diferencia es
+que la tuya correrá en la terminal y no costará 100 dólares.
+
+\begin{tecnico}[La calculadora financiera en el mundo profesional]
+  La \textbf{HP-12C} y la \textbf{Texas Instruments BA II Plus} (1991) son
+  las dos calculadoras financieras dominantes en el mercado profesional.
+  Ambas están permitidas en exámenes de certificación financiera como el
+  \textit{CFA} (Chartered Financial Analyst) y el \textit{FRM} (Financial
+  Risk Manager); otras calculadoras no están permitidas.  El hecho de que
+  profesionales paguen decenas de dólares por hardware dedicado muestra
+  cuánto valor tiene tener estas funciones disponibles al instante.
+  \par\smallskip
+  \textit{Referencia:} CFA Institute. (2024). \textit{CFA Program Approved
+  Calculators}. \url{https://www.cfainstitute.org}
+\end{tecnico}
+
+% =============================================================================
+\section{Objetivo del proyecto}
+% =============================================================================
+
+En este taller construirás una \textbf{calculadora financiera de consola} en
+C++, organizada como un proyecto de múltiples archivos.  El programa mostrará
+un menú con las funcionalidades disponibles, leerá los datos del usuario,
+realizará los cálculos y mostrará el resultado con dos decimales de
+precisión.
+
+El proyecto aplica directamente lo de la sesión anterior: cada módulo
+(\texttt{.h} + \texttt{.cpp}) tiene una responsabilidad delimitada, los
+módulos se compilan por separado con un \texttt{Makefile}, y el ejecutable
+se genera enlazando todos los objetos.
+
+\begin{recuerda}
+  Este proyecto no es una práctica de algoritmia ni de estructuras de datos.
+  El objetivo principal es demostrar que sabes \textbf{organizar un programa
+  en módulos} y \textbf{automatizar su compilación con Make}.  El contenido
+  financiero es el vehículo, no el foco.
+\end{recuerda}
+
+% =============================================================================
+\section{Arquitectura del proyecto}
+% =============================================================================
+
+El proyecto tiene \textbf{cuatro módulos mínimos}.  Puedes agregar más si
+lo consideras necesario, pero no puedes reducirlos.
+
+\begin{center}
+\begin{tabular}{lp{9.5cm}}
+  \toprule
+  \textbf{Módulo} & \textbf{Responsabilidad} \\
+  \midrule
+  \texttt{main.cpp}
+    & Punto de entrada.  Llama al menú principal en un bucle hasta
+      que el usuario elija salir.  No contiene lógica de cálculo ni
+      de presentación: solo orquesta los demás módulos. \\[4pt]
+  \texttt{interfaz.h/.cpp}
+    & Todo lo relacionado con la interacción en consola: mostrar el
+      menú principal, mostrar los submenús de cada categoría, leer
+      los datos que el usuario ingresa y mostrar los resultados
+      formateados.  No realiza cálculos. \\[4pt]
+  \texttt{matematicas.h/.cpp}
+    & Funciones matemáticas de apoyo que utilizan los módulos
+      financieros: potencia entera, cálculo de porcentaje y
+      redondeo a dos decimales.  No contiene lógica financiera. \\[4pt]
+  \texttt{financiero.h/.cpp}
+    & Implementación de todas las funciones financieras del
+      proyecto.  Utiliza las funciones de \texttt{matematicas.h}
+      para los cálculos auxiliares.  No imprime nada en consola:
+      recibe datos, devuelve resultados. \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+El grafo de dependencias entre módulos es:
+
+\begin{verbatim}
+  main.cpp
+      |
+  interfaz.h/.cpp
+      |
+  financiero.h/.cpp
+      |
+  matematicas.h/.cpp
+\end{verbatim}
+
+\begin{consejo}
+  El módulo \texttt{interfaz} solo debe llamar funciones de \texttt{financiero}
+  para obtener resultados y luego imprimirlos.  Los cálculos no van en la
+  interfaz.  Esta separación hace que sea fácil cambiar la presentación
+  (por ejemplo, pasar a interfaz gráfica) sin tocar la lógica.
+\end{consejo}
+
+\subsection{Qué debe contener cada módulo}
+
+\subsubsection{main.cpp}
+
+\begin{itemize}
+  \item La función \texttt{main}.
+  \item Un bucle que muestre el menú principal y procese la opción elegida
+        hasta que el usuario indique que quiere salir.
+  \item Inclusión de \texttt{interfaz.h}.
+\end{itemize}
+
+\subsubsection{interfaz.h / interfaz.cpp}
+
+\begin{itemize}
+  \item Una función que muestre el menú principal con todas las opciones
+        disponibles numeradas.
+  \item Una función por cada funcionalidad que lea los datos necesarios
+        del usuario, llame a la función financiera correspondiente y
+        muestre el resultado.
+  \item Los resultados monetarios siempre con dos decimales y su unidad
+        (e.g.\ ``\texttt{\$~1\,157.63 MXN}'').
+\end{itemize}
+
+\subsubsection{matematicas.h / matematicas.cpp}
+
+\begin{itemize}
+  \item Una función que calcule la potencia de un número real elevado a
+        un exponente entero no negativo.  No uses \texttt{<cmath>} para
+        implementarla: realiza el cálculo con un ciclo.
+  \item Una función que calcule el porcentaje de un valor
+        (e.g.\ \texttt{porcentaje(500, 16)} devuelve 80).
+  \item Una función que redondee un número real a dos decimales.
+\end{itemize}
+
+\subsubsection{financiero.h / financiero.cpp}
+
+\begin{itemize}
+  \item Una función por cada una de las siete funcionalidades descritas
+        en la sección siguiente.
+  \item Cada función recibe los datos del cálculo y devuelve el resultado
+        principal.  Si el cálculo produce más de un resultado (e.g.\ precio
+        sin IVA y monto del IVA), usa parámetros de salida o una estructura.
+  \item No imprime nada: toda la presentación queda en \texttt{interfaz}.
+\end{itemize}
+
+% =============================================================================
+\section{Funcionalidades y fórmulas}
+% =============================================================================
+
+Las siguientes siete funcionalidades son \textbf{obligatorias}.
+
+% ─── 4.1 ──────────────────────────────────────────────────────────────────────
+\subsection{Funcionalidad 1 — Interés simple}
+
+Cuando depositas dinero en una cuenta o pides un préstamo a \textbf{interés
+simple}, el interés se calcula siempre sobre el capital original, sin importar
+cuánto tiempo haya pasado.
+
+\textbf{Variables:}
+\begin{itemize}
+  \item $C$ — capital inicial (monto depositado o prestado)
+  \item $r$ — tasa de interés por período, expresada como decimal
+        (e.g.\ 5\,\% → $r = 0.05$)
+  \item $t$ — número de períodos (años, meses, etc.)
+\end{itemize}
+
+\textbf{Fórmulas:}
+\[
+  I = C \times r \times t
+  \qquad
+  M = C + I
+\]
+
+donde $I$ es el \textbf{interés generado} y $M$ es el \textbf{monto final}.
+
+\begin{ejemplo}[Interés simple: \$1\,000 al 5\,\% anual, 3 años]
+  \[
+    I = 1{,}000 \times 0.05 \times 3 = 150
+    \qquad
+    M = 1{,}000 + 150 = 1{,}150
+  \]
+  Al cabo de 3 años habrás ganado \$150 y tendrás \$1\,150 en total.
+\end{ejemplo}
+
+% ─── 4.2 ──────────────────────────────────────────────────────────────────────
+\subsection{Funcionalidad 2 — Interés compuesto}
+
+Con \textbf{interés compuesto}, al final de cada período el interés se suma
+al capital, y en el siguiente período el interés se calcula sobre el nuevo
+total.  Es decir, ``ganas intereses sobre los intereses''.
+
+\textbf{Variables:}
+\begin{itemize}
+  \item $C$ — capital inicial
+  \item $r$ — tasa de interés por período (decimal)
+  \item $n$ — número de períodos
+\end{itemize}
+
+\textbf{Fórmulas:}
+\[
+  M = C \times (1 + r)^n
+  \qquad
+  G = M - C
+\]
+
+donde $M$ es el \textbf{monto final} y $G$ es la \textbf{ganancia total}.
+
+\begin{ejemplo}[Interés compuesto: \$1\,000 al 5\,\% anual, 3 años]
+  \[
+    M = 1{,}000 \times (1.05)^3 = 1{,}000 \times 1.157625 = 1{,}157.63
+    \qquad
+    G = 157.63
+  \]
+  Con interés simple habrías ganado \$150; con compuesto ganas \$157.63.
+  La diferencia crece con el tiempo: a 30 años la brecha se vuelve enorme.
+\end{ejemplo}
+
+\begin{consejo}
+  Para calcular $(1.05)^3$ usa la función de potencia de tu módulo
+  \texttt{matematicas}.  No es necesario importar \texttt{<cmath>}
+  para este proyecto.
+\end{consejo}
+
+% ─── 4.3 ──────────────────────────────────────────────────────────────────────
+\subsection{Funcionalidad 3 — Calcular IVA}
+
+El \textbf{Impuesto al Valor Agregado (IVA)} es un impuesto que se agrega al
+precio de venta de casi todos los bienes y servicios.  En México la tasa
+general es del \textbf{16\,\%}.
+
+Esta funcionalidad recibe un precio sin IVA y calcula cuánto IVA se agrega
+y cuál es el precio final.
+
+\textbf{Variables:}
+\begin{itemize}
+  \item $p$ — precio sin IVA
+  \item $t$ — tasa de IVA (decimal; en México $t = 0.16$)
+\end{itemize}
+
+\textbf{Fórmulas:}
+\[
+  \text{IVA} = p \times t
+  \qquad
+  p_{\text{total}} = p + \text{IVA} = p \times (1 + t)
+\]
+
+\begin{ejemplo}[IVA sobre \$500 a tasa del 16\,\%]
+  \[
+    \text{IVA} = 500 \times 0.16 = 80
+    \qquad
+    p_{\text{total}} = 500 + 80 = 580
+  \]
+\end{ejemplo}
+
+% ─── 4.4 ──────────────────────────────────────────────────────────────────────
+\subsection{Funcionalidad 4 — Desglosar IVA}
+
+A veces un precio \textit{ya incluye} el IVA y necesitas saber cuánto
+del total es IVA y cuánto es el precio base.  Esta es la operación inversa
+a la funcionalidad anterior.
+
+\textbf{Variables:}
+\begin{itemize}
+  \item $p_{\text{total}}$ — precio con IVA incluido
+  \item $t$ — tasa de IVA (decimal)
+\end{itemize}
+
+\textbf{Fórmulas:}
+\[
+  p_{\text{sin IVA}} = \frac{p_{\text{total}}}{1 + t}
+  \qquad
+  \text{IVA} = p_{\text{total}} - p_{\text{sin IVA}}
+\]
+
+\begin{ejemplo}[Desglosar IVA de un precio de \$580 con tasa del 16\,\%]
+  \[
+    p_{\text{sin IVA}} = \frac{580}{1.16} = 500
+    \qquad
+    \text{IVA} = 580 - 500 = 80
+  \]
+\end{ejemplo}
+
+\begin{recuerda}
+  Las funcionalidades 3 y 4 son inversas: aplicar una y luego la otra
+  debe devolverte el valor original.  Esto es útil para \textbf{verificar}
+  tu implementación: si calculas el IVA sobre \$500 y obtienes \$580, y
+  luego desglosas el IVA de \$580 y \textit{no} obtienes \$500, hay un error.
+\end{recuerda}
+
+% ─── 4.5 ──────────────────────────────────────────────────────────────────────
+\subsection{Funcionalidad 5 — Cuenta de restaurante}
+
+El programa calcula el total de una cuenta de restaurante, incluyendo la
+propina, y lo divide entre los comensales.  Se asume que los \textbf{adultos}
+pagan precio completo y los \textbf{niños} pagan \textbf{la mitad} de lo
+que paga un adulto.
+
+\textbf{Variables:}
+\begin{itemize}
+  \item $s$ — subtotal de la cuenta (suma de todos los platillos)
+  \item $p$ — porcentaje de propina (e.g.\ 15 para 15\,\%)
+  \item $n_a$ — número de adultos
+  \item $n_n$ — número de niños
+\end{itemize}
+
+\textbf{Fórmulas:}
+\[
+  \text{propina} = s \times \frac{p}{100}
+  \qquad
+  T = s + \text{propina}
+\]
+
+Para dividir $T$ entre adultos y niños, donde cada niño paga la mitad de lo
+que paga un adulto, sea $x$ el pago de un adulto:
+
+\[
+  n_a \cdot x + n_n \cdot \dfrac{x}{2} = T
+  \qquad\Longrightarrow\qquad
+  x = \dfrac{T}{n_a + \dfrac{n_n}{2}}
+  \qquad
+  x_n = \dfrac{x}{2}
+\]
+
+\begin{ejemplo}[Cuenta de \$480, propina 15\,\%, 2 adultos y 1 niño]
+  \begin{align*}
+    \text{propina} &= 480 \times 0.15 = 72\\
+    T &= 480 + 72 = 552\\
+    x &= \frac{552}{2 + 0.5} = \frac{552}{2.5} = 220.80 \text{ por adulto}\\
+    x_n &= \frac{220.80}{2} = 110.40 \text{ por niño}\\
+    \text{Verificación:} &\quad 2 \times 220.80 + 1 \times 110.40 = 552 \checkmark
+  \end{align*}
+\end{ejemplo}
+
+% ─── 4.6 ──────────────────────────────────────────────────────────────────────
+\subsection{Funcionalidad 6 — Descuento comercial}
+
+Un \textbf{descuento comercial} reduce el precio de un artículo en un
+porcentaje dado.
+
+\textbf{Variables:}
+\begin{itemize}
+  \item $p_0$ — precio original
+  \item $d$ — porcentaje de descuento (e.g.\ 25 para 25\,\%)
+\end{itemize}
+
+\textbf{Fórmulas:}
+\[
+  \text{ahorro} = p_0 \times \frac{d}{100}
+  \qquad
+  p_f = p_0 - \text{ahorro} = p_0 \times \left(1 - \frac{d}{100}\right)
+\]
+
+\begin{ejemplo}[Artículo de \$800 con 25\,\% de descuento]
+  \[
+    \text{ahorro} = 800 \times 0.25 = 200
+    \qquad
+    p_f = 800 - 200 = 600
+  \]
+\end{ejemplo}
+
+% ─── 4.7 ──────────────────────────────────────────────────────────────────────
+\subsection{Funcionalidad 7 — Conversión de divisas}
+
+Convierte una cantidad de dinero de una moneda a otra, dado el tipo de
+cambio.
+
+\textbf{Variables:}
+\begin{itemize}
+  \item $A$ — cantidad en la moneda de origen
+  \item $tc$ — tipo de cambio (cuántas unidades de la moneda destino
+        equivalen a una unidad de la moneda origen)
+\end{itemize}
+
+\textbf{Fórmula:}
+\[
+  A_{\text{destino}} = A \times tc
+\]
+
+\begin{ejemplo}[100 USD a MXN con tipo de cambio 17.50]
+  \[
+    A_{\text{MXN}} = 100 \times 17.50 = 1{,}750.00 \text{ MXN}
+  \]
+\end{ejemplo}
+
+\begin{consejo}
+  El tipo de cambio que el usuario ingresa determina la dirección de la
+  conversión.  Para convertir en sentido inverso (MXN → USD), el usuario
+  debe ingresar el recíproco del tipo de cambio: si 1 USD = 17.50 MXN,
+  entonces $tc = 1/17.50 \approx 0.0571$ para convertir de MXN a USD.
+\end{consejo}
+
+% =============================================================================
+\section{Plan de pruebas}
+% =============================================================================
+
+Antes de hacer las capturas de pantalla para la entrega, verifica cada
+funcionalidad con los valores de la siguiente tabla.  Si tu programa produce
+los resultados esperados con estos datos, es muy probable que la lógica
+sea correcta.
+
+\begin{center}
+\begin{tabular}{lp{5.5cm}p{4.5cm}}
+  \toprule
+  \textbf{Func.} & \textbf{Entradas} & \textbf{Resultado esperado} \\
+  \midrule
+  1 — Int.\ simple
+    & $C = 1{,}000$, $r = 5$\,\%, $t = 3$
+    & $I = 150.00$, $M = 1{,}150.00$ \\[4pt]
+  2 — Int.\ compuesto
+    & $C = 1{,}000$, $r = 5$\,\%, $n = 3$
+    & $G = 157.63$, $M = 1{,}157.63$ \\[4pt]
+  3 — Calcular IVA
+    & $p = 500$, tasa $= 16$\,\%
+    & IVA $= 80.00$, total $= 580.00$ \\[4pt]
+  4 — Desglosar IVA
+    & $p_{\text{total}} = 580$, tasa $= 16$\,\%
+    & $p_{\text{sin IVA}} = 500.00$, IVA $= 80.00$ \\[4pt]
+  5 — Restaurante
+    & $s = 480$, propina $= 15$\,\%, 2 adultos, 1 niño
+    & propina $= 72.00$, total $= 552.00$,
+      adulto $= 220.80$, niño $= 110.40$ \\[4pt]
+  6 — Descuento
+    & $p_0 = 800$, $d = 25$\,\%
+    & ahorro $= 200.00$, $p_f = 600.00$ \\[4pt]
+  7 — Divisas
+    & $A = 100$, $tc = 17.50$
+    & $1{,}750.00$ \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\begin{advertencia}
+  Prueba también con entradas en los extremos: ¿qué pasa si el descuento
+  es 0\,\%?  ¿Y si es 100\,\%?  ¿Qué pasa si no hay niños en la cuenta
+  del restaurante ($n_n = 0$)?  Tu programa no debe crashear ni producir
+  resultados sin sentido en estos casos.
+\end{advertencia}
+
+\begin{recuerda}
+  Las funcionalidades 3 y 4 forman una prueba de consistencia: el resultado
+  de desglosar IVA sobre el total que obtuviste en la funcionalidad 3 debe
+  recuperar exactamente el precio original.
+\end{recuerda}
+
+% =============================================================================
+\section{Entrega}
+% =============================================================================
+
+\subsection{Qué entregar}
+
+Entregarás \textbf{un PDF} con capturas de pantalla de la terminal que
+demuestren el funcionamiento del programa.  El código fuente no se entrega;
+las capturas son la evidencia.
+
+\subsection{Contenido del PDF}
+
+El PDF debe incluir, en este orden:
+
+\begin{enumerate}
+
+  \item \textbf{Captura de compilación.}\\
+        Muestra la ejecución de \texttt{make} desde cero
+        (después de \texttt{make clean}) y la generación del ejecutable
+        sin errores ni advertencias.
+
+  \item \textbf{Una captura por funcionalidad} (siete en total).\\
+        Cada captura debe mostrar:
+        \begin{itemize}
+          \item El menú con la opción seleccionada.
+          \item Los datos que ingresaste.
+          \item El resultado que imprimió el programa.
+        \end{itemize}
+        Para al menos \textbf{tres} funcionalidades, incluye
+        \textbf{dos capturas distintas} (con datos diferentes) para
+        mostrar que el programa funciona en casos distintos, no solo
+        con los valores de la tabla de pruebas.
+
+  \item \textbf{Captura del Makefile.}\\
+        Muestra el contenido de tu \texttt{Makefile} en la terminal
+        (\texttt{cat Makefile}).  Debe usar variables (\texttt{CXX},
+        \texttt{CXXFLAGS}, \texttt{SRCS} u \texttt{OBJS}) y tener
+        un objetivo \texttt{clean}.
+
+\end{enumerate}
+
+\subsection{Criterios de evaluación}
+
+\begin{center}
+\begin{tabular}{p{8cm}c}
+  \toprule
+  \textbf{Criterio} & \textbf{Puntos} \\
+  \midrule
+  El programa compila sin errores con \texttt{make}      & 10 \\
+  El \texttt{Makefile} usa variables y tiene \texttt{clean} & 10 \\
+  El proyecto tiene los cuatro módulos mínimos           & 10 \\
+  Cada módulo respeta su responsabilidad (no mezcla lógica y presentación) & 10 \\
+  \midrule
+  Funcionalidades 1 y 2 (intereses) correctas            & 10 \\
+  Funcionalidades 3 y 4 (IVA) correctas y consistentes   & 10 \\
+  Funcionalidad 5 (restaurante) correcta                 & 15 \\
+  Funcionalidades 6 y 7 (descuento y divisas) correctas  & 10 \\
+  \midrule
+  El PDF incluye todas las capturas requeridas           &  5 \\
+  Al menos 3 funcionalidades con 2 casos de prueba distintos & 10 \\
+  \midrule
+  \textbf{Total}                                         & \textbf{100} \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\begin{advertencia}
+  Un programa que compila pero no tiene los módulos requeridos, o donde
+  \texttt{financiero.cpp} imprime resultados directamente en lugar de
+  devolverlos, pierde los puntos de arquitectura aunque las capturas
+  muestren resultados correctos.
+\end{advertencia}
+
+% =============================================================================
+\section*{Resumen}
+% =============================================================================
+
+\begin{itemize}
+  \item El proyecto es una calculadora financiera de consola con \textbf{siete
+        funcionalidades}: interés simple, interés compuesto, calcular IVA,
+        desglosar IVA, cuenta de restaurante, descuento y conversión de divisas.
+  \item El proyecto tiene \textbf{cuatro módulos}: \texttt{main},
+        \texttt{interfaz}, \texttt{matematicas} y \texttt{financiero}.
+  \item \texttt{financiero} calcula; \texttt{interfaz} presenta.
+        Nunca al revés.
+  \item El \texttt{Makefile} debe usar variables y compilar por etapas
+        (\texttt{.cpp} → \texttt{.o} → ejecutable).
+  \item La entrega es un \textbf{PDF con capturas} de cada funcionalidad
+        y de la ejecución de \texttt{make}.
+\end{itemize}
+
+\end{document}
