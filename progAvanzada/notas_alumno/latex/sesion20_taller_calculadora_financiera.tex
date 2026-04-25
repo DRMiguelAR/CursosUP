@@ -8,18 +8,13 @@
 \usepackage{array}
 \usepackage{booktabs}
 
-% ── Estilo de listados para firmas de funciones ───────────────────────────────
-\definecolor{lst@green} {rgb}{0,   0.6, 0   }
-\definecolor{lst@gray}  {rgb}{0.5, 0.5, 0.5 }
-\definecolor{lst@purple}{rgb}{0.58,0,   0.82}
-\definecolor{lst@beige} {rgb}{0.95,0.95,0.92}
-
+% ── Estilo de listados para firmas de funciones (paleta UP) ──────────────────
 \lstdefinestyle{firmas}{
-    backgroundcolor  = \color{lst@beige},
-    commentstyle     = \color{lst@green}\itshape,
-    keywordstyle     = \color{magenta}\bfseries,
-    numberstyle      = \tiny\color{lst@gray},
-    stringstyle      = \color{lst@purple},
+    backgroundcolor  = \color{up@gold!10!white},
+    commentstyle     = \color{up@green}\itshape,
+    keywordstyle     = \color{up@vino}\bfseries,
+    numberstyle      = \tiny\color{up@gray},
+    stringstyle      = \color{up@blue},
     basicstyle       = \ttfamily\small,
     breakatwhitespace= false,
     breaklines       = true,
@@ -33,7 +28,7 @@
     tabsize          = 2,
     frame            = single,
     framesep         = 4pt,
-    rulecolor        = \color{dummies@yellow},
+    rulecolor        = \color{up@gold},
     xleftmargin      = 14pt,
     framexleftmargin = 10pt,
     aboveskip        = 0.8em,
