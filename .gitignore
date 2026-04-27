@@ -1,2 +1,11 @@
 .ipynb_checkpoints/
 **/.ipynb_checkpoints/
+
+# LaTeX auxiliaries
+*.aux
+*.log
+*.out
+*.toc
+# PDFs generados en el directorio latex (van en pdf/, no aquí)
+**/notas_alumno/latex/*.pdf
+**/notas_profesor/latex/*.pdf

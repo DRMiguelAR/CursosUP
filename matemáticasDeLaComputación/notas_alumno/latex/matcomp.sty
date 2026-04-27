@@ -1,0 +1,380 @@
+% =============================================================================
+%  matcomp.sty — Estilo para notas de Matemáticas de la Computación
+%  Universidad Panamericana
+%
+%  Uso:
+%    \usepackage{matcomp}           % notas del alumno (portada vino)
+%    \usepackage[profesor]{matcomp} % notas del profesor (portada azul)
+%
+%  Requiere compilar con pdflatex o xelatex.
+% =============================================================================
+
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{matcomp}[2026/04/27 Estilo Matemáticas de la Computación UP]
+
+% ─── Opciones ────────────────────────────────────────────────────────────────
+\newif\if@profesor
+\@profesorfalse
+\DeclareOption{profesor}{\@profesortrue}
+\ProcessOptions\relax
+
+% =============================================================================
+% PAQUETES BASE
+% =============================================================================
+\RequirePackage[T1]{fontenc}
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[spanish,es-noshorthands]{babel}
+\RequirePackage{geometry}
+\RequirePackage{xcolor}
+\RequirePackage{graphicx}
+\RequirePackage{amsmath,amssymb}
+\RequirePackage{tcolorbox}
+\RequirePackage{pifont}
+\RequirePackage{titlesec}
+\RequirePackage{titletoc}
+\RequirePackage{fancyhdr}
+\RequirePackage{enumitem}
+\RequirePackage{microtype}
+\RequirePackage{listings}
+\RequirePackage{mdframed}
+\RequirePackage{booktabs}
+\RequirePackage{hyperref}
+\RequirePackage{lmodern}
+\RequirePackage{helvet}
+
+\tcbuselibrary{skins, breakable, listings}
+
+% =============================================================================
+% TIPOGRAFÍA
+% =============================================================================
+\renewcommand{\familydefault}{\sfdefault}
+\renewcommand{\ttdefault}{lmtt}
+
+% =============================================================================
+% COLORES INSTITUCIONALES UP
+% =============================================================================
+
+% ── Paleta primaria ───────────────────────────────────────────────────────────
+\definecolor{up@gold} {HTML}{B9975B}
+\definecolor{up@vino} {HTML}{7A1A37}
+\definecolor{up@blue} {HTML}{002D72}
+\definecolor{up@green}{HTML}{215347}
+\definecolor{up@brown}{HTML}{8B5E3C}
+
+% ── Neutros ───────────────────────────────────────────────────────────────────
+\definecolor{up@black}{HTML}{1A1A1A}
+\definecolor{up@gray} {HTML}{4A4A4A}
+\definecolor{up@lgray}{HTML}{F5F5F5}
+\definecolor{up@dgray}{HTML}{2E2E2E}
+
+% ── Aliases internos ──────────────────────────────────────────────────────────
+\colorlet{dummies@yellow}   {up@gold}
+\colorlet{dummies@black}    {up@black}
+\colorlet{dummies@gray}     {up@gray}
+\colorlet{dummies@lightgray}{up@lgray}
+\colorlet{dummies@darkgray} {up@dgray}
+
+% ── Colores de cajas ──────────────────────────────────────────────────────────
+\colorlet{box@tip}      {up@green}
+\colorlet{box@remember} {up@gold}
+\colorlet{box@warning}  {up@vino}
+\colorlet{box@technical}{up@blue}
+\colorlet{box@example}  {up@brown}
+
+% ── Portada: fondo y acento según modo ───────────────────────────────────────
+\if@profesor
+  \colorlet{cover@band}  {up@blue}
+  \colorlet{cover@accent}{up@blue}
+\else
+  \colorlet{cover@band}  {up@vino}
+  \colorlet{cover@accent}{up@gold}
+\fi
+
+% =============================================================================
+% GEOMETRÍA DE PÁGINA
+% =============================================================================
+\geometry{
+  a4paper,
+  top=2.5cm,
+  bottom=2.8cm,
+  inner=3cm,
+  outer=2.2cm,
+  headsep=0.8cm,
+  footskip=1.2cm,
+}
+
+% =============================================================================
+% HYPERREF
+% =============================================================================
+\hypersetup{
+  colorlinks  = true,
+  linkcolor   = up@black,
+  urlcolor    = up@green,
+  citecolor   = up@blue,
+  pdfborder   = {0 0 0},
+}
+
+% =============================================================================
+% ENCABEZADOS Y PIE DE PÁGINA
+% =============================================================================
+\pagestyle{fancy}
+\fancyhf{}
+
+\if@profesor
+  \fancyhead[L]{\small\color{up@gray}\textbf{NOTAS DEL PROFESOR} \textbar\ Matemáticas de la Computación}
+\else
+  \fancyhead[L]{\small\color{up@gray}\textbf{NOTAS DE CLASE} \textbar\ Matemáticas de la Computación}
+\fi
+
+\fancyhead[R]{\small\color{up@gray}\leftmark}
+\fancyfoot[C]{%
+  \color{up@gray}\small
+  \rule{0.3\textwidth}{0.4pt}\quad\thepage\quad\rule{0.3\textwidth}{0.4pt}%
+}
+\renewcommand{\headrulewidth}{1.5pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{up@gold}\leaders\hrule height \headrulewidth\hfill}}
+\renewcommand{\footrulewidth}{0pt}
+
+% =============================================================================
+% SECCIONES Y SUBSECCIONES
+% =============================================================================
+\titleformat{\section}
+  {\Large\bfseries\color{up@black}}
+  {}
+  {0pt}
+  {%
+    \colorbox{up@gold}{\parbox[c][1.1em][c]{3.5pt}{\strut}}\enspace
+  }
+  []
+
+\titleformat{\subsection}
+  {\large\bfseries\color{up@dgray}}
+  {}
+  {0pt}
+  {\color{up@vino}\textbullet\enspace}
+
+\titleformat{\subsubsection}
+  {\normalsize\bfseries\itshape\color{up@gray}}
+  {}
+  {0pt}
+  {}
+
+\titlespacing{\section}{0pt}{2ex}{0.8ex}
+\titlespacing{\subsection}{0pt}{1.5ex}{0.4ex}
+\titlespacing{\subsubsection}{0pt}{1ex}{0.2ex}
+
+% =============================================================================
+% CAJAS ESPECIALES
+% =============================================================================
+\tcbset{
+  up@base/.style={
+    breakable,
+    enhanced,
+    arc=4pt,
+    boxrule=0pt,
+    left=10pt, right=10pt,
+    top=6pt, bottom=6pt,
+    fonttitle=\bfseries\small,
+    parbox=false,
+  }
+}
+
+% ── Consejo ───────────────────────────────────────────────────────────────────
+\newenvironment{consejo}[1][Consejo]{%
+  \begin{tcolorbox}[
+    up@base,
+    colback=box@tip!10,
+    colframe=box@tip,
+    leftrule=4pt,
+    title={\textbf{>>}\enspace #1},
+    coltitle=box@tip,
+  ]
+}{%
+  \end{tcolorbox}%
+}
+
+% ── Recuerda ──────────────────────────────────────────────────────────────────
+\newenvironment{recuerda}[1][Recuerda]{%
+  \begin{tcolorbox}[
+    up@base,
+    colback=box@remember!12,
+    colframe=box@remember,
+    leftrule=4pt,
+    title={\ding{52}\enspace #1},
+    coltitle=up@dgray,
+  ]
+}{%
+  \end{tcolorbox}%
+}
+
+% ── Advertencia ───────────────────────────────────────────────────────────────
+\newenvironment{advertencia}[1][Advertencia]{%
+  \begin{tcolorbox}[
+    up@base,
+    colback=box@warning!8,
+    colframe=box@warning,
+    leftrule=4pt,
+    title={\ding{72}\enspace #1},
+    coltitle=box@warning,
+  ]
+}{%
+  \end{tcolorbox}%
+}
+
+% ── Dato técnico ──────────────────────────────────────────────────────────────
+\newenvironment{tecnico}[1][Dato técnico]{%
+  \begin{tcolorbox}[
+    up@base,
+    colback=box@technical!8,
+    colframe=box@technical,
+    leftrule=4pt,
+    title={\ding{108}\enspace #1},
+    coltitle=box@technical,
+  ]
+}{%
+  \end{tcolorbox}%
+}
+
+% ── Ejemplo ───────────────────────────────────────────────────────────────────
+\newenvironment{ejemplo}[1][Ejemplo]{%
+  \begin{tcolorbox}[
+    up@base,
+    colback=box@example!10,
+    colframe=box@example,
+    leftrule=4pt,
+    title={\ding{228}\enspace #1},
+    coltitle=box@example,
+  ]
+}{%
+  \end{tcolorbox}%
+}
+
+% ── Nota del profesor ─────────────────────────────────────────────────────────
+\if@profesor
+  \newenvironment{notaprofesor}[1][Nota del profesor]{%
+    \begin{tcolorbox}[
+      up@base,
+      colback=cover@accent!8,
+      colframe=cover@accent,
+      leftrule=4pt,
+      title={\ding{46}\enspace #1},
+      coltitle=cover@accent,
+    ]
+  }{%
+    \end{tcolorbox}%
+  }
+\else
+  \newenvironment{notaprofesor}[1][]{\comment}{\endcomment}
+\fi
+
+% =============================================================================
+% BLOQUES DE CÓDIGO
+% =============================================================================
+\lstset{
+  language        = C++,
+  basicstyle      = \ttfamily\small,
+  keywordstyle    = \bfseries\color{up@vino},
+  commentstyle    = \itshape\color{up@green},
+  stringstyle     = \color{up@blue},
+  numberstyle     = \tiny\color{up@gray},
+  numbers         = left,
+  stepnumber      = 1,
+  numbersep       = 8pt,
+  backgroundcolor = \color{up@lgray},
+  frame           = single,
+  framesep        = 4pt,
+  rulecolor       = \color{up@gold},
+  breaklines      = true,
+  breakatwhitespace = true,
+  showstringspaces= false,
+  tabsize         = 4,
+  extendedchars   = true,
+  captionpos      = b,
+  aboveskip       = 0.8em,
+  belowskip       = 0.8em,
+  xleftmargin     = 12pt,
+  xrightmargin    = 4pt,
+  framexleftmargin= 8pt,
+}
+
+\lstnewenvironment{codigo}[1][]{\lstset{#1}}{}
+
+\newcommand{\cpp}[1]{\colorbox{up@lgray}{\texttt{\small #1}}}
+
+% =============================================================================
+% LISTAS CON ESTILO
+% =============================================================================
+\setlist[itemize,1]{label=\textcolor{up@gold}{\textbullet}, leftmargin=1.5em}
+\setlist[itemize,2]{label=\textcolor{up@green}{\textendash}, leftmargin=1.5em}
+\setlist[enumerate,1]{label=\textcolor{up@vino}{\textbf{\arabic*.}}, leftmargin=1.8em}
+
+% =============================================================================
+% PORTADA
+% =============================================================================
+%
+%  Uso:  \portada{Sesión 20}{Título del tema}{2026}
+%
+\newcommand{\portada}[3]{%
+  \begin{titlepage}
+    \pagecolor{cover@band}
+    \color{white}
+    \setlength{\parindent}{0pt}
+    \vspace*{0pt}
+
+    % ── Franja blanca con escudo ─────────────────────────────────────
+    {\setlength{\fboxsep}{0pt}%
+     \noindent\colorbox{white}{%
+       \parbox[c][3.6cm][c]{\textwidth}{%
+         \centering
+         \includegraphics[height=3.2cm]{escudo_up}%
+       }%
+     }\par}
+
+    % ── Línea dorada separadora ──────────────────────────────────────
+    \noindent{\color{up@gold}\rule{\textwidth}{3.5pt}}\par
+    \vspace{0.8cm}
+
+    % ── Etiqueta del programa ────────────────────────────────────────
+    \noindent{\small\bfseries\color{up@gold}
+      \MakeUppercase{Matemáticas de la Computación}}\par
+    \vspace{0.5cm}
+
+    % ── Número de sesión ─────────────────────────────────────────────
+    {\fontsize{60}{60}\selectfont\bfseries\color{up@gold} #1\par}
+
+    \vspace{0.2cm}
+    \noindent{\color{up@gold!60!white}\rule{\textwidth}{1pt}}\par
+    \vspace{0.4cm}
+
+    % ── Título del tema ──────────────────────────────────────────────
+    {\fontsize{26}{32}\selectfont\bfseries #2\par}
+
+    \vspace{1.4cm}
+
+    % ── Badge alumno / profesor ───────────────────────────────────────
+    \if@profesor
+      \noindent\colorbox{up@gold}{%
+        \parbox{5cm}{\centering\bfseries\color{cover@band}
+          \ding{46}\enspace NOTAS DEL PROFESOR}%
+      }
+    \else
+      \noindent\colorbox{up@gold}{%
+        \parbox{4.5cm}{\centering\bfseries\color{cover@band}
+          \ding{222}\enspace NOTAS DE CLASE}%
+      }
+    \fi
+
+    \vfill
+
+    \noindent{\color{up@gold!50!white}\rule{\textwidth}{0.5pt}}\\[4pt]
+    {\small\color{up@gold!70!white} Universidad Panamericana \hfill #3}\\[2pt]
+    {\small\color{up@gold!70!white}
+      Dr.\ Miguel Alcaraz Rivera\enspace\textbullet\enspace malcaraz@up.edu.mx}
+
+  \end{titlepage}
+  \nopagecolor
+  \color{up@black}
+}
+
+% =============================================================================
+\endinput
