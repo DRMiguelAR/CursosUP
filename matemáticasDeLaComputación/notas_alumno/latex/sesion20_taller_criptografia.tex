@@ -83,7 +83,7 @@ Z & 25 & Ñ & 26 & 0 & 27 & 1 & 28 & 2 & 29 \\
 \subsection{Equipo}
 
 La actividad se realiza en \textbf{equipos de hasta tres personas}.
-Todos los integrantes deben escribir sus nombres al responder el Forms.
+Al responder el Forms deben escribir únicamente el \textbf{nombre del equipo}.
 
 \subsection{La frase}
 
@@ -102,8 +102,9 @@ con todo lo siguiente:
 \end{itemize}
 
 \begin{consejo}
-  Elige un verso que tenga entre 20 y 60 caracteres para que el proceso
-  sea manejable a mano y el bloqueo RSA sea interesante.
+  La frase debe tener \textbf{más de 20 caracteres} (ya en mayúsculas).
+  No hay límite superior, pero entre más larga, más bloques RSA tendrás
+  que calcular.
 \end{consejo}
 
 \begin{advertencia}[¡Tus frases son secretas!]
@@ -113,9 +114,8 @@ con todo lo siguiente:
   que logre decodificar más frases gana.
 
   \medskip
-  \textbf{No compartas tu verso ni tus claves} con otros equipos
-  antes de que el profesor indique que la actividad ha concluido.
-  Si filtras tu información, le quitas puntos a tu propio equipo.
+  \textbf{No compartas tu verso ni tus claves} con otros equipos.
+  Hacerlo echa a perder la siguiente actividad para todos.
 \end{advertencia}
 
 \subsection{¿Qué entregar en el Forms?}
@@ -129,7 +129,7 @@ cada cifrado, el Forms pedirá:
   \item \textbf{Frase original en mayúsculas} (el texto plano).
   \item \textbf{Clave de codificación} (varía según el cifrado).
   \item \textbf{Frase cifrada} (el texto cifrado).
-  \item \textbf{Clave de decodificación} — solo para RSA.
+  \item \textbf{Clave de decodificación} — para RSA y cifrado afín.
 \end{enumerate}
 
 Accede al formulario en:\quad
@@ -189,6 +189,9 @@ caracteres.
 \begin{description}
   \item[Clave de codificación a reportar.] El par $(a,\, b)$ que
         elegiste.
+  \item[Clave de decodificación a reportar.] El inverso modular
+        $a^{-1} \bmod 48$, es decir, el entero $a'$ tal que
+        $a \cdot a' \equiv 1 \pmod{48}$.
 \end{description}
 
 \newpage
@@ -322,7 +325,7 @@ mensaje (de izquierda a derecha).  Ejemplo:
 \textbf{Clave de decodificación} & \textbf{Formato del cifrado} \\
 \midrule
 Desplazamiento & $k$ & —        & cadena de caracteres \\
-Afín    & $(a,\, b)$ & —        & cadena de caracteres \\
+Afín    & $(a,\, b)$ & $a^{-1} \bmod 48$ & cadena de caracteres \\
 RSA     & $(e,\, n)$ & $(d,\, n)$ & lista de enteros $C_i$ \\
 \bottomrule
 \end{tabular}
