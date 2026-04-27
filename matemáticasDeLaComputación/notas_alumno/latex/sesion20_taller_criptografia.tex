@@ -192,8 +192,8 @@ caracteres.
 \begin{description}
   \item[Clave de codificación a reportar.] El par $(a,\, b)$ que
         elegiste.
-  \item[Clave de decodificación a reportar.] El inverso modular
-        $a^{-1} \bmod 50$, es decir, el entero $a'$ tal que
+  \item[Clave de decodificación a reportar.] El par $(a',\, b)$, donde
+        $a' = a^{-1} \bmod 50$ es el entero tal que
         $a \cdot a' \equiv 1 \pmod{50}$.
 \end{description}
 
@@ -328,7 +328,7 @@ mensaje (de izquierda a derecha).  Ejemplo:
 \textbf{Clave de decodificación} & \textbf{Formato del cifrado} \\
 \midrule
 Desplazamiento & $k$ & —        & cadena de caracteres \\
-Afín    & $(a,\, b)$ & $a^{-1} \bmod 50$ & cadena de caracteres \\
+Afín    & $(a,\, b)$ & $(a^{-1} \bmod 50,\; b)$ & cadena de caracteres \\
 RSA     & $(e,\, n)$ & $(d,\, n)$ & lista de enteros $C_i$ \\
 \bottomrule
 \end{tabular}
