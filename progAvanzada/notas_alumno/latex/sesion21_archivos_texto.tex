@@ -1,0 +1,501 @@
+% =============================================================================
+%  Notas de clase — Sesión 21: Archivos de texto
+%  Programación Avanzada — Universidad Panamericana
+%  Compilar: pdflatex sesion21_archivos_texto.tex
+% =============================================================================
+\documentclass[12pt, oneside]{article}
+\usepackage{progavanzada}
+\usepackage{array}
+
+\begin{document}
+
+\portada{Sesión 21}{Archivos de texto}{2026}
+
+\tableofcontents
+\newpage
+
+% =============================================================================
+\section{1970: cuando la computadora aprendió a tener cajones}
+% =============================================================================
+
+En 1970, en los laboratorios Xerox PARC en Palo Alto, un equipo de investigadores
+liderado por Alan Kay se enfrentaba a un problema que ninguna ecuación podía
+resolver: las computadoras eran intimidantes.  Los usuarios tenían que memorizar
+comandos crípticos, navegar sistemas de archivos sin ningún contexto visual y
+entender abstracciones que no tenían nada que ver con su vida cotidiana.
+
+La solución fue radical: hacer que la computadora pareciera un escritorio de
+oficina.  Un escritorio con papeles encima, cajones donde guardar documentos,
+carpetas para organizar los cajones y una papelera de reciclaje en la esquina.
+No fue una decisión de diseño gráfico.  Fue una decisión pedagógica deliberada:
+si la gente ya sabe usar un escritorio, puede aprender a usar una computadora.
+
+El nombre de los conceptos no es traducción: \textit{desktop}, \textit{folder},
+\textit{file} y \textit{trash} fueron elegidos precisamente porque ya existían
+en el mundo físico.  Hoy, en esta sesión, vas a entender por qué esa metáfora
+es tan precisa: porque la diferencia entre la memoria de tu programa y un
+archivo en disco es exactamente la diferencia entre poner un papel sobre el
+escritorio y guardarlo en un cajón.
+
+\begin{tecnico}[El escritorio digital: Xerox PARC]
+  Alan Kay y su equipo desarrollaron entre 1970 y 1973 el sistema
+  \textbf{Smalltalk}, el primero en combinar ventanas, iconos, ratón y menús
+  —lo que hoy conocemos como interfaz gráfica.  Apple llevó esas ideas al
+  mercado masivo con el Macintosh en 1984; Microsoft con Windows en 1985.
+  \par\smallskip
+  Antes de Smalltalk, los archivos se llamaban \textit{datasets} y se
+  referenciaban por códigos internos.  El término \textit{file} fue elegido
+  deliberadamente para evocar los archiveros físicos de oficina.
+  \par\smallskip
+  \textit{Referencia:} Kay, A. \& Goldberg, A. (1977). ``Personal Dynamic
+  Media.'' \textit{IEEE Computer}, 10(3), 31--41.
+\end{tecnico}
+
+% =============================================================================
+\section{Memoria vs.\ archivos: el escritorio y los cajones}
+% =============================================================================
+
+Cuando tu programa declara una variable, la computadora le asigna espacio en
+la \textbf{memoria RAM}.  Puedes leer ese valor, modificarlo, usarlo en
+cálculos.  Es rápido y cómodo, como tener un papel justo frente a ti sobre
+el escritorio.
+
+El problema es que el escritorio se limpia solo cuando el programa termina.
+Todas las variables, todos los arreglos, todos los cálculos que hiciste
+desaparecen.  La próxima vez que ejecutes el programa, empiezas de cero.
+
+Los \textbf{archivos} resuelven esto.  Un archivo vive en el disco duro (o en
+un SSD), no en RAM.  Cuando el programa termina, el archivo sigue ahí.  Cuando
+apagas la computadora, el archivo sigue ahí.  Es como guardar un papel en un
+cajón: el cajón no se vacía solo.
+
+\begin{center}
+\begin{tabular}{lll}
+  \toprule
+  \textbf{Característica}   & \textbf{Memoria (RAM)} & \textbf{Archivo (disco)} \\
+  \midrule
+  Acceso                    & Instantáneo            & Más lento \\
+  Persiste al cerrar        & No                     & Sí \\
+  Persiste al apagar        & No                     & Sí \\
+  Capacidad típica          & Gigabytes              & Terabytes \\
+  Metáfora                  & Escritorio             & Cajón \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\begin{recuerda}
+  Un programa puede guardar resultados en un archivo y otro programa puede
+  leerlos después.  Esa es la base de todo sistema de persistencia: bases
+  de datos, configuraciones, imágenes, música, documentos.  Todo es, al
+  final, un archivo.
+\end{recuerda}
+
+% =============================================================================
+\section{¿Qué es un archivo, exactamente?}
+% =============================================================================
+
+Un archivo es una \textbf{secuencia de bytes} almacenada en disco.  Nada más.
+No tiene estructura mágica, no sabe qué contiene, no se protege solo.  Lo que
+hace que un archivo sea texto, imagen o música es únicamente cómo decidimos
+interpretar esos bytes.
+
+\subsection{Verlo con tus propios ojos}
+
+Antes de escribir una sola línea de C++, crea un archivo de texto a mano:
+
+\begin{description}
+  \item[Windows] Clic derecho en el escritorio $\to$ Nuevo $\to$ Documento de texto.
+        Escribe algunas letras (por ejemplo, \texttt{Hola}) y guarda.
+  \item[Linux / Mac] En la terminal: \texttt{touch prueba.txt}, luego ábrelo
+        con cualquier editor y escribe lo mismo.
+\end{description}
+
+Ahora ábrelo con un \textbf{editor hexadecimal en línea} (por ejemplo,
+\texttt{hexed.it}).  Lo que ves es el contenido real del archivo: cada
+carácter representado por su valor en hexadecimal.
+
+La \texttt{H} de ``Hola'' es \texttt{0x48}, la \texttt{o} es \texttt{0x6F},
+la \texttt{l} es \texttt{0x6C}, la \texttt{a} es \texttt{0x61}.  Son los
+valores de la tabla ASCII que ya conoces.
+
+\begin{center}
+\begin{tabular}{cccc}
+  \toprule
+  \textbf{Carácter} & \textbf{Decimal} & \textbf{Hexadecimal} & \textbf{Binario} \\
+  \midrule
+  \texttt{H} & 72  & \texttt{0x48} & \texttt{01001000} \\
+  \texttt{o} & 111 & \texttt{0x6F} & \texttt{01101111} \\
+  \texttt{l} & 108 & \texttt{0x6C} & \texttt{01101100} \\
+  \texttt{a} & 97  & \texttt{0x61} & \texttt{01100001} \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+Fíjate en el tamaño del archivo: 4~bytes para 4~caracteres.  Agrega una
+letra más y el archivo crece exactamente 1~byte.
+
+\begin{tecnico}[El estándar lo garantiza: \texttt{sizeof(char) == 1}]
+  En C y C++, el estándar garantiza que \cpp{sizeof(char) == 1} en cualquier
+  plataforma, compilador o arquitectura.  Un \cpp{char} siempre ocupa
+  exactamente 1~byte.  Por eso un archivo de texto con $n$ caracteres ocupa
+  exactamente $n$~bytes (más los saltos de línea).
+  \par\smallskip
+  Curiosidad histórica: el primer disco duro comercial, el IBM RAMAC~350
+  (1956), almacenaba 5~MB, pesaba una tonelada y se rentaba por
+  USD~3\,200 al mes.  Una microSD actual de 1~TB cuesta menos de USD~100
+  y cabe en la uña del pulgar.  El mismo concepto de ``archivo en disco'',
+  200\,000 veces más capacidad.
+  \par\smallskip
+  \textit{Referencia:} IBM Archives. ``IBM 350 disk storage unit.''
+  \texttt{ibm.com/ibm/history/exhibits/storage}
+\end{tecnico}
+
+\subsection{Saltos de línea}
+
+Un salto de línea también es un carácter (o dos).  Aquí hay una diferencia
+importante entre sistemas operativos:
+
+\begin{center}
+\begin{tabular}{lll}
+  \toprule
+  \textbf{Sistema} & \textbf{Secuencia} & \textbf{Bytes} \\
+  \midrule
+  Linux / Mac   & \texttt{\textbackslash n}              & \texttt{0x0A} (1 byte) \\
+  Windows       & \texttt{\textbackslash r\textbackslash n} & \texttt{0x0D 0x0A} (2 bytes) \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\begin{advertencia}
+  Si creas un archivo de texto en Windows y lo abres en Linux (o viceversa),
+  puedes ver caracteres extraños al final de cada línea.  Esto es causa de
+  muchos bugs cuando se comparten archivos entre sistemas.  La biblioteca
+  \cpp{<fstream>} en modo texto maneja la conversión automáticamente en la
+  mayoría de los casos, pero es bueno saber que el problema existe.
+\end{advertencia}
+
+% =============================================================================
+\section{La biblioteca \texttt{<fstream>}}
+% =============================================================================
+
+Para leer y escribir archivos en C++ se usa la biblioteca \textbf{\cpp{<fstream>}}
+(\textit{file stream}).  Provee tres clases:
+
+\begin{center}
+\begin{tabular}{lll}
+  \toprule
+  \textbf{Clase}   & \textbf{Uso}             & \textbf{Analogía}          \\
+  \midrule
+  \cpp{ifstream}   & Leer de un archivo       & Sacar un papel del cajón   \\
+  \cpp{ofstream}   & Escribir en un archivo   & Meter un papel al cajón    \\
+  \cpp{fstream}    & Leer y escribir          & Cajón de doble apertura    \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+La idea central es que un archivo se comporta igual que \cpp{cin} y \cpp{cout}:
+usas los mismos operadores \cpp{>>} y \cpp{<<}, solo que aplicados a un objeto
+que representa un archivo en disco en lugar de la terminal.
+
+\begin{consejo}
+  Si ya sabes usar \cpp{cin} y \cpp{cout}, ya sabes casi todo lo necesario
+  para leer y escribir archivos.  \cpp{cin} y \cpp{cout} son también
+  \textbf{streams}: el primero conectado al teclado, el segundo a la pantalla.
+  \cpp{ifstream} y \cpp{ofstream} son lo mismo pero conectados a un archivo
+  en disco.  El operador cambia de destino, no de sintaxis.
+\end{consejo}
+
+% =============================================================================
+\section{Leyendo un archivo línea por línea}
+% =============================================================================
+
+El primer ejemplo lee un archivo de texto y muestra su contenido en pantalla.
+
+\textbf{canciones.txt}:
+\begin{verbatim}
+Walking on Sunshine
+Happy
+Color Esperanza
+\end{verbatim}
+
+\textbf{archivos1.cpp}:
+\begin{verbatim}
+#include <iostream>
+#include <fstream>
+#include <string>
+using namespace std;
+
+int main(){
+    ifstream ifile("canciones.txt");
+    string cancion;
+
+    while (getline(ifile, cancion)){
+        cout << cancion << endl;
+    }
+}
+\end{verbatim}
+
+Desglose:
+
+\begin{description}
+  \item[\cpp{ifstream ifile("canciones.txt");}]
+    Crea un objeto de tipo \textbf{\cpp{ifstream}} y lo conecta al archivo
+    \texttt{canciones.txt}.  Si el archivo no existe, el objeto queda en
+    estado de error pero el programa no truena por defecto.
+
+  \item[\cpp{while (getline(ifile, cancion))}]
+    Lee una línea completa del archivo y la almacena en \cpp{cancion}.
+    El salto de línea se consume pero \textit{no} se incluye en la cadena.
+    El \cpp{while} se detiene cuando no quedan más líneas: \cpp{getline}
+    devuelve el propio stream, y al llegar al final del archivo el stream
+    se evalúa como \cpp{false}.
+
+  \item[\cpp{cout << cancion << endl;}]
+    Muestra la línea en pantalla.  El \cpp{endl} agrega el salto que
+    \cpp{getline} ya consumió del archivo.
+\end{description}
+
+\begin{advertencia}
+  El archivo debe estar en el mismo directorio que el \textbf{ejecutable}
+  (no necesariamente donde está el \texttt{.cpp}).  Si el archivo no se
+  encuentra, el \cpp{while} no itera nunca y el programa termina en
+  silencio.  Para detectarlo:
+  \begin{verbatim}
+ifstream ifile("canciones.txt");
+if (!ifile){
+    cout << "Error: no se pudo abrir el archivo" << endl;
+    return 1;
+}
+  \end{verbatim}
+\end{advertencia}
+
+% =============================================================================
+\section{Escribiendo en un archivo}
+% =============================================================================
+
+Ahora al revés: en lugar de leer desde un archivo, escribimos resultados en uno.
+
+\textbf{archivos2.cpp}:
+\begin{verbatim}
+#include <iostream>
+#include <fstream>
+#include <string>
+using namespace std;
+
+int main(){
+    ofstream ofile("resultados.txt");
+    int x = 10;
+    int y = 20;
+
+    ofile << x+y << " ";
+    ofile << y-x << " ";
+    ofile << (x+y)/2 << endl;
+
+    ofile.close();
+}
+\end{verbatim}
+
+Después de ejecutar este programa, \texttt{resultados.txt} contendrá:
+\begin{verbatim}
+30 10 15
+\end{verbatim}
+
+El operador \cpp{<<} es exactamente el mismo que usas con \cpp{cout}.  La
+única diferencia es que el destino es un archivo en lugar de la pantalla.
+
+\subsection{¿Por qué llamar a \texttt{close()}?}
+
+El sistema operativo usa un \textbf{buffer}: acumula los datos antes de
+escribirlos al disco para hacer menos operaciones físicas, que son lentas.
+Al llamar \cpp{close()}, le dices que vacíe el buffer y garantice que todo
+llegó al disco.  Si el programa termina sin cerrar, el buffer se vacía
+automáticamente, pero llamar \cpp{close()} explícitamente es buena práctica.
+
+\begin{recuerda}
+  Si \texttt{resultados.txt} ya existía, \cpp{ofstream} lo
+  \textbf{sobreescribe} desde el principio.  Si quieres \textit{agregar}
+  contenido al final sin borrar lo anterior, usa el modo \cpp{fstream::app}
+  (\textit{append}):
+  \begin{verbatim}
+ofstream ofile("resultados.txt", fstream::app);
+  \end{verbatim}
+\end{recuerda}
+
+% =============================================================================
+\section{Leyendo valores numéricos}
+% =============================================================================
+
+El programa anterior escribió tres números en \texttt{resultados.txt}.
+Ahora los leemos con otro programa.
+
+\textbf{archivos3.cpp}:
+\begin{verbatim}
+#include <iostream>
+#include <fstream>
+#include <string>
+using namespace std;
+
+int main(){
+    ifstream fresultados("resultados.txt");
+    int x, y, z;
+    fresultados >> x >> y >> z;
+    cout << "La suma de " << x << " " << y << " y " << z;
+    cout << " es " << x+y+z << endl;
+}
+\end{verbatim}
+
+El operador \cpp{>>} sobre un \cpp{ifstream} funciona igual que sobre
+\cpp{cin}: salta espacios y saltos de línea, lee el siguiente token y lo
+convierte al tipo indicado.
+
+\begin{ejemplo}[El encadenamiento funciona igual que con \texttt{cin}]
+  Las tres lecturas se pueden escribir separadas o encadenadas:
+  \begin{verbatim}
+fresultados >> x;
+fresultados >> y;
+fresultados >> z;
+// equivale a:
+fresultados >> x >> y >> z;
+  \end{verbatim}
+  Cada \cpp{>>} devuelve el stream, lo que permite el encadenamiento.
+  Con \cpp{cin} lo haces todo el tiempo sin pensarlo.
+\end{ejemplo}
+
+\begin{consejo}
+  Nota el flujo completo de los tres ejemplos:
+  \textbf{archivos2} \textit{escribe} \texttt{resultados.txt};
+  \textbf{archivos3} lo \textit{lee} desde otro programa.  Ese es el poder
+  de los archivos: la comunicación entre programas, sesiones y usuarios
+  distintos.
+\end{consejo}
+
+% =============================================================================
+\section{Actividad: agenda de cumpleaños}
+% =============================================================================
+
+Vamos a construir una pequeña base de datos colaborativa.  Cada persona
+genera un archivo con su nombre y fecha de cumpleaños, lo comparte con el
+grupo, y entre todos escriben programas para consultarla.
+
+\subsection{Formato del archivo}
+
+Cada archivo personal tiene cuatro líneas, en este orden:
+
+\begin{verbatim}
+nombre
+apellidos
+día
+mes
+\end{verbatim}
+
+Por ejemplo, el archivo de Hannah Fabián (cumpleaños el 29 de febrero)
+sería:
+
+\begin{verbatim}
+Hannah
+Fabián
+29
+2
+\end{verbatim}
+
+\subsection{Parte A: genera tu archivo (10 min)}
+
+Escribe un programa que genere tu propio archivo usando lo que aprendiste
+en \textbf{archivos2.cpp}.  Nómbralo con tu nombre en minúsculas y sin
+espacios, por ejemplo \texttt{hannah.txt}.  Una vez generado, súbelo a la
+carpeta de Google Drive indicada por el profesor.
+
+\subsection{Parte B: las consultas (40 min)}
+
+Descarga todos los archivos de tus compañeros y colócalos en una carpeta.
+Luego resuelve los siguientes problemas.  Para cada uno escribe un programa
+separado.
+
+\begin{enumerate}
+
+  \item \textbf{Unir todos los datos en un solo archivo.}\\
+        Lee cada archivo individual y escribe toda la información en un
+        archivo llamado \texttt{agenda.txt}, una persona por línea con el
+        formato:\\[4pt]
+        \texttt{nombre apellidos día mes}\\[4pt]
+        Puedes apoyarte en un archivo de texto auxiliar que liste los
+        nombres de todos los archivos individuales, uno por línea.
+
+  \item \textbf{¿Quién cumple años en un mes dado?}\\
+        Lee \texttt{agenda.txt}, pide un número de mes al usuario (1~=~enero,
+        12~=~diciembre) y muestra el nombre completo de todas las personas
+        que cumplen años ese mes.
+
+  \item \textbf{¿Cuál es el siguiente cumpleaños a partir de hoy?}\\
+        Hoy es 6 de mayo.  ¿De quién es el próximo cumpleaños?  Si ningún
+        compañero cumple años después del 6 de mayo, el siguiente es el
+        primero del año que viene.  Si varias personas comparten la fecha,
+        muéstralas todas.
+
+  \item \textbf{¿Qué par de compañeros tiene los cumpleaños más cercanos?}\\
+        Encuentra el par de personas cuyas fechas de cumpleaños están
+        separadas por el menor número de días (considera el año como circular:
+        el 31 de diciembre y el 1 de enero están separados por 1 día).
+
+\end{enumerate}
+
+% =============================================================================
+\section{Ejercicios}
+% =============================================================================
+
+\begin{enumerate}
+
+  \item Escribe un programa que pida al usuario tres calificaciones, las
+        guarde en un archivo llamado \texttt{calificaciones.txt} (una por
+        línea) y luego lea ese mismo archivo y muestre el promedio.
+
+  \item El programa del ejercicio anterior sobreescribe el archivo cada
+        vez que se ejecuta.  Modifícalo para que \textit{agregue} las
+        calificaciones al final sin borrar las anteriores.  Después de
+        agregar, lee todo el archivo y calcula el promedio de
+        \textit{todas} las calificaciones almacenadas.
+
+  \item Escribe un programa que lea \texttt{canciones.txt} y genere un
+        archivo llamado \texttt{canciones\_numeradas.txt} donde cada
+        línea tenga el número de línea seguido de la canción:
+        \begin{verbatim}
+1. Walking on Sunshine
+2. Happy
+3. Color Esperanza
+        \end{verbatim}
+
+  \item Escribe un programa que lea dos archivos de texto (cuyos nombres
+        pide al usuario) y genere un tercer archivo que contenga el
+        contenido del primero seguido del contenido del segundo.
+
+  \item ¿Qué ocurre si intentas leer de un archivo que no existe con
+        \cpp{ifstream}?  ¿Lanza una excepción?  ¿Da error de compilación?
+        ¿Simplemente no lee nada?  Primero razona la respuesta, luego
+        verifica experimentalmente.
+
+\end{enumerate}
+
+% =============================================================================
+\section*{Resumen}
+% =============================================================================
+
+\begin{itemize}
+  \item La \textbf{memoria RAM} es volátil: los datos desaparecen cuando
+        el programa termina.  Los \textbf{archivos} en disco persisten.
+  \item Un archivo es una secuencia de bytes.  En texto, cada carácter
+        ocupa exactamente 1~byte (valor ASCII).
+  \item \cpp{<fstream>} provee \cpp{ifstream} (leer), \cpp{ofstream}
+        (escribir) y \cpp{fstream} (ambos).
+  \item Los operadores \cpp{>>} y \cpp{<<} funcionan igual con archivos
+        que con \cpp{cin} y \cpp{cout}: misma sintaxis, distinto destino.
+  \item \cpp{getline(stream, cadena)} lee una línea completa; el
+        \cpp{while} itera hasta el final del archivo.
+  \item \cpp{ofstream} sobreescribe el archivo por defecto; usa
+        \cpp{fstream::app} para agregar al final.
+  \item Llama a \cpp{close()} al terminar de escribir para garantizar
+        que el buffer se vacíe a disco.
+  \item En Windows los saltos de línea son \texttt{\textbackslash r\textbackslash n}
+        (2~bytes); en Linux/Mac son \texttt{\textbackslash n} (1~byte).
+\end{itemize}
+
+\end{document}

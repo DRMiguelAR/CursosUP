@@ -1,0 +1,667 @@
+% =============================================================================
+%  Notas del Profesor — Sesión 21: Archivos de texto
+%  Programación Avanzada — Universidad Panamericana
+%  Compilar: pdflatex sesion21_archivos_texto_profesor.tex
+% =============================================================================
+\documentclass[12pt, oneside]{article}
+\usepackage[profesor]{progavanzada}
+\usepackage{array}
+
+\begin{document}
+
+\portada{Sesión 21}{Archivos de texto}{2026}
+
+\tableofcontents
+\newpage
+
+% =============================================================================
+\section{Objetivos de la sesión}
+% =============================================================================
+
+Al finalizar la sesión el alumno será capaz de:
+
+\begin{enumerate}
+  \item Explicar la diferencia entre almacenamiento en memoria RAM y en
+        archivo de disco, y cuándo conviene cada uno.
+  \item Crear, leer y escribir archivos de texto en C++ usando
+        \cpp{ifstream} y \cpp{ofstream}.
+  \item Usar \cpp{getline} para leer líneas completas y \cpp{>>} para
+        leer tokens numéricos de un archivo.
+  \item Escribir un programa que genere un archivo de datos estructurado,
+        y otro que lo consuma para responder consultas.
+  \item Participar en una actividad colaborativa donde los datos de varios
+        programas se integran en un solo archivo.
+\end{enumerate}
+
+\begin{notaprofesor}[Duración y distribución (100 min)]
+  \begin{tabular}{rl}
+    10 min & Gancho histórico + preguntas de arranque \\
+    10 min & Símil del escritorio; tabla RAM vs.\ disco \\
+    15 min & ¿Qué es un archivo?  Demo con editor hex \\
+     5 min & Presentar \cpp{<fstream>} y las tres clases \\
+    25 min & Demo en vivo: archivos1, archivos2, archivos3 \\
+    35 min & Actividad: agenda de cumpleaños (Parte~A + Parte~B) \\
+  \end{tabular}
+\end{notaprofesor}
+
+% =============================================================================
+\section{Prerrequisitos}
+% =============================================================================
+
+\begin{itemize}
+  \item \cpp{cin} y \cpp{cout} con \cpp{>>} y \cpp{<<} (sesiones 1--2).
+  \item \cpp{string} y \cpp{getline} desde teclado (sesión 2).
+  \item Tabla ASCII y representación de caracteres (sesión 3).
+  \item Compilación básica con \texttt{g++} y ejecución desde terminal.
+\end{itemize}
+
+\begin{notaprofesor}
+  Esta sesión no requiere apuntadores, structs ni arreglos avanzados.  La
+  actividad final sí puede llegar a necesitar arreglos simples o vectores
+  para almacenar los datos de la agenda, pero los alumnos tienen esa base
+  de sesiones anteriores.
+  \par\smallskip
+  Señal de alerta: si algún alumno no recuerda la diferencia entre
+  \cpp{cin >>} y \cpp{getline}, detenerse 3 minutos a recordarlo con un
+  ejemplo en pantalla antes de abrir archivos.  El modelo mental de
+  ``el buffer del teclado'' es el mismo que el de ``el buffer del archivo''.
+\end{notaprofesor}
+
+% =============================================================================
+\section{Arranque y preguntas de sondeo}
+% =============================================================================
+
+\begin{notaprofesor}[Preguntas de arranque (10 min)]
+
+  \textbf{1.\ ``¿Qué le pasa a una variable cuando el programa termina?''}\\
+  Respuesta esperada: desaparece / se pierde.  Seguir con: ``¿y si quieres
+  que ese valor esté disponible la próxima vez que ejecutes el programa?''
+  Dejar que propongan soluciones (variable global, retornar el valor, etc.)
+  antes de decir: ``la solución real se llama archivo.''
+
+  \medskip
+  \textbf{2.\ ``¿Cuántas veces abrieron hoy un archivo antes de llegar
+  aquí?''}\\
+  Respuesta esperada: muchas (WhatsApp, fotos, música, documentos).
+  Seguir con: ``todos esos archivos son secuencias de bytes.  Hoy van a
+  crear sus propios archivos desde C++.''
+
+  \medskip
+  \textbf{3.\ ``¿Por qué creen que la carpeta del explorador de archivos
+  se llama \textit{carpeta}?''}\\
+  Respuesta esperada: porque se parece a una carpeta real.  Usar esto
+  para introducir la historia de Xerox PARC y el origen deliberado de la
+  metáfora.  Es el gancho para la sección histórica.
+
+\end{notaprofesor}
+
+% =============================================================================
+\section{Memoria vs.\ archivos}
+% =============================================================================
+
+\begin{notaprofesor}[Cómo presentar el símil (5 min)]
+  El símil del escritorio funciona bien si se actúa físicamente: señalar
+  el escritorio (o la pantalla), abrir el cajón del escritorio real si hay
+  uno.  Preguntar: ``¿qué pasa si empujas todos los papeles del escritorio
+  al piso?''  Eso es lo que hace el sistema operativo cuando el programa
+  termina: limpia la memoria.  ``¿Y el cajón?''  Los cajones se quedan como
+  están.
+  \par\smallskip
+  Después mostrar la tabla comparativa y pedir a un alumno que la lea en
+  voz alta.  Preguntar: ``¿cuándo prefieren usar memoria?  ¿cuándo un
+  archivo?''  Respuesta esperada: memoria para cálculos en curso, archivo
+  para guardar resultados permanentes.
+\end{notaprofesor}
+
+% =============================================================================
+\section{¿Qué es un archivo?  Demo con hex editor}
+% =============================================================================
+
+\begin{notaprofesor}[Guión de la demo (15 min)]
+  Esta demo es uno de los momentos más memorables de la sesión.  El objetivo
+  es que los alumnos \textit{vean} que un archivo es solo bytes, no magia.
+
+  \begin{enumerate}
+    \item Crear un archivo de texto vacío:
+          \begin{itemize}
+            \item Windows: clic derecho → Nuevo → Documento de texto.
+            \item Linux: \texttt{touch prueba.txt} en terminal.
+          \end{itemize}
+          Mostrar el tamaño: \textbf{0 bytes}.  Preguntar: ``¿qué esperaban?''
+
+    \item Abrir con el editor de texto, escribir \texttt{H} y guardar.
+          Mostrar el tamaño: \textbf{1 byte}.  Preguntar: ``¿cuántos bytes
+          esperaban?''
+
+    \item Abrir \texttt{prueba.txt} en \texttt{hexed.it} (o cualquier hex
+          editor en línea).  Mostrar el byte \texttt{0x48} y conectarlo con
+          la tabla ASCII de sesiones anteriores.
+
+    \item Escribir \texttt{Hola} completo.  En el hex editor: cuatro bytes,
+          \texttt{48 6F 6C 61}.  Pedir a algún alumno que identifique cada
+          carácter.
+
+    \item Agregar un salto de línea con Enter y guardar.  En Linux aparece
+          \texttt{0A}; en Windows aparece \texttt{0D 0A}.  Explicar que
+          \texttt{0A} es \texttt{LF} (Line Feed) y \texttt{0D} es
+          \texttt{CR} (Carriage Return) — herencia de las máquinas de escribir
+          donde había que hacer dos acciones separadas para pasar de línea.
+
+    \item Preguntar: ``¿qué diferencia hay entre este archivo y una imagen
+          JPEG?''  Respuesta: ninguna en fondo — también son bytes.  Lo que
+          cambia es cómo el programa los interpreta.
+  \end{enumerate}
+
+  \textbf{Por qué vale la pena hacer esto:} muchos alumnos creen que un
+  archivo de texto es algo cualitativamente distinto a un archivo binario.
+  Ver los bytes directamente rompe esa idea y prepara la sesión~22 sobre
+  archivos binarios.
+\end{notaprofesor}
+
+\begin{notaprofesor}[FAQ: archivos y bytes]
+
+  \textbf{¿Por qué el archivo vacío tiene 0 bytes y no algún encabezado?}\\
+  En sistemas Unix y la mayoría de sistemas modernos, un archivo de texto
+  plano (\texttt{.txt}) no tiene encabezado.  Empieza directamente con los
+  datos.  Otros formatos como JPEG, PDF o DOCX sí tienen encabezados
+  (\textit{magic bytes}) que identifican el tipo de archivo.  Los primeros
+  2 bytes de cualquier JPEG son siempre \texttt{FF D8}.
+
+  \medskip
+  \textbf{¿\texttt{sizeof(char)} puede ser distinto de 1?}\\
+  No.  El estándar C++ garantiza \cpp{sizeof(char) == 1} por definición.
+  Otras preguntas sobre el tamaño de los tipos son válidas (\cpp{int} puede
+  ser 2 o 4 bytes según la plataforma), pero \cpp{char} siempre es 1.
+
+  \medskip
+  \textbf{¿El problema CRLF vs LF les va a afectar en este curso?}\\
+  Raramente, porque \cpp{<fstream>} en modo texto hace la conversión
+  automáticamente al leer y al escribir.  El problema surge cuando se
+  abre el archivo en modo binario o cuando se comparte entre sistemas
+  sin conversión.  Para la actividad de hoy no es un problema.
+
+\end{notaprofesor}
+
+% =============================================================================
+\section{La biblioteca \texttt{<fstream>}}
+% =============================================================================
+
+\begin{notaprofesor}[Presentación (5 min)]
+  Al mostrar la tabla de las tres clases, enfatizar la simetría con
+  \cpp{cin}/\cpp{cout}:
+  \begin{itemize}
+    \item \cpp{cin} es un \cpp{istream} conectado al teclado.
+    \item \cpp{ifstream} es un \cpp{istream} conectado a un archivo.
+    \item La diferencia es solo dónde vienen los datos; los operadores
+          son idénticos.
+  \end{itemize}
+  Esto reduce la carga cognitiva: los alumnos ya saben usar \cpp{>>} y
+  \cpp{<<}.  Solo aprenden a apuntar esos operadores a un archivo.
+\end{notaprofesor}
+
+% =============================================================================
+\section{Demo en vivo: los tres ejemplos}
+% =============================================================================
+
+\subsection{\texttt{archivos1.cpp}: leer línea por línea}
+
+\begin{notaprofesor}[Guión (8 min)]
+  \begin{enumerate}
+    \item Mostrar \texttt{canciones.txt} con \texttt{cat} (Linux) o
+          abrirlo en el editor.  Confirmar que tiene 3 líneas.
+    \item Abrir \texttt{archivos1.cpp}, leerlo en voz alta línea por línea
+          y preguntar antes de ejecutar: ``¿qué esperan que imprima?''
+    \item Compilar y ejecutar.  Confirmar la salida.
+    \item Preguntar: ``¿qué pasaría si \texttt{canciones.txt} no existiera?''
+          Cambiar el nombre del archivo a algo que no existe y mostrar
+          que el programa termina sin imprimir nada ni dar error visible.
+    \item Agregar la verificación \cpp{if (!ifile)} justo después de abrir
+          el archivo y repetir.  Ahora sí se muestra el mensaje de error.
+          Esta es la forma correcta de manejar archivos que pueden no existir.
+    \item Pedir a un alumno que explique qué hace la condición del
+          \cpp{while (getline(...))}.  Respuesta esperada: \cpp{getline}
+          devuelve el stream; cuando llega al EOF el stream es falso.
+  \end{enumerate}
+\end{notaprofesor}
+
+\subsection{\texttt{archivos2.cpp}: escribir en un archivo}
+
+\begin{notaprofesor}[Guión (8 min)]
+  \begin{enumerate}
+    \item Antes de ejecutar, preguntar: ``¿dónde va a aparecer la salida?''
+          Respuesta esperada: en \texttt{resultados.txt}, no en pantalla.
+    \item Ejecutar.  Abrir \texttt{resultados.txt} con \texttt{cat} y
+          mostrar el contenido.
+    \item Preguntar: ``¿cuántos bytes tiene ese archivo?''
+          \texttt{ls -lh resultados.txt} o abrir en el hex editor.
+          El archivo tiene \texttt{30 10 15\textbackslash n} = 9 caracteres = 9 bytes
+          (o 10 en Windows por el \texttt{\textbackslash r}).
+    \item Ejecutar el programa \textit{otra vez} sin cambiar nada.
+          Mostrar que \texttt{resultados.txt} sigue igual: \cpp{ofstream}
+          sobreescribe.  Introducir \cpp{fstream::app} y demostrar que
+          ahora agrega una segunda línea.
+    \item Preguntar: ``¿qué pasa si no llamamos a \cpp{close()}?''
+          En la mayoría de los casos el destructor del objeto lo cierra
+          automáticamente al salir del \cpp{main}, pero es mala práctica
+          depender de eso, especialmente en programas largos donde el
+          archivo se puede necesitar antes de que termine el programa.
+  \end{enumerate}
+\end{notaprofesor}
+
+\subsection{\texttt{archivos3.cpp}: leer valores numéricos}
+
+\begin{notaprofesor}[Guión (9 min)]
+  \begin{enumerate}
+    \item Mostrar que este programa lee lo que \textbf{archivos2} escribió.
+          Enfatizar: comunicación entre programas a través del archivo.
+    \item Antes de ejecutar: ``¿cuántos \cpp{>>} necesitamos para leer
+          los tres números?  ¿Pueden ir en la misma línea?''
+          Mostrar ambas formas (separada y encadenada) y confirmar que
+          producen el mismo resultado.
+    \item Ejecutar y verificar la salida.
+    \item Pregunta de profundidad: ``Si el archivo tuviera más de 3 números,
+          ¿qué pasaría?''  Respuesta: los \cpp{>>} leen solo los primeros 3;
+          el resto queda sin leer en el stream.  ``¿Y si tuviera menos de
+          3?''  Los \cpp{>>} fallan silenciosamente y \cpp{x}, \cpp{y} o
+          \cpp{z} quedan con valores basura.  Para detectarlo se puede
+          verificar el estado del stream: \cpp{if (!fresultados)} después
+          de las lecturas.
+    \item Conectar con la actividad: ``El programa que van a escribir en
+          Parte~B lee datos estructurados de un archivo.  Ese es exactamente
+          el patrón de archivos3.''
+  \end{enumerate}
+\end{notaprofesor}
+
+\begin{notaprofesor}[FAQ: streams y operadores]
+
+  \textbf{¿Por qué \cpp{getline} y no \cpp{>>} para leer canciones?}\\
+  \cpp{>>} lee hasta el primer espacio o salto de línea.  ``Walking on
+  Sunshine'' tiene espacios, así que \cpp{>>} leería solo ``Walking''.
+  \cpp{getline} lee hasta el salto de línea, incluyendo los espacios.
+  Regla práctica: si los datos pueden contener espacios, usa \cpp{getline};
+  si son tokens separados por espacio, usa \cpp{>>}.
+
+  \medskip
+  \textbf{¿Se puede mezclar \cpp{getline} y \cpp{>>} en el mismo stream?}\\
+  Sí, pero con cuidado.  \cpp{>>} deja el \texttt{\textbackslash n} en el buffer;
+  el siguiente \cpp{getline} lo consumirá como una línea vacía.  Si vas a
+  mezclarlos, agrega \cpp{stream.ignore()} o \cpp{stream.ignore(1000,'\textbackslash n')}
+  después de cada bloque de \cpp{>>} para limpiar el buffer antes de
+  \cpp{getline}.  En la actividad de hoy se evita este problema usando
+  \cpp{getline} para cadenas y \cpp{>>} para números en campos separados.
+
+  \medskip
+  \textbf{¿Qué es EOF exactamente?}\\
+  \textit{End Of File}.  No es un byte especial dentro del archivo; es
+  una condición que el sistema operativo reporta cuando el stream llega
+  al final de los datos.  En el contexto del teclado, \texttt{Ctrl+D}
+  (Linux) o \texttt{Ctrl+Z} (Windows) simula un EOF.
+
+  \medskip
+  \textbf{¿\cpp{endl} vs \cpp{"\textbackslash n"} al escribir en archivo?}\\
+  \cpp{endl} escribe \texttt{\textbackslash n} \textit{y} vacía el buffer
+  (\textit{flush}).  \cpp{"\textbackslash n"} solo escribe el carácter.  Para
+  archivos, \cpp{"\textbackslash n"} es más rápido si escribes muchas líneas.
+  \cpp{endl} es más seguro si necesitas garantizar que el dato llegó al
+  disco inmediatamente (por ejemplo, en un log de errores).
+
+\end{notaprofesor}
+
+% =============================================================================
+\section{Actividad: agenda de cumpleaños}
+% =============================================================================
+
+\begin{notaprofesor}[Organización de la actividad (35 min)]
+
+  \textbf{Antes de la clase:}
+  \begin{itemize}
+    \item Crear la carpeta en Google Drive y tener el link listo.
+    \item Preparar un archivo \texttt{archivos.txt} de ejemplo (vacío al
+          inicio, se llena durante la Parte~A) que los alumnos puedan
+          usar para iterar sobre todos los archivos individuales.
+  \end{itemize}
+
+  \textbf{Parte~A (10 min) — Cada alumno genera su archivo:}
+  \begin{enumerate}
+    \item Dar el link de Drive.
+    \item Los alumnos escriben un programa con \cpp{ofstream} que genere su
+          archivo personal.  El formato es cuatro líneas: nombre, apellidos,
+          día, mes.
+    \item Suben el archivo generado (no el \texttt{.cpp}) a Drive.
+    \item Mientras suben, actualizar \texttt{archivos.txt} en Drive con la
+          lista de nombres de archivo para que todos puedan descargarlo.
+  \end{enumerate}
+
+  \textbf{Parte~B (25 min) — Las consultas:}\\
+  Dar tiempo libre.  Circular por el salón para desbloquear a quienes
+  estén atascados.  Los puntos de fricción más comunes son:
+  \begin{itemize}
+    \item Consulta~1: cómo leer un archivo cuyo nombre viene de otro archivo
+          (abrir un \cpp{ifstream} con un \cpp{string} como nombre).
+    \item Consulta~3: cómo manejar el ``año circular'' (si ya pasó la fecha
+          este año, buscar la más cercana para el año siguiente).
+    \item Consulta~4: cómo representar la ``distancia'' entre dos fechas
+          para poder compararlas.
+  \end{itemize}
+
+  \textbf{Cierre (5 min):}
+  Pedir a 2--3 equipos que muestren su solución a una de las consultas.
+  Elegir preferentemente la~3 o la~4, que tienen mayor riqueza algorítmica.
+
+\end{notaprofesor}
+
+\begin{notaprofesor}[Solución de referencia — Consulta 1: unir archivos]
+\begin{verbatim}
+#include <iostream>
+#include <fstream>
+#include <string>
+using namespace std;
+
+int main(){
+    ifstream lista("archivos.txt");
+    ofstream agenda("agenda.txt");
+    string archivo;
+
+    while(getline(lista, archivo)){
+        ifstream f(archivo);
+        string nombre, apellido;
+        int dia, mes;
+        getline(f, nombre);
+        getline(f, apellido);
+        f >> dia >> mes;
+        agenda << nombre << " " << apellido
+               << " " << dia << " " << mes << endl;
+        f.close();
+    }
+    agenda.close();
+}
+\end{verbatim}
+  Nota: \cpp{ifstream f(archivo)} acepta un \cpp{string} como nombre
+  desde C++11.  En compiladores más antiguos puede requerirse
+  \cpp{f.open(archivo.c\_str())}.
+\end{notaprofesor}
+
+\begin{notaprofesor}[Solución de referencia — Consulta 2: filtrar por mes]
+\begin{verbatim}
+#include <iostream>
+#include <fstream>
+#include <string>
+using namespace std;
+
+int main(){
+    int mes_buscado;
+    cout << "Mes (1-12): ";
+    cin >> mes_buscado;
+
+    ifstream agenda("agenda.txt");
+    string nombre, apellido;
+    int dia, mes;
+
+    while(agenda >> nombre >> apellido >> dia >> mes){
+        if(mes == mes_buscado)
+            cout << nombre << " " << apellido << endl;
+    }
+}
+\end{verbatim}
+\end{notaprofesor}
+
+\begin{notaprofesor}[Solución de referencia — Consulta 3: próximo cumpleaños]
+  La idea es convertir cada cumpleaños a ``día del año'' y comparar con
+  el día actual.  Se puede usar mes$\times$31~+~día como aproximación
+  suficiente para encontrar el mínimo; o calcular el día del año real
+  acumulando días por mes.
+
+  Estrategia simple con día del año aproximado:
+\begin{verbatim}
+// dias_aprox: aproximación suficiente para ordenar
+int dias_aprox(int dia, int mes){
+    int acum[] = {0,31,59,90,120,151,181,212,243,273,304,334};
+    return acum[mes-1] + dia;
+}
+
+// HOY = 6 de mayo = día ~126
+int hoy = dias_aprox(6, 5);
+
+// Para cada persona calcular dias_aprox(dia, mes)
+// Si > hoy: candidato de este año
+// Si <= hoy: candidato del año siguiente (sumar 365)
+// El próximo cumpleaños es el candidato mínimo
+\end{verbatim}
+  En clase es válido que los alumnos elijan la aproximación mes$\times$31~+~día
+  si les funciona para ordenar.  El objetivo es algorítmico, no calendárico.
+\end{notaprofesor}
+
+\begin{notaprofesor}[Solución de referencia — Consulta 4: par más cercano]
+  Convertir todas las fechas a días del año (misma función que consulta 3),
+  ordenarlas de menor a mayor, y buscar la diferencia mínima entre
+  elementos consecutivos.  No olvidar la diferencia circular entre el
+  último y el primero (suma 365 al último si es menor que el primero).
+\begin{verbatim}
+// Con N personas y arreglos nombre[], dia_año[]
+// Ordenar por dia_año (bubble sort o cualquier método conocido)
+// Luego:
+int min_diff = 365;
+int p1 = 0, p2 = 1;
+for(int i = 0; i < N-1; i++){
+    int diff = dia_año[i+1] - dia_año[i];
+    if(diff < min_diff){
+        min_diff = diff;
+        p1 = i; p2 = i+1;
+    }
+}
+// Diferencia circular:
+int diff_circular = 365 - dia_año[N-1] + dia_año[0];
+if(diff_circular < min_diff){
+    min_diff = diff_circular;
+    p1 = N-1; p2 = 0;
+}
+\end{verbatim}
+\end{notaprofesor}
+
+% =============================================================================
+\section{Errores frecuentes}
+% =============================================================================
+
+\begin{notaprofesor}[Los cinco errores más comunes]
+
+  \textbf{1.\ Archivo no encontrado — sin mensaje de error.}\\
+  Síntoma: el programa termina sin hacer nada.  No hay excepción por defecto.\\
+  Remedio: siempre verificar \cpp{if (!ifile)} justo después de abrir.
+
+  \vspace{0.5em}
+  \textbf{2.\ Ejecutable en directorio distinto al archivo de datos.}\\
+  Síntoma: mismo error que el anterior.\\
+  Remedio: usar una ruta relativa correcta o ejecutar el programa desde
+  el directorio donde están los datos.  En VS Code el directorio de trabajo
+  del ejecutable puede ser distinto al del \texttt{.cpp}.
+
+  \vspace{0.5em}
+  \textbf{3.\ Mezclar \cpp{>>} y \cpp{getline} sin limpiar el buffer.}\\
+  Síntoma: \cpp{getline} lee una cadena vacía en la siguiente llamada.\\
+  Remedio: agregar \cpp{stream.ignore()} o \cpp{stream.ignore(1000,'\textbackslash n')}
+  después de cada bloque de \cpp{>>}.
+
+  \vspace{0.5em}
+  \textbf{4.\ Olvidar \cpp{close()} en \cpp{ofstream}.}\\
+  Síntoma: el archivo existe pero está vacío o incompleto.  El buffer no
+  se vació.\\
+  Remedio: llamar \cpp{close()} explícitamente, o mejor aún, envolver el
+  \cpp{ofstream} en un bloque \cpp{\{\}} para que su destructor lo cierre.
+
+  \vspace{0.5em}
+  \textbf{5.\ Abrir un \cpp{ofstream} para leer (o viceversa).}\\
+  Síntoma: error de compilación poco claro, o el archivo se borra al abrirlo
+  con \cpp{ofstream} (que crea/sobreescribe).\\
+  Remedio: \texttt{i}~=~input (leer), \texttt{o}~=~output (escribir).
+
+\end{notaprofesor}
+
+% =============================================================================
+\section{Soluciones a los ejercicios}
+% =============================================================================
+
+\begin{notaprofesor}[Ejercicio 1 — Calificaciones]
+\begin{verbatim}
+#include <iostream>
+#include <fstream>
+using namespace std;
+
+int main(){
+    ofstream fout("calificaciones.txt");
+    float c1, c2, c3;
+    cout << "Tres calificaciones: ";
+    cin >> c1 >> c2 >> c3;
+    fout << c1 << endl << c2 << endl << c3 << endl;
+    fout.close();
+
+    ifstream fin("calificaciones.txt");
+    float x, sum = 0;
+    int n = 0;
+    while(fin >> x){ sum += x; n++; }
+    cout << "Promedio: " << sum/n << endl;
+}
+\end{verbatim}
+\end{notaprofesor}
+
+\begin{notaprofesor}[Ejercicio 2 — Agregar calificaciones]
+  Solo cambia la línea de apertura de \cpp{ofstream}:
+  \begin{verbatim}
+ofstream fout("calificaciones.txt", fstream::app);
+  \end{verbatim}
+  El bloque de lectura y promedio queda exactamente igual que en el
+  ejercicio 1.  Al acumular todas las calificaciones del archivo completo
+  el promedio ya incluye las anteriores.
+\end{notaprofesor}
+
+\begin{notaprofesor}[Ejercicio 3 — Canciones numeradas]
+\begin{verbatim}
+#include <iostream>
+#include <fstream>
+#include <string>
+using namespace std;
+
+int main(){
+    ifstream fin("canciones.txt");
+    ofstream fout("canciones_numeradas.txt");
+    string linea;
+    int num = 1;
+    while(getline(fin, linea)){
+        fout << num << ". " << linea << endl;
+        num++;
+    }
+}
+\end{verbatim}
+\end{notaprofesor}
+
+\begin{notaprofesor}[Ejercicio 4 — Concatenar archivos]
+\begin{verbatim}
+#include <iostream>
+#include <fstream>
+#include <string>
+using namespace std;
+
+int main(){
+    string a, b, c;
+    cout << "Primer archivo: ";  cin >> a;
+    cout << "Segundo archivo: "; cin >> b;
+    cout << "Archivo resultado: "; cin >> c;
+
+    ifstream f1(a), f2(b);
+    ofstream fout(c);
+    string linea;
+    while(getline(f1, linea)) fout << linea << endl;
+    while(getline(f2, linea)) fout << linea << endl;
+}
+\end{verbatim}
+\end{notaprofesor}
+
+\begin{notaprofesor}[Ejercicio 5 — Archivo inexistente]
+  Al abrir un \cpp{ifstream} con un nombre de archivo que no existe:
+  \begin{itemize}
+    \item No hay excepción por defecto.
+    \item No hay error de compilación.
+    \item El stream queda en estado de error (\cpp{failbit} activado).
+    \item Cualquier operación de lectura sobre él no hace nada.
+    \item \cpp{getline} devuelve inmediatamente \cpp{false} → el
+          \cpp{while} no itera.
+    \item \cpp{>>} no modifica la variable de destino (queda con su
+          valor anterior, normalmente basura).
+  \end{itemize}
+  Para detectar el error: \cpp{if (!fin)} o \cpp{if (fin.fail())} justo
+  después de abrir.  Para activar excepciones explícitas:
+  \begin{verbatim}
+fin.exceptions(ifstream::failbit | ifstream::badbit);
+  \end{verbatim}
+  Después de eso, abrir un archivo que no existe lanza
+  \cpp{std::ios\_base::failure}.
+\end{notaprofesor}
+
+% =============================================================================
+\section{Rúbrica de la actividad}
+% =============================================================================
+
+\begin{center}
+\begin{tabular}{p{7.5cm}cc}
+  \toprule
+  \textbf{Criterio} & \textbf{Puntos} & \textbf{Evidencia} \\
+  \midrule
+  \multicolumn{3}{l}{\textit{Parte~A — Generar archivo personal}} \\
+  \quad Archivo con 4 líneas en el formato correcto  & 5 & archivo en Drive \\
+  \quad Generado desde un programa C++ con ofstream  & 5 & código fuente \\
+  \midrule
+  \multicolumn{3}{l}{\textit{Consulta 1 — Unir archivos}} \\
+  \quad Lee correctamente cada archivo individual     & 5 & agenda.txt generada \\
+  \quad agenda.txt tiene una persona por línea        & 5 & formato correcto \\
+  \midrule
+  \multicolumn{3}{l}{\textit{Consulta 2 — Filtrar por mes}} \\
+  \quad Lee agenda.txt con ifstream                   & 5 & código fuente \\
+  \quad Muestra solo las personas del mes pedido      & 5 & salida correcta \\
+  \midrule
+  \multicolumn{3}{l}{\textit{Consulta 3 — Próximo cumpleaños}} \\
+  \quad Maneja correctamente el caso ``ya pasó este año'' & 5 & prueba con fecha pasada \\
+  \quad Muestra todos los compañeros si coinciden      & 5 & prueba con empate \\
+  \midrule
+  \multicolumn{3}{l}{\textit{Consulta 4 — Par más cercano}} \\
+  \quad Resultado correcto para el conjunto completo   & 5 & salida verificada \\
+  \quad Maneja el caso circular (dic--ene)             & 5 & prueba con fechas extremas \\
+  \midrule
+  \textbf{Total}                                       & \textbf{50} & \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+% =============================================================================
+\section{Conexiones con temas posteriores}
+% =============================================================================
+
+\begin{itemize}
+  \item \textbf{Sesión 22 — Archivos binarios:} el mismo \cpp{<fstream>},
+        pero con el flag \cpp{fstream::binary} y los métodos \cpp{write}/\cpp{read}.
+        Los alumnos ya entienden el modelo de stream; solo cambia cómo se
+        serializan los datos.
+  \item \textbf{Persistencia en POO:} en el curso de Orientación a Objetos
+        los objetos se guardarán y recuperarán de archivos.  El patrón
+        write/read que ven hoy es la base de toda serialización.
+  \item \textbf{Bases de datos:} un DBMS como SQLite es, al final, un
+        gestor de archivos muy sofisticado.  Las operaciones CRUD
+        (Create, Read, Update, Delete) mapean directamente a lo que
+        hicieron hoy con \cpp{ofstream} e \cpp{ifstream}.
+\end{itemize}
+
+% =============================================================================
+\section{Materiales y recursos}
+% =============================================================================
+
+\begin{itemize}
+  \item \textbf{Notas alumno:}
+        \texttt{notas\_alumno/pdf/sesion21\_archivos\_texto.pdf}
+  \item \textbf{Material inicial:}
+        \texttt{materialInicial/sesion21/} — \texttt{archivos1.cpp},
+        \texttt{archivos2.cpp}, \texttt{archivos3.cpp}, \texttt{canciones.txt},
+        \texttt{resultados.txt}
+  \item \textbf{Hex editor en línea:} \texttt{hexed.it}
+  \item \textbf{Google Drive:} carpeta compartida para la actividad
+        (crear antes de la sesión y tener el link listo)
+\end{itemize}
+
+\end{document}
