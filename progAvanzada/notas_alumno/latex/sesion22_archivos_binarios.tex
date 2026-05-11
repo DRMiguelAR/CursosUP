@@ -1,0 +1,662 @@
+% =============================================================================
+%  Notas de clase — Sesión 22: Archivos binarios
+%  Programación Avanzada — Universidad Panamericana
+%  Compilar: pdflatex sesion22_archivos_binarios.tex
+% =============================================================================
+\documentclass[12pt, oneside]{article}
+\usepackage{progavanzada}
+\usepackage{array}
+
+\begin{document}
+
+\portada{Sesión 22}{Archivos binarios}{2026}
+
+\tableofcontents
+\newpage
+
+% =============================================================================
+\section{1973: los bytes que se reconocen solos}
+% =============================================================================
+
+En la sesión anterior viste que un archivo no es más que una secuencia de
+bytes almacenada en disco.  Esa definición aplica tanto a un \texttt{.txt}
+como a un \texttt{.jpg}, un \texttt{.mp3} o el ejecutable \texttt{a.out}
+que produces cada vez que compilas tu programa.  La diferencia no está en
+el soporte físico sino en \textit{cómo se interpretan} esos bytes.
+
+En 1973, los laboratorios Bell publicaron la Cuarta Edición de Unix.  Entre
+las herramientas que incluyó había una pequeña pero ingeniosa: el comando
+\textbf{\texttt{file}}.  Su función era leer los primeros bytes de un
+archivo y determinar de qué tipo era, sin depender del nombre ni de la
+extensión.  La herramienta era posible porque los diseñadores de formatos
+habían adoptado una convención: los primeros bytes de cada formato forman
+una \textbf{firma} (o \textbf{número mágico}) que lo identifica de forma
+única.
+
+Hoy esa convención es universal.  Cuando abres una foto, escuchas una
+canción o ejecutas un programa, el sistema operativo lee los primeros bytes
+del archivo para saber cómo procesarlo.
+
+\begin{center}
+\begin{tabular}{llll}
+  \toprule
+  \textbf{Formato} & \textbf{Firma (hex)}            & \textbf{ASCII}          & \textbf{Uso} \\
+  \midrule
+  ELF              & \texttt{7F 45 4C 46}             & \texttt{\textbackslash x7FELF} & Ejecutables Linux \\
+  BMP              & \texttt{42 4D}                   & \texttt{BM}             & Imágenes (Windows) \\
+  JPEG             & \texttt{FF D8 FF}                & —                       & Imágenes \\
+  PNG              & \texttt{89 50 4E 47}             & \texttt{\textbackslash x89PNG} & Imágenes \\
+  MP3 (ID3)        & \texttt{49 44 33}                & \texttt{ID3}            & Audio \\
+  WAV              & \texttt{52 49 46 46}             & \texttt{RIFF}           & Audio \\
+  ZIP              & \texttt{50 4B 03 04}             & \texttt{PK}             & Archivos comprimidos \\
+  PDF              & \texttt{25 50 44 46}             & \texttt{\%PDF}          & Documentos \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+Aquí viene la sorpresa: el archivo \texttt{a.out} que produces cuando
+compilas con \texttt{g++} es un archivo binario en formato \textbf{ELF}
+(\textit{Executable and Linkable Format}).  Sus primeros cuatro bytes son
+siempre \texttt{7F 45 4C 46}.  Puedes comprobarlo en tu terminal:
+
+\begin{verbatim}
+$ g++ hola.cpp -o hola
+$ file hola
+hola: ELF 64-bit LSB pie executable, x86-64, ...
+$ xxd hola | head -1
+00000000: 7f45 4c46 0201 0100 0000 0000 0000 0000  .ELF............
+\end{verbatim}
+
+Llevas un semestre produciendo archivos binarios sin saberlo.  Hoy vas a
+entender cómo funcionan y cómo crearlos tú mismo.
+
+\begin{tecnico}[El comando \texttt{file} y los números mágicos]
+  El término ``número mágico'' viene del código fuente original de Unix.
+  Los primeros dos bytes de los ejecutables PDP-11 eran el valor octal
+  \texttt{0407}, que el \textit{loader} buscaba antes de ejecutar el
+  archivo.  Hoy la base de datos de firmas conocidas
+  (\texttt{/usr/share/misc/magic}) contiene miles de entradas, desde
+  formatos de los años~70 hasta los más recientes.
+  \par\smallskip
+  \textit{Referencia:} Ritchie, D.\,M. (1984). ``The Evolution of the
+  Unix Time-sharing System.'' \textit{AT\&T Bell Laboratories Technical
+  Journal}, 63(8), 1577--1593.
+\end{tecnico}
+
+% =============================================================================
+\section{El problema del modo texto}
+% =============================================================================
+
+En la sesión anterior guardaste enteros en archivos de texto con el
+operador \cpp{<<}.  Funciona bien para mostrar resultados, pero tiene un
+problema cuando los datos deben ser leídos por otro programa.
+
+Considera el siguiente código:
+
+\textbf{binarios1.cpp}:
+\begin{verbatim}
+#include <iostream>
+#include <fstream>
+using namespace std;
+
+int main(){
+    int x = 123;
+    int y = 27;
+
+    ofstream f1("datos.out");
+    f1 << x << y;
+    f1.close();
+
+    ifstream f2("datos.out");
+    int z;
+    f2 >> z;
+    cout << z << endl;
+}
+\end{verbatim}
+
+¿Qué imprime?  Antes de leer la respuesta, razona: ¿qué contiene
+\texttt{datos.out} después de la escritura?
+
+El operador \cpp{<<} convierte los enteros a su representación en texto.
+\texttt{123} se convierte en los tres caracteres \texttt{'1'}, \texttt{'2'},
+\texttt{'3'}, y \texttt{27} en los dos caracteres \texttt{'2'},
+\texttt{'7'}.  El archivo queda así:
+
+\begin{center}
+\begin{tabular}{ccccc}
+  \toprule
+  Byte 0 & Byte 1 & Byte 2 & Byte 3 & Byte 4 \\
+  \midrule
+  \texttt{0x31} & \texttt{0x32} & \texttt{0x33} & \texttt{0x32} & \texttt{0x37} \\
+  \texttt{'1'}  & \texttt{'2'}  & \texttt{'3'}  & \texttt{'2'}  & \texttt{'7'} \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+Cinco bytes que forman la cadena \texttt{"12327"}.  Cuando \cpp{f2 >> z}
+intenta leer un entero, lee todos los dígitos hasta el final del archivo y
+obtiene \texttt{12327}.  El programa imprime \textbf{12327}, no \textbf{123}.
+
+La solución parcial en modo texto es agregar un separador:
+\begin{verbatim}
+f1 << x << " " << y;
+\end{verbatim}
+
+Pero esto tiene dos problemas:
+
+\begin{enumerate}
+  \item Hay que recordar poner el separador en la escritura y manejarlo en
+        la lectura.  Si los datos son más complejos (cadenas con espacios,
+        tipos mixtos), el parseo se vuelve frágil.
+  \item Es ineficiente: el número \texttt{2147483647} (el mayor \cpp{int})
+        ocupa 10 bytes como texto, pero en binario siempre ocupa 4.
+\end{enumerate}
+
+El \textbf{modo binario} resuelve ambos problemas de raíz.
+
+\begin{recuerda}
+  ``Binario'' no significa que el archivo contenga ceros y unos escritos
+  como texto.  Todos los archivos son binarios a nivel del disco.
+  ``Modo binario'' significa que no hay conversión entre el dato en memoria
+  y los bytes en disco: se copian los bytes exactos tal como están en la
+  RAM.
+\end{recuerda}
+
+% =============================================================================
+\section{El modo binario: \texttt{write} y \texttt{read}}
+% =============================================================================
+
+Para abrir un archivo en modo binario, agrega la bandera
+\cpp{fstream::binary} al constructor.  Luego, en lugar de \cpp{<<} y
+\cpp{>>}, se usan los métodos \cpp{write} y \cpp{read}:
+
+\textbf{binarios2.cpp}:
+\begin{verbatim}
+#include <iostream>
+#include <fstream>
+using namespace std;
+
+int main(){
+    int x = 123;
+    int y = 27;
+
+    ofstream f1("datosbin.out", fstream::binary);
+    f1.write( (char *) &x, sizeof(int) );
+    f1.write( (char *) &y, sizeof(int) );
+    f1.close();
+
+    ifstream f2("datosbin.out", fstream::binary);
+    int w, z;
+    f2.read( (char *) &w, sizeof(int) );
+    f2.read( (char *) &z, sizeof(int) );
+    cout << w << " " << z << endl;
+}
+\end{verbatim}
+
+Salida:
+\begin{verbatim}
+123 27
+\end{verbatim}
+
+El archivo \texttt{datosbin.out} tiene exactamente \textbf{8 bytes}:
+4 para \texttt{x} y 4 para \texttt{y}, copiados directamente de la memoria.
+
+\subsection{Desglose de \texttt{write} y \texttt{read}}
+
+Ambos métodos tienen la misma firma:
+\begin{verbatim}
+ostream& write(const char* ptr, streamsize n);
+istream& read(char* ptr, streamsize n);
+\end{verbatim}
+
+\begin{description}
+  \item[\cpp{ptr}]
+    Puntero a los bytes que se van a escribir (o donde se van a colocar
+    los bytes leídos).  El tipo es \cpp{const char*}, que en C++ es el
+    tipo básico de ``puntero a bytes''.
+
+  \item[\cpp{n}]
+    Número de bytes a escribir o leer.  Casi siempre es \cpp{sizeof}
+    del tipo que quieres guardar.
+\end{description}
+
+\subsection{El cast \texttt{(char*) \&x}}
+
+Esta es la parte que más confunde.  Analízala en dos partes:
+
+\begin{enumerate}
+  \item \cpp{\&x} es la dirección de memoria de la variable \cpp{x}.
+        Su tipo es \cpp{int*} (``puntero a int'').
+  \item \cpp{(char *)} es un \textbf{cast}: le dices al compilador
+        ``trata esta dirección como un puntero a bytes, no como un
+        puntero a int''.
+\end{enumerate}
+
+No estás cambiando los datos.  La variable \cpp{x} sigue siendo un
+\cpp{int} con el valor 123.  Solo le estás diciendo a \cpp{write}:
+``empieza en esta dirección y copia los próximos \cpp{sizeof(int)} bytes
+tal como están''.
+
+\begin{advertencia}
+  El cast \cpp{(char*)} es necesario porque \cpp{write} no sabe si los
+  datos son \cpp{int}, \cpp{double}, un struct u otra cosa.  Solo trabaja
+  con bytes.  El programador es responsable de indicar la dirección
+  correcta y el tamaño correcto.  Si el tamaño que pasas a \cpp{write}
+  no coincide con el tamaño real del dato, los datos llegan corruptos
+  al disco, y el error suele ser silencioso.
+\end{advertencia}
+
+\begin{ejemplo}[Verificar el tamaño del archivo]
+  Después de ejecutar \textbf{binarios2.cpp} puedes confirmar que el
+  archivo tiene exactamente 8 bytes:
+  \begin{verbatim}
+$ ls -l datosbin.out
+-rw-r--r-- 1 usuario grupo 8 may 11 datosbin.out
+  \end{verbatim}
+  Compara con el archivo en modo texto: tendría 5 bytes (\texttt{"12327"})
+  o 6 con el separador (\texttt{"123 27"}).  El archivo binario es más
+  pequeño y no necesita parseo.
+\end{ejemplo}
+
+% =============================================================================
+\section{Guardar structs completos}
+% =============================================================================
+
+El verdadero poder del modo binario aparece cuando trabajas con
+\textbf{structs}.  Un struct es un bloque contiguo de bytes en memoria.
+\cpp{write} puede copiar ese bloque completo al disco en una sola llamada,
+sin necesidad de escribir campo por campo.
+
+Reutilizamos el struct de la actividad anterior:
+
+\textbf{persona.h}:
+\begin{verbatim}
+using namespace std;
+
+struct Persona {
+    char nombre[30];
+    char apellido[30];
+    int  dia;
+    int  mes;
+};
+\end{verbatim}
+
+\subsection{Escribir un struct}
+
+\begin{verbatim}
+#include <iostream>
+#include <fstream>
+#include <cstring>
+#include "persona.h"
+using namespace std;
+
+int main(){
+    Persona p;
+    strcpy(p.nombre,   "Hannah");
+    strcpy(p.apellido, "Fabián");
+    p.dia = 29;
+    p.mes = 2;
+
+    ofstream f("hannah.cumple", fstream::binary);
+    f.write( (char *) &p, sizeof(Persona) );
+    f.close();
+}
+\end{verbatim}
+
+\cpp{sizeof(Persona)} calcula el tamaño del struct en bytes: en principio
+$30 + 30 + 4 + 4 = 68$, aunque el compilador puede agregar relleno
+(\textit{padding}); ver el ejercicio~3.
+
+\subsection{Leer un struct}
+
+\begin{verbatim}
+#include <iostream>
+#include <fstream>
+#include "persona.h"
+using namespace std;
+
+int main(){
+    Persona p;
+
+    ifstream f("hannah.cumple", fstream::binary);
+    f.read( (char *) &p, sizeof(Persona) );
+    f.close();
+
+    cout << p.nombre  << " " << p.apellido
+         << ": " << p.dia << "/" << p.mes << endl;
+}
+\end{verbatim}
+
+Salida:
+\begin{verbatim}
+Hannah Fabián: 29/2
+\end{verbatim}
+
+\begin{consejo}
+  La simetría es total: escritura y lectura usan \cpp{\&p} y
+  \cpp{sizeof(Persona)}.  Si en alguno de los dos lados cambias el
+  tamaño o la dirección, los datos llegan corruptos.  Escribe primero,
+  lee inmediatamente y verifica la salida antes de continuar.
+\end{consejo}
+
+\subsection{Múltiples registros y acceso aleatorio}
+
+Para guardar varios registros, llama a \cpp{write} una vez por registro:
+
+\begin{verbatim}
+ofstream f("agenda.bin", fstream::binary);
+for (int i = 0; i < n; i++){
+    f.write( (char *) &personas[i], sizeof(Persona) );
+}
+f.close();
+\end{verbatim}
+
+El archivo resultante tiene exactamente \cpp{n * sizeof(Persona)} bytes.
+Para leer directamente el registro en la posición~$k$ (sin leer los
+anteriores), usa \cpp{seekg} para saltar:
+
+\begin{verbatim}
+ifstream f("agenda.bin", fstream::binary);
+Persona p;
+f.seekg(k * sizeof(Persona));
+f.read( (char *) &p, sizeof(Persona) );
+\end{verbatim}
+
+Esto se llama \textbf{acceso aleatorio}: puedes ir directo a cualquier
+registro como si fuera el elemento $k$ de un arreglo.  Con archivos de
+texto no es posible hacerlo de forma confiable porque los registros tienen
+longitud variable.
+
+\begin{tecnico}[Por qué arreglos de \texttt{char} en lugar de \texttt{string}]
+  El struct \cpp{Persona} usa \cpp{char nombre[30]} en lugar de
+  \cpp{string}.  Un \cpp{string} en C++ no es un bloque contiguo de
+  bytes: es un objeto que guarda internamente un puntero a memoria
+  dinámica.  Si lo escribieras en binario, guardarías la dirección
+  del puntero, no el texto.  En otra ejecución esa dirección no
+  tendría sentido.  Los arreglos de \cpp{char} son simples bloques
+  de bytes y por eso funcionan correctamente con \cpp{write} y
+  \cpp{read}.
+\end{tecnico}
+
+% =============================================================================
+\section{Formatos binarios en el mundo real}
+% =============================================================================
+
+Todos los formatos de archivo que usas a diario son binarios: imágenes,
+canciones, documentos, ejecutables.  Cada uno tiene una estructura definida
+por un estándar y es, en esencia, un conjunto de structs escritos en disco.
+A continuación verás cómo están construidos algunos de los más comunes.
+
+\subsection{BMP: el formato de imagen más simple}
+
+El formato \textbf{BMP} (\textit{BitMaP}) fue introducido con Windows~3.0
+en 1990.  No aplica compresión: los píxeles se almacenan directamente,
+lo que lo hace simple de leer pero voluminoso.  Una imagen de
+$100\times100$ píxeles a 24~bits ocupa $100\times100\times3=30{,}000$
+bytes de datos de imagen, más el encabezado.
+
+La estructura es casi directamente expresable como structs de C++:
+
+\begin{verbatim}
+// Encabezado del archivo (14 bytes)
+struct BMPHeader {
+    char  firma[2];      // siempre "BM"
+    int   tamano;        // tamaño total del archivo en bytes
+    short reservado1;    // siempre 0
+    short reservado2;    // siempre 0
+    int   offset_datos;  // posición donde empiezan los píxeles
+};
+
+// Encabezado de imagen (40 bytes)
+struct BMPInfo {
+    int    tam_encabezado; // siempre 40
+    int    ancho;          // píxeles de ancho
+    int    alto;           // píxeles de alto
+    short  planos;         // siempre 1
+    short  bits_pixel;     // 24 para color completo
+    int    compresion;     // 0 = sin compresión
+    int    tam_imagen;     // tamaño de los datos (puede ser 0)
+    int    ppm_x;          // píxeles por metro horizontal
+    int    ppm_y;          // píxeles por metro vertical
+    int    colores_tabla;  // 0 = todos
+    int    colores_imp;    // 0 = todos
+};
+\end{verbatim}
+
+Después de los 54 bytes de encabezado vienen los píxeles en orden
+\textbf{BGR} (azul, verde, rojo), de la fila inferior a la superior.
+El orden invertido es un legado de la arquitectura \textit{little-endian}
+de Intel.
+
+\subsection{JPEG: compresión con pérdida}
+
+El formato \textbf{JPEG} fue estandarizado en 1992 por el
+\textit{Joint Photographic Experts Group}.  A diferencia de BMP, aplica
+compresión con pérdida: descarta información que el ojo humano percibe
+poco (frecuencias altas en el espacio de color YCbCr) y reduce el tamaño
+del archivo típicamente entre 10:1 y 20:1.  Sin JPEG, las páginas web con
+fotografías habrían sido imprácticamente lentas en la era del módem.
+
+Un JPEG no almacena píxeles directamente.  Sus datos se organizan en
+\textbf{segmentos}, cada uno precedido por un marcador de dos bytes que
+comienza con \texttt{FF}:
+
+\begin{center}
+\begin{tabular}{lll}
+  \toprule
+  \textbf{Marcador} & \textbf{Hex} & \textbf{Significado} \\
+  \midrule
+  SOI  & \texttt{FF D8} & Inicio del archivo (\textit{Start Of Image}) \\
+  APP0 & \texttt{FF E0} & Información JFIF (versión, resolución) \\
+  SOF0 & \texttt{FF C0} & Parámetros de imagen (ancho, alto, canales) \\
+  DHT  & \texttt{FF C4} & Tablas Huffman (para descomprimir) \\
+  SOS  & \texttt{FF DA} & Inicio de los datos comprimidos \\
+  EOI  & \texttt{FF D9} & Fin del archivo (\textit{End Of Image}) \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+Por eso los primeros dos bytes de todo JPEG son siempre \texttt{FF D8}:
+marcan el inicio del archivo.  El último marcador que encontrarás al
+final es siempre \texttt{FF D9}.
+
+\subsection{WAV: audio sin compresión}
+
+El formato \textbf{WAV} guarda audio en formato PCM
+(\textit{Pulse-Code Modulation}): muestras numéricas tomadas a intervalos
+regulares.  Un CD de audio usa 44\,100 muestras por segundo, cada una de
+16~bits.  Un minuto en estéreo son
+$44{,}100 \times 2 \times 2 \times 60 \approx 10$~MB.
+
+WAV usa el contenedor \textbf{RIFF} (\textit{Resource Interchange File
+Format}), una secuencia de bloques donde cada uno tiene un identificador
+de cuatro caracteres, un tamaño y sus datos.  El inicio es siempre:
+
+\begin{verbatim}
+"RIFF"  [tamaño total - 8 bytes]  "WAVE"
+"fmt "  [16]  [1=PCM]  [canales]  [frecuencia_Hz]  [...]
+"data"  [tamaño de las muestras]  [muestras PCM...]
+\end{verbatim}
+
+El espacio en \texttt{"fmt "} es parte del identificador y no puede
+omitirse.  Las muestras son simplemente enteros de 16 o 24~bits escritos
+en modo binario, uno tras otro.
+
+\subsection{ELF: el ejecutable que ya conoces}
+
+El formato \textbf{ELF} (\textit{Executable and Linkable Format}) es el
+estándar para ejecutables y bibliotecas en Linux.  Cada \texttt{a.out}
+que has producido este semestre es un ELF.  Su encabezado inicial ocupa
+64~bytes en arquitecturas de 64~bits:
+
+\begin{verbatim}
+struct ELFHeader {
+    unsigned char magic[4];  // 7F 45 4C 46 = "\x7FELF"
+    unsigned char clase;     // 1=32 bits, 2=64 bits
+    unsigned char endian;    // 1=little-endian, 2=big-endian
+    unsigned char version;   // siempre 1
+    // ... campos de relleno ...
+    unsigned short tipo;     // 2=ejecutable, 3=librería compartida
+    unsigned short maquina;  // 62=x86-64
+    // ...
+};
+\end{verbatim}
+
+Después del encabezado vienen las secciones: \texttt{.text} (código
+máquina), \texttt{.data} (variables globales inicializadas), \texttt{.bss}
+(variables no inicializadas) y otras que el enlazador y el cargador del
+sistema operativo usan para ejecutar el programa.
+
+\begin{consejo}
+  Los formatos binarios son, en esencia, structs escritos en disco con
+  una estructura definida por un estándar.  Las habilidades que aprendiste
+  hoy son suficientes para leer la cabecera de un BMP, verificar los bytes
+  mágicos de cualquier archivo, o diseñar tus propios formatos.  Las bases
+  de datos de alto rendimiento como SQLite usan exactamente este principio:
+  páginas de tamaño fijo con una estructura bien definida.
+\end{consejo}
+
+% =============================================================================
+\section{Actividad: agenda de cumpleaños binaria}
+% =============================================================================
+
+Esta actividad es la continuación directa de la sesión~21, pero ahora
+los datos se guardan y leen en formato binario usando el struct
+\cpp{Persona}.
+
+\subsection{Formato del archivo}
+
+Cada archivo personal es un único registro binario de tipo \cpp{Persona}
+(\cpp{sizeof(Persona)} bytes).  El nombre del archivo es tu nombre en
+minúsculas con extensión \texttt{.cumple} (por ejemplo,
+\texttt{hannah.cumple}).
+
+\subsection{Parte A: genera tu archivo (10 min)}
+
+Escribe un programa que cree tu propio archivo \texttt{.cumple}:
+
+\begin{enumerate}
+  \item Define una variable de tipo \cpp{Persona} y llénala con tus datos
+        reales usando \cpp{strcpy}.
+  \item Ábrela en modo binario con \cpp{ofstream} y escribe el struct.
+  \item Cierra el archivo.
+  \item Abre el mismo archivo con \cpp{ifstream} en modo binario, lee el
+        struct de vuelta y muestra los datos en pantalla para verificar
+        que la escritura fue correcta.
+\end{enumerate}
+
+Sube tu archivo \texttt{.cumple} a la carpeta de Google Drive indicada por
+el profesor.
+
+\subsection{Parte B: las consultas (40 min)}
+
+Descarga todos los archivos \texttt{.cumple} de tus compañeros y
+colócalos en una carpeta.  Luego resuelve los siguientes problemas.
+Para cada uno escribe un programa separado.
+
+\begin{enumerate}
+
+  \item \textbf{Unir todos los registros en un solo archivo binario.}\\
+        Lee cada archivo \texttt{.cumple} individual y escribe todos los
+        registros en un archivo llamado \texttt{agenda.bin}.  El resultado
+        es un arreglo de \cpp{Persona} en disco: cada registro ocupa
+        exactamente \cpp{sizeof(Persona)} bytes, uno tras otro.  Puedes
+        apoyarte en un archivo de texto auxiliar con los nombres de los
+        archivos individuales, uno por línea.
+
+  \item \textbf{¿Cuántas personas hay en la agenda?}\\
+        Abre \texttt{agenda.bin}, mueve el stream al final con
+        \cpp{seekg(0, ios::end)} y consulta la posición con \cpp{tellg()}.
+        Divide entre \cpp{sizeof(Persona)}.  Muestra el resultado.
+
+  \item \textbf{Buscar por nombre.}\\
+        Pide un nombre al usuario y recorre \texttt{agenda.bin} registro
+        por registro hasta encontrar una coincidencia.  Si existe, muestra
+        el nombre completo y la fecha de cumpleaños.
+
+  \item \textbf{Acceso aleatorio: el registro $k$.}\\
+        Pide un número $k$ al usuario y muestra directamente el
+        $k$-ésimo registro de \texttt{agenda.bin} usando \cpp{seekg},
+        sin leer los registros anteriores.
+
+\end{enumerate}
+
+% =============================================================================
+\section{Ejercicios}
+% =============================================================================
+
+\begin{enumerate}
+
+  \item Modifica \textbf{binarios2.cpp} para guardar y leer tres valores
+        de tipo \cpp{double} en lugar de dos \cpp{int}.  Verifica con
+        \texttt{ls -l} que el archivo resultante tiene exactamente
+        \cpp{3 * sizeof(double)} bytes.
+
+  \item Define un struct \cpp{Producto} con los campos:
+        \cpp{char nombre[40]}, \cpp{double precio} e \cpp{int cantidad}.
+        Escribe un programa que guarde cinco productos en un archivo
+        binario llamado \texttt{inventario.bin} y luego los lea todos y
+        los muestre en pantalla.
+
+  \item \cpp{sizeof(Persona)} no siempre es $30 + 30 + 4 + 4 = 68$.
+        Compila y ejecuta:
+        \begin{verbatim}
+#include <iostream>
+#include "persona.h"
+using namespace std;
+int main(){
+    cout << sizeof(Persona) << endl;
+}
+        \end{verbatim}
+        Si el resultado es mayor que~68, el compilador está agregando
+        \textbf{relleno} (\textit{padding}) para alinear los campos en
+        memoria.  ¿Crees que esto afecta la escritura y lectura binaria
+        si el escritor y el lector compilan con el mismo compilador?
+        ¿Y si los archivos se comparten entre sistemas distintos?
+
+  \item Escribe un programa que abra cualquier archivo (cuyo nombre pide
+        al usuario), lea sus primeros 8 bytes e imprima cada byte en
+        hexadecimal con el formato \texttt{0xNN}.  Pruébalo con un
+        \texttt{.jpg}, un \texttt{.png} y el ejecutable \texttt{a.out}.
+        Compara los resultados con la tabla de números mágicos de la
+        sección~1.
+
+  \item Extiende el ejercicio~2 para modificar el precio de un producto
+        dado su índice (0 a~4) \textit{sin reescribir todo el archivo}.
+        Usa \cpp{fstream} con los modos
+        \cpp{fstream::in | fstream::out | fstream::binary} y el método
+        \cpp{seekp} para posicionarte en el registro correcto antes de
+        llamar a \cpp{write}.
+
+\end{enumerate}
+
+% =============================================================================
+\section*{Resumen}
+% =============================================================================
+
+\begin{itemize}
+  \item En \textbf{modo texto} los datos se convierten a caracteres al
+        escribir y se parsean al leer; en \textbf{modo binario} los bytes
+        se copian directamente entre la memoria y el disco.
+  \item La bandera \cpp{fstream::binary} activa el modo binario al abrir
+        el archivo.
+  \item \cpp{write((char*)\&dato, sizeof(tipo))} escribe los bytes exactos
+        del dato; \cpp{read((char*)\&dato, sizeof(tipo))} los recupera.
+  \item El cast \cpp{(char*)\&x} indica a \cpp{write}/\cpp{read} dónde
+        están los bytes; \cpp{sizeof} indica cuántos copiar.  Son dos
+        informaciones distintas y ambas deben ser correctas.
+  \item Los structs con campos de tamaño fijo (\cpp{char[n]}, \cpp{int},
+        \cpp{double}) se serializan directamente con \cpp{write}/\cpp{read}.
+        Los \cpp{string} no, porque internamente contienen punteros.
+  \item El acceso aleatorio a registros de tamaño fijo se logra con
+        \cpp{seekg(k * sizeof(T))} para lectura y
+        \cpp{seekp(k * sizeof(T))} para escritura.
+  \item Todos los formatos de archivo populares (JPEG, PNG, WAV, ELF, BMP)
+        son structs escritos en disco con una estructura definida por un
+        estándar.
+  \item Los primeros bytes de cada formato forman una \textbf{firma} o
+        \textbf{número mágico} que identifica el tipo de archivo sin
+        depender del nombre ni de la extensión.
+\end{itemize}
+
+\end{document}
