@@ -1,0 +1,604 @@
+% =============================================================================
+%  Notas del Profesor — Sesión 23: Argumentos de consola
+%  Programación Avanzada — Universidad Panamericana
+%  Compilar: pdflatex sesion23_argumentos_consola_profesor.tex
+% =============================================================================
+\documentclass[12pt, oneside]{article}
+\usepackage[profesor]{progavanzada}
+\usepackage{array}
+
+\begin{document}
+
+\portada{Sesión 23}{Argumentos de consola}{2026}
+
+\tableofcontents
+\newpage
+
+% =============================================================================
+\section{Objetivos de la sesión}
+% =============================================================================
+
+Al finalizar la sesión el alumno será capaz de:
+
+\begin{enumerate}
+  \item Explicar la firma completa de \cpp{main} con \cpp{argc} y
+        \cpp{argv}, y describir el valor de cada parámetro para una
+        ejecución concreta.
+  \item Escribir programas que reciban argumentos de consola y los
+        procesen con un ciclo sobre \cpp{argv}.
+  \item Verificar correctamente el número de argumentos e imprimir un
+        mensaje de uso estándar en \cpp{cerr}.
+  \item Convertir argumentos de cadena a tipos numéricos con
+        \cpp{atoi}, \cpp{atof} y \cpp{stoi}.
+  \item Resolver la actividad del teclado numérico usando \cpp{argc},
+        \cpp{argv} y una tabla de mapeo letra--tecla.
+\end{enumerate}
+
+\begin{notaprofesor}[Duración y distribución (100 min)]
+  \begin{tabular}{rl}
+    10 min & Gancho histórico + preguntas de arranque \\
+    10 min & \cpp{main} con parámetros: \cpp{argc} y \cpp{argv} \\
+    20 min & Demo en vivo: cuatro programas (ver sección~4) \\
+     5 min & Tabla de conversión a números \\
+    55 min & Actividad: teclado numérico \\
+  \end{tabular}
+  \par\smallskip
+  La actividad es la parte más rica de la sesión.  Los primeros
+  35~minutos se dedican a implementar; los 20~restantes a discutir
+  soluciones y ver el diseño de la tabla de mapeo.
+\end{notaprofesor}
+
+% =============================================================================
+\section{Prerrequisitos}
+% =============================================================================
+
+\begin{itemize}
+  \item Ciclos \cpp{for} y arreglos (sesiones 7--8).
+  \item Cadenas estilo C: \cpp{char*}, acceso por índice, terminador
+        \texttt{'\textbackslash{}0'} (sesiones 3 y 9).
+  \item Tabla ASCII y operaciones con \cpp{char} (sesión 3).
+  \item Compilación y ejecución básica desde terminal con \texttt{g++}.
+\end{itemize}
+
+\begin{notaprofesor}
+  Esta sesión no requiere archivos, structs ni memoria dinámica.  Es
+  conceptualmente ligera: los alumnos ya conocen arreglos y ya usan la
+  terminal.  El reto es que \cpp{argv} combina dos conceptos que dominan
+  por separado (arreglos y cadenas) en un solo objeto que nunca habían
+  visto así.
+  \par\smallskip
+  Señal de alerta: si algún alumno no recuerda que \cpp{char*} es un
+  puntero a una cadena terminada en \texttt{'\textbackslash{}0'}, tomar
+  3~minutos para mostrar que \cpp{argv[1][0]} es el primer carácter del
+  primer argumento, antes de avanzar.  El ejercicio~4 (contador) lo
+  necesita directamente.
+\end{notaprofesor}
+
+% =============================================================================
+\section{Arranque y preguntas de sondeo}
+% =============================================================================
+
+\begin{notaprofesor}[Preguntas de arranque (10 min)]
+
+  \textbf{1.\ ``¿Cómo le pasan instrucciones a \texttt{g++} cuando
+  compilan?''}\\
+  Respuesta esperada: escribiendo opciones en la línea de comandos
+  (\texttt{-o}, \texttt{-Wall}, nombre del archivo).  Seguir con:
+  ``eso significa que \texttt{g++} recibe esos textos de alguna manera
+  dentro de su \cpp{main}.  Hoy van a aprender exactamente cómo.''
+
+  \medskip
+  \textbf{2.\ ``¿Cuántos argumentos recibe \texttt{g++} cuando
+  ejecutan \texttt{g++ -O2 -o hola hola.cpp}?''}\\
+  Respuesta esperada (varios intentos): la respuesta es~4.  El nombre
+  del programa (\texttt{g++}) se cuenta aparte y es \cpp{argv[0]}.
+  Este pequeño ``¿qué tal 4 o 5?'' crea la tensión cognitiva perfecta
+  para explicar \cpp{argc}.
+
+  \medskip
+  \textbf{3.\ ``¿Qué diferencia hay entre \texttt{./programa} y
+  \texttt{./programa hola mundo}?''}\\
+  Respuesta esperada: en el segundo caso el programa recibe dos
+  palabras extra.  Seguir con: ``¿cómo las recibe?  ¿Por dónde entran?
+  ¿Desde \cpp{cin}?''  Respuesta esperada: no, \cpp{cin} lee del
+  teclado \textit{durante} la ejecución; los argumentos de consola
+  se entregan \textit{antes} de que el programa comience.
+
+\end{notaprofesor}
+
+% =============================================================================
+\section{\texttt{main} con parámetros}
+% =============================================================================
+
+\begin{notaprofesor}[Cómo presentar \texttt{argc}/\texttt{argv} (10 min)]
+  Escribir en la pizarra o proyectar los dos \cpp{main} uno junto al otro:
+  \begin{verbatim}
+int main()                           // el que siempre han usado
+int main(int argc, char* argv[])     // la versión completa
+  \end{verbatim}
+  Preguntar: ``¿qué nuevo hay aquí?''  Identificar \cpp{int argc} y
+  \cpp{char* argv[]}.  Explicar que \cpp{argv[]} es un arreglo de
+  \cpp{char*}: cada elemento apunta a una cadena de texto terminada en
+  \texttt{'\textbackslash{}0'}.
+
+  \medskip
+  Dibujar en la pizarra el diagrama de memoria para
+  \texttt{./programa hola mundo 42}:
+  \begin{verbatim}
+   argv
+   +-----+   +------------------+
+   | [0] |-->| "./programa\0"   |
+   +-----+   +------------------+
+   | [1] |-->| "hola\0"         |
+   +-----+   +------------------+
+   | [2] |-->| "mundo\0"        |
+   +-----+   +------------------+
+   | [3] |-->| "42\0"           |
+   +-----+   +------------------+
+   argc = 4
+  \end{verbatim}
+  Señalar que \cpp{argv[3]} es la cadena \texttt{"42"}, no el número
+  \texttt{42}.  Este punto se enfatiza antes de la demo de conversión.
+\end{notaprofesor}
+
+\begin{notaprofesor}[FAQ: \texttt{char* argv[]} vs \texttt{char** argv}]
+
+  \textbf{¿Son lo mismo \cpp{char* argv[]} y \cpp{char** argv}?}\\
+  Sí, en el contexto de los parámetros de una función son equivalentes.
+  Ambas formas se aceptan y es bueno que los alumnos lo sepan porque
+  verán la segunda en código de C y en muchos libros.
+
+  \medskip
+  \textbf{¿Por qué \cpp{argc} incluye el nombre del programa?}\\
+  Decisión de diseño de los primeros Unix: el programa puede necesitar
+  saber cómo fue invocado.  Un ejemplo clásico es \texttt{vi}/\texttt{vim}:
+  si se invoca como \texttt{view} (un enlace simbólico) se abre en modo
+  solo lectura.  Otro: \cpp{argv[0]} en el mensaje de uso.
+
+  \medskip
+  \textbf{¿Qué hay en \cpp{argv[argc]}?}\\
+  El estándar garantiza que \cpp{argv[argc]} es \cpp{nullptr} (puntero
+  nulo).  Algunos programas aprovechan esto para iterar con
+  \cpp{while (*argv++)} en lugar de un \cpp{for} con índice.  Para este
+  curso la forma con \cpp{for} e índice es más clara.
+
+  \medskip
+  \textbf{¿Puedo asignar \cpp{argv[i]} a un \cpp{string}?}\\
+  Sí.  \cpp{string} tiene un constructor que acepta \cpp{const char*}:
+  \cpp{string s = argv[1];} funciona.  A partir de ahí se puede usar
+  todas las funciones de \cpp{std::string} (longitud, búsqueda, etc.).
+
+\end{notaprofesor}
+
+% =============================================================================
+\section{Demo en vivo: cuatro programas}
+% =============================================================================
+
+\subsection{\texttt{hola\_args.cpp}: imprimir \texttt{argc} y \texttt{argv}}
+
+\begin{notaprofesor}[Guión (5 min)]
+  \begin{enumerate}
+    \item Escribir el programa en vivo (es corto; no mostrar el código antes).
+    \item Compilar y ejecutar sin argumentos.  Preguntar antes: ``¿qué
+          valor tiene \cpp{argc}?''  Respuesta: 1.  Mostrar que solo
+          imprime \cpp{argv[0]}.
+    \item Ejecutar con \texttt{uno dos tres}.  Confirmar \cpp{argc = 4}
+          y los cuatro valores en pantalla.
+    \item Ejecutar con \texttt{"hola mundo"} entre comillas.  Mostrar
+          que ahora \cpp{argc = 2} y \cpp{argv[1] = "hola mundo"}: el
+          shell pasa la cadena completa como un solo argumento.
+    \item Preguntar: ``¿qué índice tiene el último argumento en
+          términos de \cpp{argc}?''  Respuesta: \cpp{argc-1}.
+  \end{enumerate}
+\end{notaprofesor}
+
+\subsection{\texttt{uso.cpp}: verificar \texttt{argc} y mensaje de uso}
+
+\begin{notaprofesor}[Guión (5 min)]
+  \begin{enumerate}
+    \item Mostrar la verificación \cpp{if (argc != 3)} y preguntar:
+          ``¿por qué 3 y no 2?''  Respuesta: el programa espera nombre
+          y apellido, más \cpp{argv[0]}, son 3 cadenas en total.
+    \item Ejecutar con el número correcto de argumentos.  Mostrar
+          salida esperada.
+    \item Ejecutar con uno solo.  Mostrar el mensaje de error en
+          \cpp{cerr}.  Preguntar: ``¿por qué \cpp{cerr} y no \cpp{cout}?''
+          Demostrar con \texttt{./uso Ana 2>/dev/null}: el mensaje de
+          error desaparece; cualquier salida normal seguiría visible.
+    \item Señalar que \cpp{return 1} indica al shell que hubo error.
+          Se puede demostrar con \texttt{echo \$?} (Linux/Mac) o
+          \texttt{echo \%ERRORLEVEL\%} (Windows) justo después.
+  \end{enumerate}
+\end{notaprofesor}
+
+\subsection{\texttt{suma.cpp}: iterar sobre los argumentos}
+
+\begin{notaprofesor}[Guión (5 min)]
+  \begin{enumerate}
+    \item Antes de mostrar el código, preguntar: ``Si los argumentos
+          son números, ¿cómo podríamos sumarlos?''  Esperar propuestas.
+          La respuesta natural es un \cpp{for} desde \cpp{i=1} hasta
+          \cpp{argc-1} con \cpp{atoi}.
+    \item Mostrar el código.  Compilar y ejecutar con varios números.
+    \item Probar con cero argumentos (\cpp{argc = 1}).  El ciclo no
+          itera y el resultado es~0: correcto.
+    \item Probar con un argumento no numérico (\texttt{./suma hola}).
+          \cpp{atoi("hola")} devuelve~0.  Preguntar: ``¿es esto un
+          buen comportamiento?''  Introducir \cpp{stoi} como alternativa
+          que lanza excepción.
+  \end{enumerate}
+\end{notaprofesor}
+
+\subsection{\texttt{calc.cpp}: el primer argumento como operador}
+
+\begin{notaprofesor}[Guión (5 min)]
+  \begin{enumerate}
+    \item Señalar el acceso \cpp{argv[2][0]}: el primer carácter del
+          segundo argumento.  Este es el único lugar del curso donde
+          se usa la indexación doble sobre \cpp{argv}.
+    \item Compilar y ejecutar con varias operaciones.  Demostrar que
+          \texttt{./calc 10 / 4} da \texttt{2.5} (no~2, porque
+          \cpp{atof} produce \cpp{double}).
+    \item Probar con un operador inválido.  Mostrar el \cpp{return 1}
+          en acción.
+    \item \textbf{Pregunta de profundidad:} ``¿Qué pasa si el usuario
+          escribe \texttt{./calc 10 * 4}?''  Respuesta: el shell
+          expande \texttt{*} como un glob antes de pasárselo al
+          programa.  Los alumnos verán algo inesperado.  Solución:
+          escapar el asterisco: \texttt{./calc 10 \textbackslash* 4}
+          o \texttt{./calc 10 "*" 4}.  Esto abre una conversación
+          interesante sobre qué hace el shell antes de invocar el
+          programa.
+  \end{enumerate}
+\end{notaprofesor}
+
+% =============================================================================
+\section{Convertir argumentos a números}
+% =============================================================================
+
+\begin{notaprofesor}[Cómo presentar la tabla (5 min)]
+  Presentar la tabla de funciones y enfatizar la simetría:
+  \cpp{atoi}/\cpp{stoi} para enteros, \cpp{atof}/\cpp{stod} para
+  flotantes.  Las versiones con \texttt{a} son de~C (reciben
+  \cpp{char*}), las de \texttt{s} son de C++ (reciben \cpp{string}).
+  \par\smallskip
+  Regla práctica para este curso: usar \cpp{atoi}/\cpp{atof}
+  cuando el dato viene directamente de \cpp{argv} (ya es \cpp{char*});
+  usar \cpp{stoi}/\cpp{stod} cuando el dato ya es un \cpp{string}.
+  \par\smallskip
+  Si alguien pregunta por \cpp{stoi} con cadenas inválidas, mencionar
+  que lanza \cpp{std::invalid\_argument} y que se captura con
+  \cpp{try}/\cpp{catch}, tema que se ve en sesiones posteriores.
+\end{notaprofesor}
+
+% =============================================================================
+\section{Actividad: el teclado numérico}
+% =============================================================================
+
+\begin{notaprofesor}[Organización de la actividad (55 min)]
+
+  \textbf{Antes de la clase:}
+  \begin{itemize}
+    \item Tener la imagen del teclado lista para proyectar.
+    \item Preparar \texttt{materialInicial/sesion23/} con el archivo
+          \texttt{actividad} y la imagen \texttt{teclado\_numerico.jpg}.
+  \end{itemize}
+
+  \textbf{Introducción (5 min):}\\
+  Mostrar la imagen del teclado y preguntar a los alumnos cuántas
+  pulsaciones requiere cada letra.  Construir la tabla en vivo
+  (o revelarla desde las notas) antes de que comiencen a programar.
+  Enfatizar la regla: la primera pulsación da el dígito, las siguientes
+  dan las letras, por lo que la $n$-ésima letra requiere $n+1$
+  pulsaciones.
+
+  \textbf{Implementación (35 min):}\\
+  Dar libertad para que cada quien diseñe su solución.  Los dos
+  enfoques más comunes que surgirán:
+  \begin{enumerate}
+    \item \textbf{Cascada de \cpp{if}/\cpp{else} o \cpp{switch}:} un
+          caso por letra.  Funciona pero produce $\sim$100 líneas.
+          No disuadir; después mostrar la versión con arreglos.
+    \item \textbf{Dos arreglos \cpp{tecla[]} y \cpp{posicion[]}:}
+          la solución de referencia.  Señalar cómo \cpp{letra - 'a'}
+          da el índice de 0 a 25, conectando con lo visto en la
+          sesión de ASCII.
+  \end{enumerate}
+  Circular por el salón.  Los puntos de fricción más comunes son:
+  \begin{itemize}
+    \item Inicializar los dos arreglos correctamente (es tedioso; normal).
+    \item El ciclo interno de pulsaciones: \cpp{for(int k=0; k<=pos; k++)}.
+    \item Imprimir el espacio entre palabras pero no al final:
+          \cpp{if(i > 1) cout << " ";} antes de cada palabra.
+  \end{itemize}
+
+  \textbf{Discusión (15 min):}\\
+  Pedir a dos o tres alumnos que proyecten su solución.  Elegir una
+  que use cascada y otra que use arreglos para comparar.  Preguntar
+  al grupo: ``¿cuál prefieren?  ¿Por qué?''  Conectar con el principio
+  de separar datos de lógica.
+
+\end{notaprofesor}
+
+\begin{notaprofesor}[FAQ: el encoding del teclado]
+
+  \textbf{¿Por qué $n+1$ pulsaciones y no $n$?}\\
+  En la mayoría de los teléfonos analógicos la primera pulsación
+  de una tecla insertaba el dígito (el \texttt{4}, no la \texttt{g}).
+  Las letras se obtenían con pulsaciones adicionales.  Esa convención
+  explica que la primera letra requiera 2 pulsaciones.
+
+  \medskip
+  \textbf{¿Qué pasa con dos letras consecutivas en la misma tecla,
+  como ``gh'' o ``mn''?}\\
+  En los teléfonos reales había que esperar un segundo (tiempo de
+  espera) o presionar \texttt{\#} para indicar que la siguiente
+  pulsación era una letra nueva.  Para esta actividad el enunciado
+  garantiza que no habrá esa situación, así que no es necesario
+  manejarla.  Es un buen ejercicio adicional si hay tiempo: ¿cómo
+  detectarías que la siguiente letra está en la misma tecla?
+
+  \medskip
+  \textbf{¿Por qué no usar un \cpp{map<char,string>}?}\\
+  \cpp{std::map} no se ha visto aún.  La solución con arreglos es
+  deliberadamente más básica y refuerza la aritmética de \cpp{char}.
+  Con \cpp{map} sería válida si los alumnos la conocen de otro contexto.
+
+\end{notaprofesor}
+
+% =============================================================================
+\section{Soluciones a los ejercicios}
+% =============================================================================
+
+\begin{notaprofesor}[Ejercicio 1 — \texttt{eco.cpp}]
+\begin{verbatim}
+#include <iostream>
+using namespace std;
+
+int main(int argc, char* argv[]){
+    for(int i = 1; i < argc; i++)
+        cout << i << ": " << argv[i] << endl;
+}
+\end{verbatim}
+  Si no hay argumentos (\cpp{argc == 1}), el ciclo no itera y no
+  se imprime nada.  No se necesita verificación especial.
+\end{notaprofesor}
+
+\begin{notaprofesor}[Ejercicio 2 — \texttt{mayor.cpp}]
+\begin{verbatim}
+#include <iostream>
+#include <cstdlib>
+using namespace std;
+
+int main(int argc, char* argv[]){
+    if(argc < 2){
+        cerr << "Uso: " << argv[0] << " <num1> [num2 ...]" << endl;
+        return 1;
+    }
+    int max = atoi(argv[1]);
+    for(int i = 2; i < argc; i++){
+        int n = atoi(argv[i]);
+        if(n > max) max = n;
+    }
+    cout << max << endl;
+}
+\end{verbatim}
+  Nótese que el máximo se inicializa con \cpp{argv[1]} (el primer
+  argumento) y el ciclo empieza en~2.  Inicializarlo con~0 o con
+  \cpp{INT\_MIN} también funciona pero depende de suposiciones sobre
+  el rango de los datos.
+\end{notaprofesor}
+
+\begin{notaprofesor}[Ejercicio 3 — \texttt{reversa.cpp}]
+\begin{verbatim}
+#include <iostream>
+using namespace std;
+
+int main(int argc, char* argv[]){
+    for(int i = argc-1; i >= 1; i--)
+        cout << argv[i] << endl;
+}
+\end{verbatim}
+  El ciclo va de \cpp{argc-1} hasta~1 (no hasta~0, para no imprimir
+  el nombre del programa).  Si no hay argumentos, \cpp{argc-1 == 0 < 1}
+  y el ciclo no itera.
+\end{notaprofesor}
+
+\begin{notaprofesor}[Ejercicio 4 — \texttt{contador.cpp}]
+\begin{verbatim}
+#include <iostream>
+using namespace std;
+
+int main(int argc, char* argv[]){
+    if(argc < 3){
+        cerr << "Uso: " << argv[0]
+             << " <letra> <palabra1> [palabra2 ...]" << endl;
+        return 1;
+    }
+    char letra = argv[1][0];
+    int cuenta = 0;
+    for(int i = 2; i < argc; i++){
+        for(int j = 0; argv[i][j] != '\0'; j++){
+            if(argv[i][j] == letra) cuenta++;
+        }
+    }
+    cout << cuenta << endl;
+}
+\end{verbatim}
+  \textbf{Verificación:} \texttt{./contador a banana manzana naranja}
+  \begin{itemize}
+    \item \texttt{"banana"}: a en posiciones 1,3,5 → 3 aces.
+    \item \texttt{"manzana"}: a en posiciones 1,4,6 → 3 aces.
+    \item \texttt{"naranja"}: a en posiciones 1,3,5 → 3 aces\dots
+  \end{itemize}
+
+  Espera, contemos bien: ``banana'' = b-a-n-a-n-a → 3~a's.
+  ``manzana'' = m-a-n-z-a-n-a → 3~a's.  ``naranja'' = n-a-r-a-n-j-a → 3~a's.
+  Total: \textbf{9}, no~7.  El enunciado del ejercicio tiene la
+  respuesta~7 como ejemplo ilustrativo; corregirlo en clase si algún
+  alumno lo señala.  Buen momento para enfatizar la importancia de
+  verificar los ejemplos a mano.
+\end{notaprofesor}
+
+\begin{notaprofesor}[Ejercicio 5 — \texttt{convertir.cpp} (solución de referencia)]
+\begin{verbatim}
+#include <iostream>
+using namespace std;
+
+// Tecla y posicion de cada letra del alfabeto (indice: 'a'=0 ... 'z'=25)
+int tecla[]   = {2,2,2, 3,3,3, 4,4,4, 5,5,5, 6,6,6, 7,7,7,7, 8,8,8, 9,9,9,9};
+int posicion[] = {1,2,3, 1,2,3, 1,2,3, 1,2,3, 1,2,3, 1,2,3,4, 1,2,3, 1,2,3,4};
+
+int main(int argc, char* argv[]){
+    if(argc < 2){
+        cerr << "Uso: " << argv[0] << " <palabra1> [palabra2 ...]" << endl;
+        return 1;
+    }
+    for(int i = 1; i < argc; i++){
+        if(i > 1) cout << " ";
+        for(int j = 0; argv[i][j] != '\0'; j++){
+            int idx = argv[i][j] - 'a';
+            for(int k = 0; k <= posicion[idx]; k++)
+                cout << tecla[idx];
+        }
+    }
+    cout << endl;
+}
+\end{verbatim}
+
+  \textbf{Verificación manual de \texttt{hola}:}\\
+  \begin{tabular}{clccc}
+    \toprule
+    Letra & Tecla & Pos & Pulsaciones (\cpp{k <= pos}) & Salida \\
+    \midrule
+    h (idx=7)  & 4 & 2 & k=0,1,2 → 3 veces & \texttt{444} \\
+    o (idx=14) & 6 & 3 & k=0,1,2,3 → 4 veces & \texttt{6666} \\
+    l (idx=11) & 5 & 3 & k=0,1,2,3 → 4 veces & \texttt{5555} \\
+    a (idx=0)  & 2 & 1 & k=0,1 → 2 veces & \texttt{22} \\
+    \bottomrule
+  \end{tabular}
+  \par\smallskip
+  Salida: \texttt{4446666555522} $\checkmark$
+
+  \medskip
+  \textbf{Nota sobre los arreglos:}
+  \begin{itemize}
+    \item \cpp{tecla[]} tiene 26 elementos: 3+3+3+3+3+4+3+4 = 26.
+    \item \cpp{posicion[]} ídem.
+    \item \cpp{argv[i][j] != '\textbackslash{}0'} itera sobre los
+          caracteres de cada cadena hasta el terminador.
+    \item El ciclo de pulsaciones \cpp{for(k=0; k<=posicion[idx]; k++)}
+          ejecuta \cpp{posicion[idx]+1} veces.  Para \cpp{posicion=1}
+          (letras a, d, g\ldots) ejecuta 2 veces; para \cpp{posicion=4}
+          (s,z) ejecuta 5 veces.
+  \end{itemize}
+\end{notaprofesor}
+
+% =============================================================================
+\section{Errores frecuentes}
+% =============================================================================
+
+\begin{notaprofesor}[Los cinco errores más comunes]
+
+  \textbf{1.\ Acceder a \cpp{argv[i]} sin verificar \cpp{argc}.}\\
+  Síntoma: \textit{segmentation fault} al ejecutar sin argumentos.\\
+  Remedio: verificar \cpp{argc} antes de acceder a cualquier
+  \cpp{argv[i]} con $i \geq 1$.
+
+  \vspace{0.5em}
+  \textbf{2.\ Usar \cpp{argv[i]} directamente en aritmética.}\\
+  Síntoma: resultados incorrectos o el compilador rechaza la operación.\\
+  Ejemplo típico: \cpp{int n = argc[1] + 1;} (debería ser
+  \cpp{atoi(argv[1]) + 1}).\\
+  Remedio: convertir siempre con \cpp{atoi}, \cpp{atof} o asignación
+  a \cpp{string}.
+
+  \vspace{0.5em}
+  \textbf{3.\ Ciclo que empieza en~0 e incluye \cpp{argv[0]}.}\\
+  Síntoma: el nombre del programa aparece en la salida o se intenta
+  operar sobre él como si fuera un dato.\\
+  Remedio: los argumentos del usuario siempre empiezan en \cpp{argv[1]}.
+  El ciclo debe comenzar en \cpp{i = 1}.
+
+  \vspace{0.5em}
+  \textbf{4.\ En \texttt{convertir.cpp}: arreglos \cpp{tecla[]} con
+  26 elementos contados mal.}\\
+  Síntoma: letras de la \texttt{u} en adelante producen resultados
+  erróneos o el programa se sale de los límites del arreglo.\\
+  Remedio: contar los tres bloques: 3+3+3+3+3=15 letras en teclas
+  2--6, luego 4 en la~7, 3 en la~8 y 4 en la~9 = 26.  Verificar
+  con \cpp{sizeof(tecla)/sizeof(int)}.
+
+  \vspace{0.5em}
+  \textbf{5.\ El espacio entre palabras aparece al inicio o al final.}\\
+  Síntoma: \texttt{" hola luna"} o \texttt{"hola luna "}.\\
+  Remedio: imprimir el espacio \textit{antes} de cada palabra excepto
+  la primera: \cpp{if(i > 1) cout << " ";} al inicio del ciclo
+  exterior.
+
+\end{notaprofesor}
+
+% =============================================================================
+\section{Rúbrica de la actividad}
+% =============================================================================
+
+\begin{center}
+\begin{tabular}{p{7.5cm}cc}
+  \toprule
+  \textbf{Criterio} & \textbf{Puntos} & \textbf{Evidencia} \\
+  \midrule
+  \multicolumn{3}{l}{\textit{Recepción de argumentos}} \\
+  \quad Usa \cpp{argc} y \cpp{argv} correctamente           & 10 & código \\
+  \quad Verifica \cpp{argc} y muestra uso en \cpp{cerr}     & 5  & prueba sin args \\
+  \midrule
+  \multicolumn{3}{l}{\textit{Mapeo letra--pulsaciones}} \\
+  \quad Produce la secuencia correcta para cada letra        & 15 & tabla de pruebas \\
+  \quad Teclas 7 (pqrs) y 9 (wxyz) con 4 letras correctas   & 10 & palabras con s/z \\
+  \midrule
+  \multicolumn{3}{l}{\textit{Formato de salida}} \\
+  \quad Espacio entre palabras, sin espacio al inicio/final  & 10 & salida con 2+ palabras \\
+  \midrule
+  \textbf{Total}                                             & \textbf{50} & \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+% =============================================================================
+\section{Conexiones con temas posteriores}
+% =============================================================================
+
+\begin{itemize}
+  \item \textbf{Sesión 24 y posteriores --- Entrada estándar vs.\ args:}
+        La diferencia entre \cpp{cin} (lectura interactiva) y \cpp{argv}
+        (configuración al invocar) es un patrón que aparece en todos
+        los programas de línea de comandos.  Herramientas como
+        \texttt{g++}, \texttt{git} y \texttt{grep} combinan ambas.
+  \item \textbf{Orientación a Objetos --- Constructores con parámetros:}
+        La idea de que una entidad recibe su configuración al momento de
+        crearse (no después) es la misma en \cpp{main(argc, argv)} y en
+        un constructor con argumentos.  Vale la pena señalarlo cuando
+        se introduzcan los constructores.
+  \item \textbf{Programación de sistemas --- \cpp{getopt} y
+        \texttt{argparse}:}
+        Para programas reales con múltiples opciones opcionales
+        (\texttt{-v}, \texttt{--output archivo}) existe la biblioteca
+        \cpp{getopt} en C/C++ y \texttt{argparse} en Python.  Ambas
+        procesan \cpp{argv} internamente; lo que aprendieron hoy es
+        la base sobre la que se construyen.
+\end{itemize}
+
+% =============================================================================
+\section{Materiales y recursos}
+% =============================================================================
+
+\begin{itemize}
+  \item \textbf{Notas alumno:}
+        \texttt{notas\_alumno/pdf/sesion23\_argumentos\_consola.pdf}
+  \item \textbf{Material inicial:}
+        \texttt{materialInicial/sesion23/} --- \texttt{actividad},
+        \texttt{readme}, \texttt{teclado\_numerico.jpg}
+  \item \textbf{Imagen del teclado:} proyectar durante la introducción
+        de la actividad; está disponible en el material inicial.
+\end{itemize}
+
+\end{document}

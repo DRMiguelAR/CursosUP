@@ -1,0 +1,489 @@
+% =============================================================================
+%  Notas de clase — Sesión 23: Argumentos de consola
+%  Programación Avanzada — Universidad Panamericana
+%  Compilar: pdflatex sesion23_argumentos_consola.tex
+% =============================================================================
+\documentclass[12pt, oneside]{article}
+\usepackage{progavanzada}
+\usepackage{array}
+
+\begin{document}
+
+\portada{Sesión 23}{Argumentos de consola}{2026}
+
+\tableofcontents
+\newpage
+
+% =============================================================================
+\section{1969: ``haz una sola cosa y hazla bien''}
+% =============================================================================
+
+En 1969, Ken Thompson diseñó la primera versión de Unix en un PDP-7
+que nadie más usaba en los Laboratorios Bell.  Dennis Ritchie se unió
+poco después, y juntos establecieron una filosofía de diseño que sigue
+siendo vigente más de cincuenta años después:
+
+\begin{center}
+\textit{``Escribe programas que hagan una sola cosa y la hagan bien.''}\\
+\textit{``Escribe programas que puedan trabajar juntos.''}
+\end{center}
+
+Para que los programas trabajen juntos necesitan dos mecanismos: una
+forma de recibir instrucciones desde el exterior, y una forma de pasar
+sus resultados a otro programa.  La segunda se resolvió con las
+\textbf{tuberías} (\textit{pipes}); la primera, con los
+\textbf{argumentos de consola}.
+
+Cuando escribes:
+
+\begin{verbatim}
+$ g++ -O2 -o hola hola.cpp
+\end{verbatim}
+
+el shell toma esa línea, la separa en cinco cadenas y se las pasa al
+compilador.  El compilador las recibe como un arreglo de cadenas llamado
+\cpp{argv} (de \textit{argument vector}) y un entero llamado \cpp{argc}
+(de \textit{argument count}).  Llevas un semestre usando \texttt{g++}
+sin saber que le estás pasando cuatro argumentos por \cpp{argv}.
+
+Esta convención fue diseñada por Dennis Ritchie al desarrollar el
+lenguaje~C alrededor de 1972 y quedó formalizada en el estándar
+ANSI~C de 1989.  Hoy es parte del estándar de C++ y de prácticamente
+todo lenguaje compilado moderno.
+
+\begin{tecnico}[La filosofía Unix y las tuberías]
+  Los programas \texttt{grep}, \texttt{wc}, \texttt{sort} y \texttt{ls}
+  son extremadamente pequeños porque cada uno hace una sola cosa.  Su
+  poder real proviene de combinarlos:
+  \begin{verbatim}
+$ cat notas.txt | grep "error" | wc -l
+  \end{verbatim}
+  Este comando cuenta cuántas líneas de \texttt{notas.txt} contienen
+  la palabra ``error''.  Cada programa recibe su configuración por
+  \cpp{argv} y sus datos por la entrada estándar.
+  \par\smallskip
+  \textit{Referencia:} Ritchie, D.\,M., \& Thompson, K.~(1974).
+  ``The UNIX time-sharing system.''
+  \textit{Communications of the ACM}, 17(7), 365--375.
+\end{tecnico}
+
+% =============================================================================
+\section{\texttt{main} con parámetros: \texttt{argc} y \texttt{argv}}
+% =============================================================================
+
+Hasta ahora siempre has escrito:
+
+\begin{verbatim}
+int main(){
+    ...
+}
+\end{verbatim}
+
+Esa forma no recibe argumentos.  La versión completa de \cpp{main} es:
+
+\begin{verbatim}
+int main(int argc, char* argv[]){
+    ...
+}
+\end{verbatim}
+
+\begin{description}
+  \item[\cpp{argc}]
+    Número de cadenas recibidas, incluyendo el nombre del programa.
+    Su valor mínimo es~1.
+  \item[\cpp{argv}]
+    Arreglo de cadenas estilo~C.  Cada elemento es un \cpp{char*}
+    que apunta a una cadena terminada en \texttt{'\textbackslash{}0'}.
+    \begin{itemize}
+      \item \cpp{argv[0]}: nombre o ruta del ejecutable.
+      \item \cpp{argv[1]} a \cpp{argv[argc-1]}: los argumentos del usuario.
+    \end{itemize}
+\end{description}
+
+Ejemplo: si ejecutas:
+
+\begin{verbatim}
+$ ./mi_programa hola mundo 42
+\end{verbatim}
+
+entonces:
+
+\begin{center}
+\begin{tabular}{cll}
+  \toprule
+  \textbf{Variable}  & \textbf{Valor}            & \textbf{Descripción} \\
+  \midrule
+  \cpp{argc}         & \texttt{4}                & cuatro cadenas en total \\
+  \cpp{argv[0]}      & \texttt{"./mi\_programa"} & nombre del ejecutable \\
+  \cpp{argv[1]}      & \texttt{"hola"}           & primer argumento \\
+  \cpp{argv[2]}      & \texttt{"mundo"}          & segundo argumento \\
+  \cpp{argv[3]}      & \texttt{"42"}             & tercer argumento \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\begin{advertencia}
+  \cpp{argv[3]} es la cadena \texttt{"42"}, no el número \texttt{42}.
+  Si quieres usarlo en una operación aritmética hay que convertirlo
+  explícitamente.  Este es uno de los errores más comunes al trabajar
+  con argumentos de consola.
+\end{advertencia}
+
+\subsection{Un primer programa con \texttt{argc}/\texttt{argv}}
+
+\textbf{hola\_args.cpp}:
+\begin{verbatim}
+#include <iostream>
+using namespace std;
+
+int main(int argc, char* argv[]){
+    cout << "argc = " << argc << endl;
+    for (int i = 0; i < argc; i++){
+        cout << "argv[" << i << "] = " << argv[i] << endl;
+    }
+}
+\end{verbatim}
+
+Ejecución:
+\begin{verbatim}
+$ ./hola_args uno dos tres
+argc = 4
+argv[0] = ./hola_args
+argv[1] = uno
+argv[2] = dos
+argv[3] = tres
+\end{verbatim}
+
+\begin{recuerda}
+  El shell divide la línea de comandos usando los espacios como
+  separadores.  Si quieres pasar una cadena con espacios como un solo
+  argumento, enciérrala en comillas:
+  \begin{verbatim}
+$ ./programa "hola mundo"
+  \end{verbatim}
+  En ese caso \cpp{argc} es~2 y \cpp{argv[1]} es \texttt{"hola mundo"}
+  (una sola cadena, no dos).
+\end{recuerda}
+
+% =============================================================================
+\section{Verificar el número de argumentos}
+% =============================================================================
+
+Los programas robustos siempre verifican que recibieron el número
+correcto de argumentos antes de intentar usarlos.  Acceder a
+\cpp{argv[2]} cuando \cpp{argc} es~2 es comportamiento indefinido;
+en la práctica provoca un \textit{segmentation fault} o lee memoria
+basura.
+
+\textbf{uso.cpp}:
+\begin{verbatim}
+#include <iostream>
+using namespace std;
+
+int main(int argc, char* argv[]){
+    if (argc != 3){
+        cerr << "Uso: " << argv[0]
+             << " <nombre> <apellido>" << endl;
+        return 1;
+    }
+    cout << "Hola, " << argv[1] << " " << argv[2] << "!" << endl;
+}
+\end{verbatim}
+
+Ejecuciones:
+\begin{verbatim}
+$ ./uso Ana Lopez
+Hola, Ana Lopez!
+
+$ ./uso Ana
+Uso: ./uso <nombre> <apellido>
+\end{verbatim}
+
+Dos detalles importantes:
+
+\begin{enumerate}
+  \item El mensaje de error va a \cpp{cerr} (la salida de error estándar),
+        no a \cpp{cout}.  Así el usuario puede redirigir la salida normal
+        sin mezclarla con mensajes de error.
+
+  \item El programa devuelve \cpp{1} para indicar al shell que algo salió
+        mal.  Por convención, \cpp{return 0} significa éxito y cualquier
+        otro valor indica error.
+\end{enumerate}
+
+\begin{consejo}
+  Usa \cpp{argv[0]} en el mensaje de uso en lugar de escribir el nombre
+  del programa a mano.  Así el mensaje sigue siendo correcto aunque
+  renombres el ejecutable.
+\end{consejo}
+
+% =============================================================================
+\section{Convertir argumentos a números}
+% =============================================================================
+
+Los argumentos siempre llegan como cadenas de texto.  Para usarlos en
+operaciones numéricas hay que convertirlos.  C++ ofrece varias funciones
+para esto:
+
+\begin{center}
+\begin{tabular}{lll}
+  \toprule
+  \textbf{Función}   & \textbf{Tipo que devuelve} & \textbf{Encabezado} \\
+  \midrule
+  \cpp{atoi(s)}      & \cpp{int}                  & \cpp{<cstdlib>} \\
+  \cpp{atol(s)}      & \cpp{long}                 & \cpp{<cstdlib>} \\
+  \cpp{atof(s)}      & \cpp{double}               & \cpp{<cstdlib>} \\
+  \cpp{stoi(s)}      & \cpp{int}                  & \cpp{<string>} \\
+  \cpp{stol(s)}      & \cpp{long}                 & \cpp{<string>} \\
+  \cpp{stod(s)}      & \cpp{double}               & \cpp{<string>} \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+Las funciones que comienzan con \texttt{a} (de \textit{ASCII to}) vienen
+de~C y reciben \cpp{char*}.  Las que comienzan con \texttt{s} (de
+\textit{string to}) son de C++ y aceptan \cpp{std::string}.  Como
+\cpp{argv[i]} ya es \cpp{char*}, las versiones de~C funcionan
+directamente sin conversión extra.
+
+\textbf{suma.cpp} — suma todos los argumentos como enteros:
+\begin{verbatim}
+#include <iostream>
+#include <cstdlib>
+using namespace std;
+
+int main(int argc, char* argv[]){
+    int total = 0;
+    for (int i = 1; i < argc; i++){
+        total += atoi(argv[i]);
+    }
+    cout << total << endl;
+}
+\end{verbatim}
+
+Ejecución:
+\begin{verbatim}
+$ ./suma 10 20 30 5
+65
+\end{verbatim}
+
+\begin{advertencia}
+  \cpp{atoi} devuelve~\texttt{0} cuando la cadena no es un número
+  válido, sin ningún aviso.  \cpp{stoi} lanza una excepción en ese caso.
+  Si los argumentos vienen directamente del usuario y pueden ser
+  inválidos, \cpp{stoi} dentro de un bloque \cpp{try}/\cpp{catch} es
+  la opción más segura.
+\end{advertencia}
+
+\begin{ejemplo}[Calculadora de dos operandos]
+  \textbf{calc.cpp}:
+  \begin{verbatim}
+#include <iostream>
+#include <cstdlib>
+using namespace std;
+
+int main(int argc, char* argv[]){
+    if (argc != 4){
+        cerr << "Uso: " << argv[0]
+             << " <num1> <op> <num2>" << endl;
+        return 1;
+    }
+    double a  = atof(argv[1]);
+    char   op = argv[2][0];
+    double b  = atof(argv[3]);
+
+    if      (op == '+') cout << a + b << endl;
+    else if (op == '-') cout << a - b << endl;
+    else if (op == '*') cout << a * b << endl;
+    else if (op == '/') cout << a / b << endl;
+    else {
+        cerr << "Operador desconocido: " << op << endl;
+        return 1;
+    }
+}
+  \end{verbatim}
+  Ejecuciones:
+  \begin{verbatim}
+$ ./calc 3.5 + 1.5
+5
+$ ./calc 10 / 4
+2.5
+  \end{verbatim}
+\end{ejemplo}
+
+% =============================================================================
+\section{Actividad: el teclado numérico}
+% =============================================================================
+
+Antes de los \textit{smartphones}, todos los teléfonos celulares tenían un
+teclado de doce teclas.  Para escribir un mensaje de texto había que
+presionar cada tecla varias veces: el número de pulsaciones indicaba qué
+letra se quería.
+
+El detalle importante es que la \textbf{primera pulsación de una tecla
+siempre introduce el dígito}, no una letra.  Las letras se obtienen a
+partir de la segunda pulsación.  Con el mapeo estándar (ITU E.161, 1994):
+
+\begin{center}
+\begin{tabular}{cll}
+  \toprule
+  \textbf{Tecla} & \textbf{Letras} & \textbf{Pulsaciones para cada letra} \\
+  \midrule
+  2 & a b c & \texttt{22} \quad \texttt{222} \quad \texttt{2222} \\
+  3 & d e f & \texttt{33} \quad \texttt{333} \quad \texttt{3333} \\
+  4 & g h i & \texttt{44} \quad \texttt{444} \quad \texttt{4444} \\
+  5 & j k l & \texttt{55} \quad \texttt{555} \quad \texttt{5555} \\
+  6 & m n o & \texttt{66} \quad \texttt{666} \quad \texttt{6666} \\
+  7 & p q r s & \texttt{77} \quad \texttt{777} \quad \texttt{7777} \quad \texttt{77777} \\
+  8 & t u v & \texttt{88} \quad \texttt{888} \quad \texttt{8888} \\
+  9 & w x y z & \texttt{99} \quad \texttt{999} \quad \texttt{9999} \quad \texttt{99999} \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+La regla general: para la $n$-ésima letra de una tecla se presiona ese
+dígito exactamente $n+1$ veces (una por el dígito más $n$ por la posición).
+Los espacios entre palabras se representan con un espacio en la salida.
+
+\subsection*{Ejemplo verificado}
+
+\begin{verbatim}
+$ ./convertir hola luna
+4446666555522 555588866622
+\end{verbatim}
+
+Comprobación de \texttt{hola}:
+
+\begin{center}
+\begin{tabular}{clccc}
+  \toprule
+  \textbf{Letra} & \textbf{Tecla} & \textbf{Posición} & \textbf{Pulsaciones} & \textbf{Salida} \\
+  \midrule
+  h & 4 (ghi) & 2ª & $2+1=3$ & \texttt{444} \\
+  o & 6 (mno) & 3ª & $3+1=4$ & \texttt{6666} \\
+  l & 5 (jkl) & 3ª & $3+1=4$ & \texttt{5555} \\
+  a & 2 (abc) & 1ª & $1+1=2$ & \texttt{22} \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\begin{center}
+  \texttt{hola} $\longrightarrow$ \texttt{444} + \texttt{6666} +
+  \texttt{5555} + \texttt{22} = \texttt{4446666555522}
+\end{center}
+
+Comprobación de \texttt{luna}:
+
+\begin{center}
+\begin{tabular}{clccc}
+  \toprule
+  \textbf{Letra} & \textbf{Tecla} & \textbf{Posición} & \textbf{Pulsaciones} & \textbf{Salida} \\
+  \midrule
+  l & 5 (jkl) & 3ª & $3+1=4$ & \texttt{5555} \\
+  u & 8 (tuv) & 2ª & $2+1=3$ & \texttt{888} \\
+  n & 6 (mno) & 2ª & $2+1=3$ & \texttt{666} \\
+  a & 2 (abc) & 1ª & $1+1=2$ & \texttt{22} \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\begin{center}
+  \texttt{luna} $\longrightarrow$ \texttt{5555} + \texttt{888} +
+  \texttt{666} + \texttt{22} = \texttt{555588866622}
+\end{center}
+
+\subsection*{Especificación del programa}
+
+\begin{itemize}
+  \item El programa se llama \texttt{convertir} y recibe las palabras
+        como argumentos de consola (cada palabra es un \cpp{argv[i]}).
+  \item Cada argumento contiene solo letras minúsculas del alfabeto inglés.
+  \item La salida imprime las pulsaciones de cada palabra separadas por
+        un espacio, seguidas de un salto de línea.
+  \item Para simplificar, ningún argumento contendrá dos letras
+        consecutivas en la misma tecla (por ejemplo, no habrá
+        \texttt{"gh"} ni \texttt{"mn"} juntas dentro de la misma palabra).
+\end{itemize}
+
+\subsection*{Pista}
+
+Observa que las letras del alfabeto inglés van de \cpp{'a'} (ASCII~97)
+a \cpp{'z'} (ASCII~122).  La expresión \cpp{letra - 'a'} produce un
+índice de~0 a~25 que puedes usar para buscar en una tabla.  Piensa en
+qué datos necesitas guardar por cada letra: su tecla y su posición en
+esa tecla.
+
+% =============================================================================
+\section{Ejercicios}
+% =============================================================================
+
+\begin{enumerate}
+
+  \item Escribe un programa \textbf{eco.cpp} que imprima cada argumento
+        en una línea separada, numerado desde~1.  Ejemplo:
+        \begin{verbatim}
+$ ./eco rojo verde azul
+1: rojo
+2: verde
+3: azul
+        \end{verbatim}
+        Si no se proporcionan argumentos, el programa no imprime nada
+        (sin mensaje de error).
+
+  \item Escribe un programa \textbf{mayor.cpp} que reciba varios enteros
+        como argumentos e imprima el mayor de ellos.  Si no se
+        proporciona ningún argumento, muestra un mensaje de uso en
+        \cpp{cerr} y termina con código~1.
+
+  \item Escribe un programa \textbf{reversa.cpp} que imprima los
+        argumentos en orden inverso (el último primero, el primero al
+        final).  Ejemplo:
+        \begin{verbatim}
+$ ./reversa uno dos tres
+tres
+dos
+uno
+        \end{verbatim}
+
+  \item Escribe un programa \textbf{contador.cpp} que reciba como primer
+        argumento una letra y como argumentos siguientes varias palabras,
+        y cuente cuántas veces aparece esa letra en el conjunto de palabras.
+        Ejemplo:
+        \begin{verbatim}
+$ ./contador a banana manzana naranja
+7
+        \end{verbatim}
+
+  \item Escribe el programa \textbf{convertir.cpp} de la actividad.
+        Antes de entregarlo, incluye al inicio del archivo, como
+        comentarios, los cálculos manuales de al menos dos palabras de
+        prueba distintas que usaste para verificar tu solución.
+
+\end{enumerate}
+
+% =============================================================================
+\section*{Resumen}
+% =============================================================================
+
+\begin{itemize}
+  \item \cpp{main} puede recibir dos parámetros: \cpp{int argc}
+        (número de cadenas, incluyendo el nombre del programa) y
+        \cpp{char* argv[]} (arreglo de cadenas~C con cada argumento).
+  \item \cpp{argv[0]} siempre es el nombre del ejecutable; los argumentos
+        del usuario están en \cpp{argv[1]} a \cpp{argv[argc-1]}.
+  \item Siempre verifica el valor de \cpp{argc} antes de acceder a
+        \cpp{argv[i]}.  Leer fuera de rango es comportamiento indefinido.
+  \item Los argumentos llegan como cadenas; \cpp{atoi}, \cpp{atof} y
+        \cpp{stoi} permiten convertirlos a enteros o flotantes.
+  \item El mensaje de uso convencional se imprime en \cpp{cerr} y el
+        programa retorna~\texttt{1} para señalar error al shell.
+  \item En el teclado numérico telefónico, la $n$-ésima letra de una
+        tecla requiere $n+1$ pulsaciones: una por el dígito y $n$ por
+        su posición en la tecla.
+  \item La filosofía Unix de ``hacer una cosa y hacerla bien'' se apoya
+        en los argumentos de consola: cada programa recibe su
+        configuración por \cpp{argv} y puede encadenarse con otros
+        mediante tuberías.
+\end{itemize}
+
+\end{document}
