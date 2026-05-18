@@ -1,0 +1,15 @@
+actividad
+
+Objetivo: Generar un programa que reciba como parámetro una frase y lo convierta a su marcación en un teclado numérico.
+
+
+
+Entrada: Recibir como parámetro de ejecución una frase compuesta de palabras que contengan sólo letras minúsculas del alfabeto inglés, desde consola.
+
+Salida: Escribir la marcación numérica que se debió teclear en un alfabeto numérico para lograr la frase de entrada.
+
+Ejemplo:
+
+ ./convertir hola adios
+
+>> 4446666555522 223355666677777
