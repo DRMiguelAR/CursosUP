@@ -1,0 +1,330 @@
+% =============================================================================
+%  Instrucciones para el Reporte Técnico del Proyecto Final
+%  Geometría Computacional — Universidad Panamericana
+%  Compilar: pdflatex instrucciones_reporte_tecnico.tex
+% =============================================================================
+\documentclass[12pt, oneside]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish, es-noshorthands]{babel}
+\usepackage[a4paper, top=3cm, bottom=3cm, left=3cm, right=3cm]{geometry}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{array}
+\usepackage{parskip}
+\usepackage{microtype}
+\usepackage{lmodern}
+\usepackage[colorlinks=true, linkcolor=black, citecolor=black, urlcolor=black]{hyperref}
+
+\setlist[enumerate]{itemsep=2pt, topsep=4pt}
+\setlist[itemize]{itemsep=2pt, topsep=4pt}
+
+\renewcommand{\arraystretch}{1.3}
+
+\begin{document}
+
+% =============================================================================
+%  Encabezado
+% =============================================================================
+\begin{center}
+  {\large\bfseries Universidad Panamericana}\\[4pt]
+  {\large Geometría Computacional}\\[8pt]
+  \rule{\textwidth}{0.4pt}\\[6pt]
+  {\LARGE\bfseries Instrucciones para el Reporte Técnico\\[4pt]
+                   del Proyecto Final}\\[6pt]
+  \rule{\textwidth}{0.4pt}\\[4pt]
+  {\small Dr.\ Miguel Alcaraz Rivera \quad\textbullet\quad
+          malcaraz@up.edu.mx \quad\textbullet\quad 2026}
+\end{center}
+
+\vspace{1cm}
+
+% =============================================================================
+\section*{1.\quad Objetivo}
+% =============================================================================
+
+El reporte técnico constituye el examen alternativo del proyecto final.
+Su propósito es documentar formalmente el sistema implementado, sustentar
+con investigación bibliográfica los algoritmos y estructuras de datos
+utilizados, y demostrar que los resultados obtenidos satisfacen los
+resultados de aprendizaje de la materia.
+
+% =============================================================================
+\section*{2.\quad Condición de elegibilidad}
+% =============================================================================
+
+La opción del reporte aplica exclusivamente a los equipos cuyo sistema
+procese y visualice correctamente los archivos \textit{layer} publicados
+por todos los demás equipos, además de los propios.  Un proyecto que no
+supere las pruebas cruzadas de interoperabilidad no califica para esta
+modalidad.
+
+% =============================================================================
+\section*{3.\quad Estructura del documento}
+% =============================================================================
+
+El reporte deberá presentar las siguientes secciones en el orden indicado.
+
+\vspace{0.5em}
+\noindent\textbf{3.1\quad Portada}
+
+Deberá incluir el nombre del proyecto, los integrantes del equipo, el
+nombre de la materia, la institución y la fecha de entrega.
+
+\vspace{0.5em}
+\noindent\textbf{3.2\quad Resumen}
+
+Se redactará un párrafo de máximo 250 palabras que describa el problema
+abordado, los algoritmos y estructuras de datos empleados, y los
+resultados obtenidos.  El resumen debe ser auto-contenido.
+
+\vspace{0.5em}
+\noindent\textbf{3.3\quad Introducción}
+
+La introducción comprenderá los siguientes elementos:
+
+\begin{enumerate}
+  \item Contexto del problema en el dominio de los sistemas de información
+        geográfica (GIS) y la cartografía digital.
+  \item Definición precisa del problema de ingeniería abordado.
+  \item Justificación de los algoritmos y estructuras de datos seleccionados.
+  \item Alcance del sistema: qué se implementó y qué quedó fuera del alcance.
+  \item Organización del documento.
+\end{enumerate}
+
+En esta sección deberán abordarse explícitamente los resultados de
+aprendizaje \textbf{RA-C1} y \textbf{RA-C3} (véase sección~5).
+
+\vspace{0.5em}
+\noindent\textbf{3.4\quad Marco teórico}
+
+Se presentará la investigación bibliográfica sobre los fundamentos del
+sistema.  Los temas de cobertura obligatoria se especifican en la
+sección~4.
+
+\vspace{0.5em}
+\noindent\textbf{3.5\quad Diseño del sistema}
+
+Se describirá la arquitectura del sistema: módulos, flujo de datos y las
+decisiones de diseño más relevantes.  Para cada decisión de diseño
+deberá explicarse la alternativa descartada y el criterio de selección.
+Se incluirá al menos un diagrama de componentes o de flujo de datos.
+
+\vspace{0.5em}
+\noindent\textbf{3.6\quad Implementación}
+
+Se presentarán los fragmentos de código más representativos, acompañados
+de su explicación.  No deberá incluirse la totalidad del código fuente;
+se seleccionarán los segmentos que ilustren las decisiones de diseño
+descritas en la sección anterior.  Cada fragmento deberá comentarse en
+términos de su función, su corrección y los casos límite que maneja o
+que quedan fuera de su alcance.
+
+\vspace{0.5em}
+\noindent\textbf{3.7\quad Resultados y demostración}
+
+Se presentarán las capturas de pantalla especificadas en la sección~6,
+con pie de figura descriptivo para cada una.  En esta sección deberá
+abordarse también el resultado de aprendizaje \textbf{RA-C2}, mediante
+la descripción de aplicaciones reales en las que el sistema implementado
+podría emplearse (véase sección~5).
+
+\vspace{0.5em}
+\noindent\textbf{3.8\quad Conclusiones}
+
+Las conclusiones deberán retomar explícitamente los tres resultados de
+aprendizaje (\textbf{RA-C1}, \textbf{RA-C2} y \textbf{RA-C3}).  Se
+incluirá una reflexión sobre las decisiones de diseño tomadas, las
+limitaciones encontradas y el trabajo futuro que se identificó.  Las
+conclusiones no deberán limitarse a repetir el resumen.
+
+\vspace{0.5em}
+\noindent\textbf{3.9\quad Bibliografía}
+
+Se incluirán mínimo cinco fuentes académicas en formato IEEE o APA,
+aplicado de manera consistente a lo largo del documento.  Al menos una
+de las fuentes deberá ser el artículo original de Bentley y Ottmann
+(1979).  Las fuentes listadas en la bibliografía deberán estar citadas
+en el texto, y toda afirmación técnica deberá tener su referencia
+correspondiente.
+
+% =============================================================================
+\section*{4.\quad Contenido del marco teórico}
+% =============================================================================
+
+\noindent\textbf{Temas de cobertura obligatoria:}
+
+\begin{enumerate}
+  \item \textbf{Subdivisiones planares y la DCEL.}
+        Definición de subdivisión planar.  Descripción de la estructura
+        de lista doblemente conectada de aristas: vértices, semi-aristas
+        y caras, y sus relaciones de adyacencia.  Operaciones que la
+        estructura soporta eficientemente.
+
+  \item \textbf{Paradigma de barrido de plano.}
+        Principio general del algoritmo.  Definición de línea de barrido,
+        cola de eventos y árbol de estado.  Invariante que se mantiene
+        durante el barrido.
+
+  \item \textbf{Algoritmo de Bentley-Ottmann.}
+        Descripción de los tres tipos de eventos: inicio de segmento,
+        fin de segmento e intersección.  Complejidad en tiempo y espacio.
+        Comparación con el algoritmo de Shamos-Hoey.
+
+  \item \textbf{Identificación de caras.}
+        Procedimiento para identificar las caras de una subdivisión planar
+        a partir de las semi-aristas.  Identificación de la cara no acotada.
+\end{enumerate}
+
+\noindent\textbf{Temas recomendados:}
+
+\begin{itemize}
+  \item Aplicaciones de fusión de capas en sistemas GIS (OpenStreetMap,
+        QGIS, ArcGIS).
+  \item Configuraciones degeneradas en Bentley-Ottmann: vértices
+        compartidos, segmentos colineales, tres o más segmentos
+        concurrentes en un punto.
+  \item Librerías de geometría computacional existentes (CGAL) y
+        justificación del desarrollo desde cero.
+\end{itemize}
+
+\noindent\textbf{Fuentes de partida:}
+
+\begin{itemize}
+  \item de Berg, M., Cheong, O., van Kreveld, M., \& Overmars, M.
+        (2008). \textit{Computational Geometry: Algorithms and
+        Applications} (3.ª~ed.). Springer. Capítulos~2 y~5.
+  \item Bentley, J.\,L., \& Ottmann, T.\,A. (1979). Algorithms for
+        reporting and counting geometric intersections. \textit{IEEE
+        Transactions on Computers}, 28(9), 643--647.
+  \item Shamos, M.\,I., \& Hoey, D. (1976). Geometric intersection
+        problems. \textit{17th Annual Symposium on Foundations of
+        Computer Science}, 208--215.
+\end{itemize}
+
+% =============================================================================
+\section*{5.\quad Resultados de aprendizaje}
+% =============================================================================
+
+El reporte deberá demostrar evidencia de los siguientes resultados de
+aprendizaje de la materia.  La introducción y las conclusiones son las
+secciones donde deberá recogerse esta evidencia de forma explícita.
+
+\vspace{0.5em}
+\begin{center}
+\begin{tabular}{p{1.2cm} p{11.2cm}}
+\toprule
+\textbf{RA} & \textbf{Enunciado} \\
+\midrule
+\textbf{C1} & Diseñar soluciones creativas para problemas complejos de
+              ingeniería. \\
+\textbf{C2} & Diseñar sistemas, componentes o procesos para satisfacer
+              las necesidades identificadas con la consideración adecuada
+              para la salud y la seguridad públicas, el costo total de
+              vida, el carbono neto cero, así como las consideraciones de
+              recursos, culturales, sociales y ambientales. \\
+\textbf{C3} & Crear, seleccionar y aplicar, y reconocer las limitaciones
+              de las técnicas, los recursos y las herramientas de TI e
+              ingeniería modernas adecuadas, incluidas la predicción y el
+              modelado, para problemas complejos de ingeniería.  Dichas
+              técnicas incluyen matemáticas basadas en conceptos, análisis
+              numérico, análisis de datos, estadísticas y aspectos formales
+              de informática y ciencias de la información. \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\vspace{0.5em}
+\noindent\textbf{Indicaciones para la introducción:}
+
+\begin{itemize}
+  \item \textbf{RA-C1:} Se argumentará por qué el problema de fusión de
+        capas geográficas constituye un problema complejo de ingeniería,
+        identificando los dominios de conocimiento que confluyen y las
+        restricciones en conflicto que el diseño debió resolver.
+
+  \item \textbf{RA-C3:} Se describirán las técnicas, estructuras de datos
+        y algoritmos seleccionados, con justificación de su elección frente
+        a alternativas disponibles.
+\end{itemize}
+
+\noindent\textbf{Indicaciones para las conclusiones:}
+
+\begin{itemize}
+  \item \textbf{RA-C1:} Se reflexionará sobre la complejidad del problema
+        abordado y sobre las decisiones de diseño que definen la solución
+        implementada.
+
+  \item \textbf{RA-C2:} Se identificarán al menos dos contextos de
+        aplicación real del sistema en los que sean relevantes
+        consideraciones de salud y seguridad, medio ambiente, recursos o
+        impacto social.  Se desarrollará cada contexto con argumentación
+        sustentada.
+
+  \item \textbf{RA-C3:} Se enumerarán las limitaciones concretas
+        identificadas en los algoritmos y herramientas utilizados, ya sea
+        en términos de casos no contemplados, aproximaciones numéricas o
+        restricciones de la implementación.
+\end{itemize}
+
+% =============================================================================
+\section*{6.\quad Imágenes requeridas}
+% =============================================================================
+
+Deberán incluirse las siguientes capturas de pantalla en la sección de
+resultados.  Cada imagen irá acompañada de un pie de figura que describa
+qué representa y qué evidencia.
+
+\begin{enumerate}
+  \item Capas individuales antes de la fusión (mínimo dos capas distintas),
+        con vértices y aristas visibles.
+  \item Capas superpuestas o estado intermedio del algoritmo de barrido,
+        que ilustre la complejidad del proceso de fusión.
+  \item Capa resultante de la fusión, con vértices, aristas y caras
+        correctamente identificados.
+  \item Selección de la cara externa (cara no acotada) resaltada en la
+        interfaz.
+  \item Demostración de la funcionalidad de selección y deselección de
+        caras internas, con retroalimentación visual.
+  \item Procesamiento de un ejemplo proporcionado por otro equipo, con
+        identificación explícita del equipo de origen.
+\end{enumerate}
+
+Las capturas deberán tener resolución suficiente para que texto y trazos
+sean legibles en el documento impreso.
+
+% =============================================================================
+\section*{7.\quad Criterios de evaluación}
+% =============================================================================
+
+\begin{center}
+\begin{tabular}{p{3.5cm} p{9cm}}
+\toprule
+\textbf{Criterio} & \textbf{Descripción} \\
+\midrule
+Claridad conceptual
+  & El sistema, su diseño y su funcionamiento pueden comprenderse
+    únicamente a partir del reporte, sin necesidad de consultar el
+    código fuente. \\
+Marco teórico
+  & Los temas obligatorios se desarrollan con profundidad suficiente
+    para que el lector pueda juzgar la corrección de la implementación.
+    Cada afirmación técnica está respaldada por una referencia. \\
+Resultados de aprendizaje
+  & Los tres resultados de aprendizaje se abordan de forma explícita y
+    argumentada en introducción y conclusiones. \\
+Calidad de las imágenes
+  & Las capturas constituyen evidencia del funcionamiento del sistema,
+    con pie de figura que explica qué se muestra. \\
+Honestidad técnica
+  & Las limitaciones del sistema y de los algoritmos empleados se
+    reconocen y describen con precisión. \\
+Consistencia formal
+  & Notación matemática uniforme, figuras numeradas y referenciadas,
+    bibliografía completa y homogénea. \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\end{document}
