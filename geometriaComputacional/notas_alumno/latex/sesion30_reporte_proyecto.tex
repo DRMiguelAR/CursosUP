@@ -1,0 +1,778 @@
+% =============================================================================
+%  Notas de clase — Sesión 30: Reporte técnico del proyecto final
+%  Geometría Computacional — Universidad Panamericana
+%
+%  Compilar (desde este directorio):
+%    TEXINPUTS=../../../progAvanzada/notas_alumno/latex: \
+%      pdflatex sesion30_reporte_proyecto.tex
+%
+%  O bien copiar progavanzada.sty y escudo_up.png a este directorio
+%  y compilar normalmente:
+%    pdflatex sesion30_reporte_proyecto.tex
+% =============================================================================
+\documentclass[12pt, oneside]{article}
+\usepackage{progavanzada}
+\usepackage{array}
+
+% ── Encabezado para Geometría Computacional ──────────────────────────────────
+\fancyhead[L]{\small\color{up@gray}\textbf{NOTAS DE CLASE}
+              \textbar\ Geometría Computacional}
+
+% ── Portada adaptada al curso ─────────────────────────────────────────────────
+%    Mismo diseño que \portada{}{}{}  pero con nombre de curso correcto.
+\newcommand{\portadaGeo}[3]{%
+  \begin{titlepage}
+    \pagecolor{cover@band}
+    \color{white}
+    \setlength{\parindent}{0pt}
+    \vspace*{0pt}
+    {\setlength{\fboxsep}{0pt}%
+     \noindent\colorbox{white}{%
+       \parbox[c][3.6cm][c]{\textwidth}{%
+         \centering
+         \includegraphics[height=3.2cm]{escudo_up}%
+       }}\par}
+    \noindent{\color{up@gold}\rule{\textwidth}{3.5pt}}\par
+    \vspace{0.8cm}
+    \noindent{\small\bfseries\color{up@gold}
+      \MakeUppercase{Geometría Computacional}}\par
+    \vspace{0.5cm}
+    {\fontsize{60}{60}\selectfont\bfseries\color{up@gold} #1\par}
+    \vspace{0.2cm}
+    \noindent{\color{up@gold!60!white}\rule{\textwidth}{1pt}}\par
+    \vspace{0.4cm}
+    {\fontsize{26}{32}\selectfont\bfseries #2\par}
+    \vspace{1.4cm}
+    \noindent\colorbox{up@gold}{%
+      \parbox{4.5cm}{\centering\bfseries\color{cover@band}
+        \ding{222}\enspace NOTAS DE CLASE}}
+    \vfill
+    \noindent{\color{up@gold!50!white}\rule{\textwidth}{0.5pt}}\\[4pt]
+    {\small\color{up@gold!70!white} Universidad Panamericana \hfill #3}\\[2pt]
+    {\small\color{up@gold!70!white}
+      Dr.\ Miguel Alcaraz Rivera\enspace\textbullet\enspace malcaraz@up.edu.mx}
+  \end{titlepage}
+  \nopagecolor
+  \color{up@black}
+}
+
+\begin{document}
+
+\portadaGeo{Sesión 30}{Reporte técnico\\del proyecto final}{2026}
+
+\tableofcontents
+\newpage
+
+% =============================================================================
+\section{1854, 1967, 1979: los mapas como problemas de ingeniería}
+% =============================================================================
+
+En septiembre de 1854, el médico John Snow clavó pines en un mapa de
+Londres para marcar los casos de cólera que había documentado durante
+la epidemia que asolaba el barrio de Soho.  Cuando terminó, el patrón
+era imposible de ignorar: todos los casos se agrupaban alrededor de una
+sola bomba de agua en la calle Broad.  Snow convenció a las autoridades
+de retirar la manija de esa bomba, la epidemia cedió, y de paso inventó
+el análisis espacial~\cite{Snow1855}.
+
+Un siglo después, en 1967, el geógrafo Roger Tomlinson creó el primer
+\textbf{Sistema de Información Geográfica} (\textit{Geographic Information
+System}, GIS) del mundo para inventariar el uso del suelo en Canadá.
+El reto central que tuvo que resolver fue exactamente el que tú acabas
+de atacar en este curso: ¿cómo combinar múltiples \textbf{capas} de
+información geográfica en una representación coherente?  Tomlinson lo
+hizo con papel, escáneres primitivos y años de trabajo~\cite{Tomlinson2012}.
+
+Doce años después, en 1979, Jon Bentley y Thomas Ottmann publicaron el
+artículo que lleva su nombre: un algoritmo capaz de detectar todas las
+intersecciones entre $n$ segmentos en tiempo $O((n+k)\log n)$, donde
+$k$ es el número de intersecciones~\cite{BentleyOttmann1979}.  Ese
+algoritmo es el núcleo computacional de cualquier sistema que fusione
+capas geográficas de manera eficiente.  Lo implementaste.
+
+Tu proyecto no fue un ejercicio académico abstracto: fue la
+reimplementación de una pieza fundamental de la infraestructura de
+software que hace posibles los mapas digitales modernos, desde
+OpenStreetMap hasta los sistemas de navegación del teléfono.
+
+% =============================================================================
+\section{Recap: lo que construiste}
+% =============================================================================
+
+Antes de hablar del reporte, conviene tener claro exactamente qué
+comprende el sistema.  Cada componente tiene nombre, algoritmo y
+complejidad; todos deben aparecer en tu marco teórico.
+
+\begin{enumerate}
+  \item \textbf{Lectura de \textit{layers} en formato DCEL.}
+        El sistema lee archivos que describen una \textbf{lista
+        doblemente conectada de aristas} (\textit{Doubly Connected
+        Edge List}, DCEL): vértices, semi-aristas y caras.  Es el
+        formato estándar para representar subdivisiones planares.
+
+  \item \textbf{Fusión de capas con Bentley-Ottmann.}
+        El algoritmo de barrido de plano (\textit{plane sweep})
+        detecta todas las intersecciones entre segmentos de distintas
+        capas.  Cada intersección genera nuevos vértices y divide las
+        aristas involucradas.
+
+  \item \textbf{Reconstrucción de aristas y caras.}
+        A partir de los vértices e intersecciones calculados se
+        reconstruyen las aristas de la subdivisión resultante y se
+        identifican sus caras, incluyendo la \textbf{cara externa}
+        (la cara no acotada).
+
+  \item \textbf{Exportación de archivos.}
+        El sistema genera archivos de vértices, aristas y caras que
+        describen la nueva capa fusionada en formato DCEL,
+        reutilizable por cualquier otro equipo.
+
+  \item \textbf{Visualización interactiva.}
+        Una aplicación carga el resultado y permite visualizar el mapa
+        completo, seleccionar y deseleccionar caras individuales
+        (incluida la cara externa) con retroalimentación visual.
+
+  \item \textbf{Interoperabilidad entre equipos.}
+        Cada equipo subió ejemplos de \textit{layers}; tu sistema
+        debía procesar correctamente los ejemplos de los demás equipos.
+\end{enumerate}
+
+% =============================================================================
+\section{El reporte como examen alternativo}
+% =============================================================================
+
+Si tu proyecto procesa y visualiza correctamente los \textit{layers}
+de todos los demás equipos, tienes la opción de entregar un
+\textbf{reporte técnico} en lugar del examen final.
+
+\begin{recuerda}[Condición de elegibilidad]
+  El reporte solo aplica si el proyecto funciona correctamente,
+  incluyendo la demostración de que puede procesar los ejemplos
+  entregados por los otros equipos.  Un proyecto parcialmente
+  funcional no califica para esta opción.
+\end{recuerda}
+
+El reporte es un documento académico-técnico, similar a los que los
+ingenieros producen en la industria para documentar sistemas que han
+construido.  No es una bitácora de lo que hiciste, ni un resumen de
+la materia: es la documentación formal de una solución a un problema
+de ingeniería.
+
+\begin{consejo}[¿Por qué un reporte y no un examen?]
+  Un examen mide si puedes recordar y aplicar conceptos bajo presión.
+  Un buen reporte técnico demuestra algo más valioso: que entiendes
+  lo que construiste, que puedes conectarlo con la literatura
+  existente y que eres capaz de comunicarlo con claridad y precisión.
+  En la industria, esa es la habilidad que diferencia a los ingenieros
+  excepcionales de los competentes.
+\end{consejo}
+
+% =============================================================================
+\section{Estructura del reporte}
+% =============================================================================
+
+El reporte debe contener las siguientes secciones en este orden.
+Para cada una se indica qué incluir y a qué profundidad.
+
+% -----------------------------------------------------------------------------
+\subsection{Portada}
+% -----------------------------------------------------------------------------
+
+Nombre del proyecto, integrantes del equipo, curso, institución y
+fecha.  Sin colores extravagantes ni adornos innecesarios: una portada
+limpia comunica profesionalismo.
+
+% -----------------------------------------------------------------------------
+\subsection{Resumen}
+% -----------------------------------------------------------------------------
+
+Un párrafo de \textbf{máximo 250 palabras} que responda:
+
+\begin{itemize}
+  \item ¿Qué problema resuelve el sistema?
+  \item ¿Qué algoritmos y estructuras de datos se utilizaron?
+  \item ¿Qué resultados se obtuvieron?
+\end{itemize}
+
+El resumen es lo primero que lee cualquier evaluador.  Debe ser
+auto-contenido: quien lo lea sin conocer el proyecto debe entender
+de qué trata.
+
+% -----------------------------------------------------------------------------
+\subsection{Introducción}
+% -----------------------------------------------------------------------------
+
+Aquí se establece el contexto y la motivación del trabajo.  Esta
+sección \textbf{debe} abordar explícitamente los resultados de
+aprendizaje RA-C1 y RA-C3 (ver sección~\ref{sec:ra}).
+
+Una introducción completa contiene:
+
+\begin{enumerate}
+  \item \textbf{Contexto:} ¿en qué dominio existe el problema?
+        (sistemas GIS, cartografía digital, superposición de capas
+        geográficas).
+
+  \item \textbf{Problema:} ¿cuál es el reto de ingeniería que aborda
+        el sistema?  Sé específico: no es ``hacer un mapa'', sino
+        ``fusionar múltiples subdivisiones planares detectando todas
+        las intersecciones de forma eficiente y reconstruyendo la
+        topología de la capa resultante''.
+
+  \item \textbf{Solución propuesta:} qué algoritmos y estructuras de
+        datos se seleccionaron y por qué.  Aquí va la conexión con
+        RA-C3.
+
+  \item \textbf{Alcance:} qué hace y qué no hace el sistema.
+
+  \item \textbf{Organización del documento:} un párrafo breve que
+        describe qué contiene cada sección.
+\end{enumerate}
+
+% -----------------------------------------------------------------------------
+\subsection{Marco teórico}
+% -----------------------------------------------------------------------------
+
+Investigación bibliográfica de los fundamentos del sistema.
+Ver sección~\ref{sec:teoria} para los temas concretos que debes cubrir
+y las fuentes de partida.
+
+% -----------------------------------------------------------------------------
+\subsection{Diseño del sistema}
+% -----------------------------------------------------------------------------
+
+Describe la arquitectura del sistema: módulos, flujo de datos y las
+decisiones de diseño más importantes.  Un diagrama de componentes o de
+flujo de datos es casi obligatorio aquí.
+
+Para cada decisión de diseño relevante responde: ¿por qué lo hiciste
+así y no de otra manera?  Por ejemplo: ¿qué representación elegiste
+para la cola de eventos de Bentley-Ottmann?  ¿Cómo estructuraste la
+DCEL en memoria?  ¿Cómo identificas la cara externa?
+
+% -----------------------------------------------------------------------------
+\subsection{Implementación}
+% -----------------------------------------------------------------------------
+
+Fragmentos de código relevantes con su explicación.  \textbf{No copies
+todo el código fuente}; selecciona las partes más interesantes o más
+difíciles: la estructura DCEL, el manejo del árbol de barrido, la
+identificación de caras, la lógica de selección en la interfaz.
+
+\begin{advertencia}
+  Un reporte que solo muestra código sin explicarlo no demuestra
+  comprensión.  Para cada fragmento incluido, explica qué hace,
+  por qué lo diseñaste así y qué casos límite maneja o no maneja.
+\end{advertencia}
+
+% -----------------------------------------------------------------------------
+\subsection{Resultados y demostración}
+% -----------------------------------------------------------------------------
+
+Capturas de pantalla que evidencian el funcionamiento del sistema.
+Ver sección~\ref{sec:capturas} para la lista específica de capturas
+requeridas.
+
+Esta sección también es el lugar natural para abordar RA-C2: ¿en qué
+aplicaciones reales podría usarse el sistema?  ¿Qué implicaciones
+tiene su uso?  (ver sección~\ref{sec:ra}).
+
+% -----------------------------------------------------------------------------
+\subsection{Conclusiones}
+% -----------------------------------------------------------------------------
+
+Las conclusiones \textbf{deben} retomar explícitamente los tres
+resultados de aprendizaje.  Una buena conclusión no repite el resumen:
+reflexiona sobre lo que aprendiste, qué salió como esperabas y qué no,
+y cuál es la relevancia más amplia del trabajo.
+
+Estructura sugerida:
+\begin{enumerate}
+  \item Resumen de lo logrado (dos o tres oraciones).
+  \item RA-C1: reflexión sobre la complejidad del problema y las
+        decisiones creativas tomadas.
+  \item RA-C2: implicaciones del sistema en aplicaciones reales,
+        medio ambiente o sociedad.
+  \item RA-C3: limitaciones concretas de los algoritmos y herramientas
+        utilizados.
+  \item Trabajo futuro: ¿qué mejorarías en una siguiente versión?
+\end{enumerate}
+
+% -----------------------------------------------------------------------------
+\subsection{Bibliografía}
+% -----------------------------------------------------------------------------
+
+\textbf{Mínimo cinco fuentes académicas} en formato IEEE o APA,
+consistente a lo largo del documento.  Al menos una fuente debe ser
+el artículo original de Bentley y Ottmann (1979).
+
+\begin{recuerda}[Citar es parte del trabajo técnico]
+  Cada afirmación técnica en el marco teórico debe tener una cita.
+  Escribir ``el algoritmo de Bentley-Ottmann tiene complejidad
+  $O((n+k)\log n)$'' sin citar la fuente es como presentar resultados
+  sin datos.  No cuentes páginas de Wikipedia ni repositorios de
+  código como fuentes académicas.
+\end{recuerda}
+
+% =============================================================================
+\section{Los resultados de aprendizaje en tu proyecto}
+\label{sec:ra}
+% =============================================================================
+
+Tu reporte debe conectar explícitamente el trabajo realizado con los
+resultados de aprendizaje de la materia.  Esto no es decorativo:
+es la evidencia concreta de que tu formación como ingeniero avanzó
+con este proyecto.
+
+Los tres resultados de aprendizaje (\textbf{RA}) que debes abordar son:
+
+\bigskip
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{p{1.1cm} p{10.8cm}}
+  \toprule
+  \textbf{RA} & \textbf{Enunciado} \\
+  \midrule
+  \textbf{C1} & Diseñar soluciones creativas para problemas complejos
+                de ingeniería. \\
+  \textbf{C2} & Diseñar sistemas, componentes o procesos considerando
+                adecuadamente la salud y seguridad públicas, el costo
+                total de vida, el carbono neto cero, y aspectos de
+                recursos, culturales, sociales y ambientales. \\
+  \textbf{C3} & Crear, seleccionar, aplicar y reconocer las limitaciones
+                de técnicas y herramientas modernas de TI e ingeniería,
+                incluyendo matemáticas conceptuales, análisis numérico,
+                análisis de datos y aspectos formales de informática
+                y ciencias de la información. \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+% -----------------------------------------------------------------------------
+\subsection{RA-C1: Soluciones creativas para problemas complejos}
+% -----------------------------------------------------------------------------
+
+Un ``problema complejo de ingeniería'' no es solo uno difícil: es uno
+que requiere integrar conocimiento de múltiples áreas, cuyas soluciones
+no son únicas y cuyas restricciones pueden estar en
+conflicto~\cite{ABET2023}.  Tu proyecto encaja exactamente ahí:
+
+\begin{itemize}
+  \item \textbf{Integración de áreas.}  El sistema combina geometría
+        computacional (intersecciones de segmentos), estructuras de
+        datos (DCEL, árboles de búsqueda balanceados), algoritmos de
+        barrido, diseño de formatos de archivo e interfaces gráficas.
+        Ninguna de estas piezas sola resuelve el problema.
+
+  \item \textbf{Soluciones no únicas.}  Hay múltiples maneras válidas
+        de representar la DCEL en memoria, de manejar la cola de
+        eventos en el barrido y de identificar las caras resultantes.
+        Las decisiones que tomaste definen tu solución.
+
+  \item \textbf{Restricciones en conflicto.}  La interoperabilidad
+        (que otros equipos puedan usar tus archivos) añade una
+        restricción de diseño real: no basta con que funcione para
+        tus propios datos.
+\end{itemize}
+
+\textbf{En la introducción} explica por qué este es un problema complejo:
+los ingredientes técnicos que confluyen y qué lo hace no trivial de
+resolver.  Evita frases genéricas como ``es complejo porque requiere
+mucho código''; sé específico en los algoritmos y la topología
+involucrados.
+
+\textbf{En las conclusiones} reflexiona sobre las decisiones de diseño:
+¿cuál fue la más difícil?  ¿Qué te sorprendió?  ¿Cambiarías algo si
+empezaras de nuevo?
+
+% -----------------------------------------------------------------------------
+\subsection{RA-C2: Consideraciones más allá del algoritmo}
+% -----------------------------------------------------------------------------
+
+Este resultado de aprendizaje pide que pienses en las implicaciones de
+lo que construiste más allá de su corrección técnica.  Para un sistema
+de fusión de capas geográficas esto es especialmente rico:
+
+\begin{description}
+  \item[Salud y seguridad pública.]
+    Los sistemas GIS son infraestructura crítica en emergencias:
+    mapas de zonas de inundación, rutas de evacuación, ubicación de
+    hospitales y estaciones de bomberos.  Un error en la fusión de
+    capas en ese contexto puede tener consecuencias físicas reales
+    para las personas.
+
+  \item[Carbono neto cero.]
+    El análisis espacial es una herramienta clave en la planificación
+    de energía renovable (ubicación de parques solares y eólicos),
+    el monitoreo de deforestación y la modelación del ciclo del carbono
+    a nivel territorial.  Tu sistema procesa exactamente el tipo de
+    datos que esas aplicaciones requieren.
+
+  \item[Recursos y costo total de vida.]
+    Los formatos de datos abiertos e interoperables, como el que
+    diseñaron entre equipos, reducen el costo de integración de
+    sistemas a largo plazo.  Un formato propietario atrapado en una
+    empresa tiene costo oculto que se acumula durante años.
+
+  \item[Consideraciones culturales y sociales.]
+    Los mapas no son neutrales: definen fronteras, derechos sobre
+    la tierra y territorios.  Una herramienta de fusión de capas que
+    introduce errores geométricos puede invalidar argumentos legales
+    o técnicos con consecuencias reales para comunidades.
+\end{description}
+
+\begin{consejo}
+  En la sección de resultados o en las conclusiones, desarrolla
+  \textbf{dos o tres} de estos puntos (los que mejor conecten con
+  tu implementación concreta) en un párrafo cada uno.  La profundidad
+  importa más que el número de puntos cubiertos.
+\end{consejo}
+
+% -----------------------------------------------------------------------------
+\subsection{RA-C3: Herramientas modernas y sus limitaciones}
+% -----------------------------------------------------------------------------
+
+Este es posiblemente el resultado de aprendizaje más concreto de
+documentar, porque las limitaciones de tu implementación son evidencia
+directa de él.  No las evites: reconocer las limitaciones de las
+herramientas que usas es una señal de madurez técnica, no de debilidad.
+
+\textbf{Herramientas y técnicas que aplicaste y que debes documentar:}
+
+\begin{itemize}
+  \item \textbf{La DCEL como estructura de datos formal.}  ¿Cuándo es
+        eficiente y cuándo no?  ¿Qué operaciones soporta en $O(1)$ y
+        cuáles requieren recorridos?
+
+  \item \textbf{Algoritmo de Bentley-Ottmann.}  Complejidad teórica
+        $O((n+k)\log n)$, más eficiente que el algoritmo ingenuo
+        $O(n^2)$ cuando $k \ll n^2$.  ¿Pero cuándo el algoritmo
+        ingenuo sería preferible en la práctica?
+
+  \item \textbf{Precisión numérica.}  El algoritmo de barrido asume
+        aritmética exacta, pero los números de punto flotante tienen
+        error de redondeo.  Las configuraciones degeneradas (tres
+        segmentos que se intersectan en un punto, segmentos colineales)
+        requieren manejo especial.  ¿Cómo lo abordaste o qué casos
+        decidiste no manejar?
+
+  \item \textbf{El kit de interfaz gráfica elegido.}  ¿Qué puede y
+        qué no puede hacer?  ¿Qué limitó la implementación de la
+        visualización?
+\end{itemize}
+
+\textbf{En la introducción} menciona qué herramientas y técnicas formales
+utilizaste y por qué las seleccionaste sobre alternativas.
+
+\textbf{En las conclusiones} lista de manera honesta las limitaciones
+que encontraste: casos que tu implementación no maneja, aproximaciones
+que tomaste, situaciones donde el algoritmo falla.  Esto no resta
+puntos: los suma.
+
+\begin{tecnico}[El artículo original de Bentley-Ottmann]
+  Bentley, J.\,L., \& Ottmann, T.\,A. (1979).
+  ``Algorithms for reporting and counting geometric intersections.''
+  \textit{IEEE Transactions on Computers}, 28(9), 643--647.
+
+  Vale la pena leerlo.  Tiene menos de cinco páginas y es un ejemplo
+  magistral de cómo presentar un algoritmo: motivación del problema,
+  descripción del enfoque, demostración de complejidad, comparación
+  con la solución ingenua.  Tu reporte puede seguir esa estructura.
+\end{tecnico}
+
+% =============================================================================
+\section{Marco teórico: qué investigar}
+\label{sec:teoria}
+% =============================================================================
+
+El marco teórico no es un glosario.  No basta poner una definición de
+DCEL y pasar al siguiente tema.  La pregunta guía para cada concepto
+es: \textit{¿qué necesita entender el lector para poder juzgar si mi
+implementación es correcta y eficiente?}
+
+% -----------------------------------------------------------------------------
+\subsection{Temas obligatorios}
+% -----------------------------------------------------------------------------
+
+\begin{enumerate}
+
+  \item \textbf{Subdivisiones planares y la DCEL.}
+        ¿Qué es una subdivisión planar?  ¿Por qué la DCEL es la
+        representación estándar?  Describe sus tres componentes
+        (vértices, semi-aristas, caras) y sus punteros.  Explica qué
+        operaciones soporta eficientemente y cuáles no.
+
+  \item \textbf{El paradigma del barrido de plano.}
+        ¿Cuál es la idea central detrás de los algoritmos de barrido?
+        ¿Qué es la línea de barrido?  ¿Qué invariante mantiene el
+        árbol de estado durante el barrido?  ¿Qué tipos de eventos
+        existen?
+
+  \item \textbf{Algoritmo de Bentley-Ottmann.}
+        Descripción detallada: cola de eventos, árbol de estado, los
+        tres tipos de eventos (inicio de segmento, fin de segmento,
+        intersección).  Complejidad en tiempo y espacio.  Comparación
+        con el algoritmo de Shamos-Hoey.
+
+  \item \textbf{Identificación de caras en una subdivisión planar.}
+        ¿Cómo se identifican las caras a partir de las semi-aristas?
+        ¿Cómo se distingue la cara externa?
+
+\end{enumerate}
+
+% -----------------------------------------------------------------------------
+\subsection{Temas recomendados}
+% -----------------------------------------------------------------------------
+
+\begin{itemize}
+  \item \textbf{Aplicaciones de GIS} que usan fusión de capas:
+        OpenStreetMap, QGIS, ArcGIS.  Contextualizar tu sistema en
+        ese ecosistema muestra que entiendes el dominio del problema.
+
+  \item \textbf{Configuraciones degeneradas en Bentley-Ottmann.}
+        El artículo original asume posición general.  ¿Qué pasa con
+        vértices compartidos, segmentos colineales o tres segmentos
+        que se intersectan en un solo punto?
+
+  \item \textbf{Librerías existentes.}  CGAL (\textit{Computational
+        Geometry Algorithms Library}) tiene implementaciones robustas
+        de DCEL y Bentley-Ottmann.  ¿Por qué las implementaste desde
+        cero en lugar de usar CGAL?
+\end{itemize}
+
+% -----------------------------------------------------------------------------
+\subsection{Fuentes de partida}
+% -----------------------------------------------------------------------------
+
+\begin{description}
+  \item[Libro de referencia.]
+    de Berg, M., Cheong, O., van Kreveld, M., \& Overmars, M.
+    (2008).  \textit{Computational Geometry: Algorithms and
+    Applications} (3.ª~ed.).  Springer.
+    Los capítulos~2 (DCEL) y~5 (barrido de plano) cubren exactamente
+    los temas de este proyecto.  Es el libro de la materia.
+
+  \item[Artículo original.]
+    Bentley, J.\,L., \& Ottmann, T.\,A. (1979).
+    Algorithms for reporting and counting geometric intersections.
+    \textit{IEEE Transactions on Computers}, 28(9), 643--647.
+
+  \item[Precursor histórico.]
+    Shamos, M.\,I., \& Hoey, D. (1976).
+    Geometric intersection problems.
+    \textit{17th Annual Symposium on Foundations of Computer Science},
+    208--215.
+    Detecta si hay alguna intersección (sin reportarlas todas) en
+    $O(n \log n)$.  Leerlo antes del artículo de Bentley-Ottmann
+    da perspectiva sobre el avance.
+
+  \item[Contexto de aplicación.]
+    Documentación de CGAL (\texttt{https://www.cgal.org}) y la wiki de
+    OpenStreetMap (\texttt{https://wiki.openstreetmap.org}) para el
+    contexto de GIS.
+\end{description}
+
+% =============================================================================
+\section{Las capturas de pantalla que necesitas}
+\label{sec:capturas}
+% =============================================================================
+
+Las imágenes en un reporte técnico no son decoración: son evidencia.
+Cada captura debe tener un pie de figura descriptivo que explique qué
+muestra y qué significa.  Una imagen sin explicación no demuestra nada.
+
+Lista mínima de capturas requeridas:
+
+\begin{enumerate}
+  \item \textbf{Capas individuales antes de la fusión.}
+        Al menos dos capas distintas cargadas por separado, con sus
+        vértices y aristas visibles.
+
+  \item \textbf{Estado del barrido o capas superpuestas.}
+        Si el sistema puede visualizar el proceso del barrido o
+        las capas superpuestas antes de la fusión, inclúyelo.
+        Hace visible la complejidad del problema.
+
+  \item \textbf{Resultado de la fusión.}
+        La capa resultante con vértices, aristas y caras correctamente
+        identificados.
+
+  \item \textbf{Cara externa destacada.}
+        Una captura que muestre claramente que el sistema identifica
+        y puede seleccionar la cara no acotada.
+
+  \item \textbf{Selección de caras internas.}
+        Demostración de la funcionalidad de selección y deselección
+        con retroalimentación visual.
+
+  \item \textbf{Ejemplo de otro equipo procesado.}
+        Al menos una captura que muestre tu sistema procesando un
+        \textit{layer} diseñado por otro equipo.  Identifica de qué
+        equipo es el ejemplo.
+\end{enumerate}
+
+\begin{consejo}
+  Toma las capturas con resolución suficiente para que texto y líneas
+  sean legibles en el PDF.  Una captura borrosa no demuestra nada.
+  Si tu interfaz tiene modo oscuro, considera si el modo claro resulta
+  más legible impreso.
+\end{consejo}
+
+% =============================================================================
+\section{Lo que distingue un buen reporte}
+% =============================================================================
+
+No todos los reportes que cumplan los requisitos mínimos serán
+equivalentes.  Los criterios que separan un trabajo notable de uno
+suficiente son:
+
+\begin{description}
+  \item[Claridad conceptual.]
+    ¿Se entiende exactamente qué hace el sistema leyendo solo el
+    reporte, sin ver el código?  Un lector que conozca geometría
+    computacional pero no haya visto tu implementación debe poder
+    seguir tu diseño sin ambigüedades.
+
+  \item[Honestidad técnica.]
+    Los reportes que reconocen limitaciones, casos no manejados y
+    compromisos de diseño son más valiosos que los que pretenden que
+    todo funciona perfectamente.  En la industria y en la academia
+    se valora saber qué \textit{no} funciona y por qué.
+
+  \item[Conexión con la bibliografía.]
+    ¿Tu implementación sigue el algoritmo del libro o lo adapta?
+    ¿En qué difiere y por qué?  Un buen reporte conecta la
+    implementación concreta con la literatura publicada.
+
+  \item[Consistencia en el formato.]
+    Notación matemática consistente, figuras numeradas y referenciadas
+    desde el texto, bibliografía completa con el mismo formato a lo
+    largo del documento.
+
+  \item[Narrativa coherente.]
+    El reporte debe leerse como un documento, no como una colección
+    de secciones independientes.  La introducción plantea algo que
+    el cuerpo desarrolla y las conclusiones cierran.
+\end{description}
+
+\begin{advertencia}[Lo que definitivamente no debes hacer]
+  \begin{itemize}
+    \item Pegar el código fuente completo en el reporte.
+    \item Usar capturas de pantalla del código en lugar de fragmentos
+          bien formateados.
+    \item Escribir las conclusiones repitiendo el resumen.
+    \item Incluir fuentes en la bibliografía que no se citan en
+          el texto (ni al revés: citar sin incluir en la bibliografía).
+    \item Usar Wikipedia como fuente académica primaria.
+  \end{itemize}
+\end{advertencia}
+
+% =============================================================================
+\section{Ejercicios de planeación}
+% =============================================================================
+
+Los siguientes ejercicios no requieren código: son para planear las
+partes más importantes del reporte antes de empezar a escribirlo.
+Resuélvelos en papel o en un borrador antes de la siguiente sesión.
+
+\begin{enumerate}
+
+  \item Lee el abstract del artículo original de Bentley y Ottmann
+        (1979) y escribe, con tus propias palabras y en menos de
+        100~palabras, el problema que resuelve y la idea central de
+        su solución.  Esta será la base de tu descripción del algoritmo
+        en el marco teórico.
+
+  \item Escribe el primer párrafo de tu introducción.  Debe responder:
+        ¿qué problema resuelve tu sistema?  ¿Por qué ese problema es
+        complejo desde el punto de vista de la ingeniería?  No uses
+        frases genéricas; sé específico sobre los algoritmos y
+        estructuras involucrados.  (RA-C1)
+
+  \item Enumera \textbf{al menos tres limitaciones concretas} de tu
+        implementación.  Para cada una indica si es una limitación del
+        algoritmo, de la precisión numérica, de la interfaz u otra
+        fuente.  Estas irán en las conclusiones.  (RA-C3)
+
+  \item Elige \textbf{dos} de los cuatro contextos de RA-C2 (salud y
+        seguridad, carbono, recursos, cultural/social) que mejor
+        conecten con tu sistema y escribe un párrafo de cuatro a seis
+        oraciones para cada uno.  (RA-C2)
+
+  \item Diseña el layout de la sección de resultados: qué capturas
+        incluirás, en qué orden, y qué dirá el pie de figura de
+        cada una.  Usa la lista de la sección~\ref{sec:capturas}
+        como punto de partida.
+
+\end{enumerate}
+
+% =============================================================================
+\section*{Resumen}
+% =============================================================================
+
+\begin{itemize}
+  \item El reporte técnico es el examen alternativo para equipos con
+        proyecto funcional, incluyendo la demostración con los
+        \textit{layers} de los demás equipos.
+  \item La estructura obligatoria es: portada, resumen, introducción,
+        marco teórico, diseño del sistema, implementación, resultados,
+        conclusiones y bibliografía.
+  \item La \textbf{introducción} debe abordar RA-C1 (problema complejo
+        y solución creativa) y RA-C3 (herramientas y técnicas
+        seleccionadas).
+  \item Las \textbf{conclusiones} deben abordar los tres resultados de
+        aprendizaje: RA-C1 (reflexión sobre la complejidad y las
+        decisiones de diseño), RA-C2 (implicaciones reales del sistema)
+        y RA-C3 (limitaciones encontradas en algoritmos y herramientas).
+  \item RA-C1: argumenta por qué el problema es genuinamente complejo
+        y qué hay de creativo en tu solución.
+  \item RA-C2: conecta el sistema con aplicaciones que involucren
+        salud, medio ambiente, recursos o impacto social; elige dos
+        o tres y desarróllalos con profundidad.
+  \item RA-C3: documenta qué algoritmos y estructuras elegiste,
+        su complejidad teórica y las limitaciones que encontraste
+        en la práctica.
+  \item El marco teórico cubre DCEL, paradigma de barrido de plano,
+        algoritmo de Bentley-Ottmann e identificación de caras.
+  \item Fuente mínima obligatoria: Bentley \& Ottmann (1979).
+        Libro recomendado: de Berg et al.\ (2008), capítulos~2 y~5.
+  \item Cada captura es evidencia: demuestra que el sistema funciona,
+        con pie de figura que explique qué muestra.
+  \item Reconocer limitaciones es parte de RA-C3 y suma, no resta.
+\end{itemize}
+
+% =============================================================================
+%  Bibliografía de esta sesión
+% =============================================================================
+\begin{thebibliography}{9}
+
+\bibitem{Snow1855}
+  Snow, J. (1855).
+  \textit{On the Mode of Communication of Cholera} (2.ª~ed.).
+  John Churchill.
+
+\bibitem{Tomlinson2012}
+  Tomlinson, R. (2012).
+  \textit{Thinking About GIS: Geographic Information System Planning
+  for Managers} (5.ª~ed.).
+  Esri Press.
+
+\bibitem{BentleyOttmann1979}
+  Bentley, J.\,L., \& Ottmann, T.\,A. (1979).
+  Algorithms for reporting and counting geometric intersections.
+  \textit{IEEE Transactions on Computers}, 28(9), 643--647.
+
+\bibitem{deBerg2008}
+  de Berg, M., Cheong, O., van Kreveld, M., \& Overmars, M. (2008).
+  \textit{Computational Geometry: Algorithms and Applications}
+  (3.ª~ed.).
+  Springer.
+
+\bibitem{ABET2023}
+  ABET. (2023).
+  \textit{Criteria for Accrediting Engineering Programs, 2023--2024}.
+  ABET.
+
+\end{thebibliography}
+
+\end{document}
