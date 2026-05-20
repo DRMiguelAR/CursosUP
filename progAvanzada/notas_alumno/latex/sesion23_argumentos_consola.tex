@@ -73,19 +73,19 @@ $ cat notas.txt | grep "error" | wc -l
 
 Hasta ahora siempre has escrito:
 
-\begin{verbatim}
+\begin{codigo}
 int main(){
     ...
 }
-\end{verbatim}
+\end{codigo}
 
 Esa forma no recibe argumentos.  La versión completa de \cpp{main} es:
 
-\begin{verbatim}
+\begin{codigo}
 int main(int argc, char* argv[]){
     ...
 }
-\end{verbatim}
+\end{codigo}
 
 \begin{description}
   \item[\cpp{argc}]
@@ -129,29 +129,69 @@ entonces:
   con argumentos de consola.
 \end{advertencia}
 
-\subsection{Un primer programa con \texttt{argc}/\texttt{argv}}
+\begin{recuerda}[Dos notaciones equivalentes para \texttt{argv}]
+  Encontrarás las siguientes dos formas en el código; ambas son
+  idénticas para el compilador:
+  \begin{itemize}
+    \item \cpp{char* argv[]} — arreglo de apuntadores a \cpp{char}
+    \item \cpp{char** argv} — apuntador a apuntador a \cpp{char}
+  \end{itemize}
+  Elige la que te resulte más clara.  En este curso usaremos
+  \cpp{char** argv} en los ejemplos cortos y \cpp{char* argv[]}
+  cuando queremos enfatizar que es un arreglo.
+\end{recuerda}
 
-\textbf{hola\_args.cpp}:
-\begin{verbatim}
+% -----------------------------------------------------------------------------
+\subsection{Primer programa: contar argumentos}
+% -----------------------------------------------------------------------------
+
+El programa más sencillo que usa \cpp{argc}/\cpp{argv} simplemente
+reporta cuántos argumentos recibió:
+
+\begin{codigo}[caption=argumentos1.cpp]
 #include <iostream>
 using namespace std;
 
-int main(int argc, char* argv[]){
-    cout << "argc = " << argc << endl;
-    for (int i = 0; i < argc; i++){
-        cout << "argv[" << i << "] = " << argv[i] << endl;
-    }
+int main(int argc, char **argv){
+    cout << "Recibí " << argc << " argumentos\n";
 }
+\end{codigo}
+
+Ejecución en terminal:
+\begin{verbatim}
+$ ./argumentos1 hola mundo
+Recibí 3 argumentos
 \end{verbatim}
 
-Ejecución:
+Observa que el ejecutable mismo cuenta como un argumento, por eso el
+resultado es~3 y no~2.
+
+% -----------------------------------------------------------------------------
+\subsection{Iterar e imprimir los argumentos}
+% -----------------------------------------------------------------------------
+
+Para mostrar los argumentos que el usuario proporcionó (sin el nombre
+del programa) iteramos desde \cpp{i=1}:
+
+\begin{codigo}[caption=argumentos2.cpp]
+#include <iostream>
+using namespace std;
+
+int main(int argc, char **argv){
+    cout << "Recibí " << argc << " argumentos\n";
+    for (int i = 1; i < argc; i++){
+        cout << "\t" << argv[i] << endl;
+    }
+}
+\end{codigo}
+
+Ejecución en terminal:
 \begin{verbatim}
-$ ./hola_args uno dos tres
-argc = 4
-argv[0] = ./hola_args
-argv[1] = uno
-argv[2] = dos
-argv[3] = tres
+$ ./argumentos2 rojo verde azul
+Recibí 4 argumentos
+        rojo
+        verde
+        azul
 \end{verbatim}
 
 \begin{recuerda}
@@ -159,11 +199,58 @@ argv[3] = tres
   separadores.  Si quieres pasar una cadena con espacios como un solo
   argumento, enciérrala en comillas:
   \begin{verbatim}
-$ ./programa "hola mundo"
+$ ./argumentos2 "hola mundo"
   \end{verbatim}
   En ese caso \cpp{argc} es~2 y \cpp{argv[1]} es \texttt{"hola mundo"}
   (una sola cadena, no dos).
 \end{recuerda}
+
+% -----------------------------------------------------------------------------
+\subsection{\texttt{argv[i]} es una cadena de C: recorrerla carácter por carácter}
+% -----------------------------------------------------------------------------
+
+Cada elemento de \cpp{argv} es un \cpp{char*}: un apuntador al primer
+carácter de una cadena terminada en \texttt{'\textbackslash{}0'}.  Eso
+significa que puedes recorrerla carácter a carácter exactamente igual
+que cualquier cadena de C:
+
+\begin{codigo}[caption=argumentos4.cpp]
+#include <iostream>
+using namespace std;
+
+int main(int argc, char **argv){
+    cout << "Recibí " << argc << " argumentos\n";
+    char *x = argv[1];
+    int i = 0;
+    while (true){
+        if (x[i] == '\0') break;
+        cout << x[i] << endl;
+        i++;
+    }
+}
+\end{codigo}
+
+Ejecución en terminal:
+\begin{verbatim}
+$ ./argumentos4 hola
+Recibí 2 argumentos
+h
+o
+l
+a
+\end{verbatim}
+
+¿Por qué termina en \texttt{'\textbackslash{}0'}?  Porque el shell
+construye cada argumento como una cadena de C estándar.  El bucle
+\cpp{while(true)} con ruptura al encontrar el centinela es el patrón
+clásico para recorrer cadenas de C.
+
+\begin{consejo}
+  Este ejemplo conecta directamente con lo que ya sabes sobre
+  apuntadores y arreglos.  \cpp{argv} es un \cpp{char**}: un apuntador
+  que apunta a otro apuntador.  \cpp{argv[1]} devuelve el segundo
+  \cpp{char*}, y \cpp{argv[1][0]} el primer carácter de ese argumento.
+\end{consejo}
 
 % =============================================================================
 \section{Verificar el número de argumentos}
@@ -175,28 +262,34 @@ correcto de argumentos antes de intentar usarlos.  Acceder a
 en la práctica provoca un \textit{segmentation fault} o lee memoria
 basura.
 
-\textbf{uso.cpp}:
-\begin{verbatim}
+El siguiente programa espera exactamente dos números; si no los recibe,
+muestra un mensaje de uso y termina:
+
+\begin{codigo}[caption=argumentos3.cpp]
 #include <iostream>
 using namespace std;
 
-int main(int argc, char* argv[]){
+int main(int argc, char **argv){
     if (argc != 3){
-        cerr << "Uso: " << argv[0]
-             << " <nombre> <apellido>" << endl;
+        cerr << "Debes mandar dos números\n";
+        cerr << "./suma n1 n2\n";
         return 1;
     }
-    cout << "Hola, " << argv[1] << " " << argv[2] << "!" << endl;
+    int x, y;
+    x = atoi(argv[1]);
+    y = atoi(argv[2]);
+    cout << "La suma de " << x << " + " << y << " = " << x + y << endl;
 }
-\end{verbatim}
+\end{codigo}
 
-Ejecuciones:
+Ejecución en terminal:
 \begin{verbatim}
-$ ./uso Ana Lopez
-Hola, Ana Lopez!
+$ ./argumentos3 10 25
+La suma de 10 + 25 = 35
 
-$ ./uso Ana
-Uso: ./uso <nombre> <apellido>
+$ ./argumentos3 10
+Debes mandar dos números
+./suma n1 n2
 \end{verbatim}
 
 Dos detalles importantes:
@@ -246,27 +339,6 @@ de~C y reciben \cpp{char*}.  Las que comienzan con \texttt{s} (de
 \cpp{argv[i]} ya es \cpp{char*}, las versiones de~C funcionan
 directamente sin conversión extra.
 
-\textbf{suma.cpp} — suma todos los argumentos como enteros:
-\begin{verbatim}
-#include <iostream>
-#include <cstdlib>
-using namespace std;
-
-int main(int argc, char* argv[]){
-    int total = 0;
-    for (int i = 1; i < argc; i++){
-        total += atoi(argv[i]);
-    }
-    cout << total << endl;
-}
-\end{verbatim}
-
-Ejecución:
-\begin{verbatim}
-$ ./suma 10 20 30 5
-65
-\end{verbatim}
-
 \begin{advertencia}
   \cpp{atoi} devuelve~\texttt{0} cuando la cadena no es un número
   válido, sin ningún aviso.  \cpp{stoi} lanza una excepción en ese caso.
@@ -277,7 +349,8 @@ $ ./suma 10 20 30 5
 
 \begin{ejemplo}[Calculadora de dos operandos]
   \textbf{calc.cpp}:
-  \begin{verbatim}
+
+\begin{codigo}
 #include <iostream>
 #include <cstdlib>
 using namespace std;
@@ -301,7 +374,8 @@ int main(int argc, char* argv[]){
         return 1;
     }
 }
-  \end{verbatim}
+\end{codigo}
+
   Ejecuciones:
   \begin{verbatim}
 $ ./calc 3.5 + 1.5
@@ -448,6 +522,8 @@ uno
   \item Escribe un programa \textbf{contador.cpp} que reciba como primer
         argumento una letra y como argumentos siguientes varias palabras,
         y cuente cuántas veces aparece esa letra en el conjunto de palabras.
+        Para recorrer cada argumento usa el patrón de \texttt{argumentos4.cpp}:
+        itera carácter a carácter hasta encontrar \texttt{'\textbackslash{}0'}.
         Ejemplo:
         \begin{verbatim}
 $ ./contador a banana manzana naranja
@@ -469,10 +545,14 @@ $ ./contador a banana manzana naranja
   \item \cpp{main} puede recibir dos parámetros: \cpp{int argc}
         (número de cadenas, incluyendo el nombre del programa) y
         \cpp{char* argv[]} (arreglo de cadenas~C con cada argumento).
+  \item Las notaciones \cpp{char* argv[]} y \cpp{char** argv} son
+        equivalentes; ambas declaran un apuntador a apuntador a \cpp{char}.
   \item \cpp{argv[0]} siempre es el nombre del ejecutable; los argumentos
         del usuario están en \cpp{argv[1]} a \cpp{argv[argc-1]}.
   \item Siempre verifica el valor de \cpp{argc} antes de acceder a
         \cpp{argv[i]}.  Leer fuera de rango es comportamiento indefinido.
+  \item Cada \cpp{argv[i]} es un \cpp{char*}: una cadena de C terminada
+        en \texttt{'\textbackslash{}0'} que puedes recorrer carácter a carácter.
   \item Los argumentos llegan como cadenas; \cpp{atoi}, \cpp{atof} y
         \cpp{stoi} permiten convertirlos a enteros o flotantes.
   \item El mensaje de uso convencional se imprime en \cpp{cerr} y el
