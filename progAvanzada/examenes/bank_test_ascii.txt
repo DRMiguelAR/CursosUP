@@ -1,0 +1,2 @@
+TF	An algorithm correct on the sample input is correct for all inputs.	false
+MC	What is the first step in algorithm design?	Code immediately	incorrect	Analyze the problem	correct	Write comments	incorrect
