@@ -1,0 +1,105 @@
+Upload or Import Questions
+Updated on 2026-05-05
+You can write questions offline in a text file and upload it into a test.
+
+After you upload the file, you can edit and use the questions exactly like the questions that you create inside your course.
+
+Images are not supported at this time.
+
+Before you begin
+The questions and the file you want to upload must meet the guidelines detailed in this topic.
+
+Questions that contain an error will fail to upload. Questions without errors will upload successfully.
+
+The system doesn't check for duplicate questions.
+
+Uploaded questions automatically default to the point value that they're assigned when uploaded. If you didn't set a default value, questions will automatically have a point value of zero. You'll have to add a point value for each question.
+
+Upload a question file
+From the test, select the plus sign to open the menu
+
+Select Upload questions from file.
+
+Select Browse to locate the file.
+
+Select Submit and then OK. The questions appear in the test.
+
+You can edit and reorder the questions.
+
+File format guidelines
+Each file that contains questions to be uploaded must conform to these guidelines:
+
+Each file must be a tab-delimited TXT file. You can edit this file in Microsoft® Excel® or in a text editor.
+
+It is recommended that each batch file not exceed 250 records.
+
+Don't include a header row in the file.
+
+Don't include blank lines between records. The blank line will be processed and return an error.
+
+Include only one question per row.
+
+The first field in each row defines the type of question.
+
+Separate each field in a row with a TAB.
+
+correct, incorrect, true, false, and other words that identify answers must be in English.
+
+Question format guidelines
+To upload successfully, the questions in the text file must conform to the guidelines in this table.
+
+Note
+Questions that contain an error will fail to upload. Questions without errors will upload successfully.
+
+Table 28. Question format guidelines
+Question Type
+
+Structure
+
+Multiple Choice
+
+MC TAB question text TAB answer text TAB correct|incorrect TAB answer two text TAB correct|incorrect
+
+Text within ( ) may be repeated for each of the answers that are part of the Multiple Choice question. The maximum number of answers is 100.
+
+Multiple Answer
+
+MA TAB question text TAB answer text TAB correct|incorrect TAB answer two text TAB correct|incorrect
+
+Text within ( ) may be repeated for each of the answers that are part of the Multiple Answer question. The maximum number of answers is 100.
+
+True/False
+
+TF TAB question text TAB true|false
+
+Essay
+
+ESS TAB question text TAB [example]
+
+Text within [ ] is optional. You may choose to add a sample or leave this blank.
+
+Matching
+
+MAT TAB question text TAB answer text TAB matching text TAB answer two text TAB matching two text
+
+Text within ( ) may be repeated for each of the answers that are part of the Matching question. The maximum number of answers is 100. The system will randomly order the answers and their question. When uploading a matching question, you must have a one-to-one relationship between questions and answers. If not, correct answers may be marked incorrect if more than one answer has the same value.
+
+Fill in the Blank
+
+FIB TAB question text TAB answer text TAB answer two text
+
+Text within ( ) may be repeated for each of the answers that are part of the Fill in the Blank question. The maximum number of answers is 100.
+
+Fill in Multiple Blanks
+
+FIB_PLUS TAB question text TAB variable1 TAB answer1 TAB answer2 TAB TAB variable2 TAB answer3
+
+The format consists of a list of variable-answers where each variable-answer is composed of the variable name and a list of correct answers for that variable. Variable-answers are delimited by an empty field.
+
+The maximum number of variables is 10.
+
+Numeric Response
+
+NUM TAB question text TAB answer TAB [optional] tolerance
+
+
