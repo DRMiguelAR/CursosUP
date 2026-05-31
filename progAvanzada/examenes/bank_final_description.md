@@ -25,4 +25,15 @@
 | 4 | MC   | Diferencia técnica entre prototipo en `.h` y definición en `.cpp` |
 | 5 | TF   | Prototipo y definición deben coincidir en tipo de retorno |
 | 6 | MAT  | Archivo `.h` → prototipo; archivo `.cpp` → definición |
-| 7 | MA   | Ventajas técnicas concretas de la modularización |
+| 7 | MA       | Ventajas técnicas concretas de la modularización |
+
+### Punto 2 — Una definición, múltiples declaraciones (4 preguntas)
+
+**Objetivo a evaluar:** Que el alumno comprenda que en C++ declarar es distinto a definir, que declarar múltiples veces es válido, que definir más de una vez en el mismo programa produce un error de enlazado, y que ese error ocurre en la etapa de *linking*, no de compilación.
+
+| #  | Tipo      | Tema |
+|----|-----------|------|
+| 8  | TF        | Declarar un prototipo varias veces no es un error |
+| 9  | MC        | Consecuencia de definir una función en dos `.cpp` enlazados juntos |
+| 10 | FIB_PLUS  | Completar: declarar (cuantas veces) vs. definir (solo una vez) |
+| 11 | MC        | Etapa en que se detecta la definición duplicada: *linking* |
