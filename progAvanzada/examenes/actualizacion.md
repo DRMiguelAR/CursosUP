@@ -2,7 +2,7 @@
 
 **Última actualización:** 2026-06-01
 **Archivo del banco:** `bank_final.tsv`
-**Total de preguntas:** 22
+**Total de preguntas:** 26
 
 ---
 
@@ -19,6 +19,7 @@
 | 21 | Archivos de texto | Punto 1: Memoria vs. archivos | 3 (preguntas 17–19) |
 | 21 | Archivos de texto | Punto 2: ¿Qué es un archivo? / saltos de línea | 2 (preguntas 20–21) |
 | 21 | Archivos de texto | Punto 3: `<fstream>` | 1 (pregunta 22) |
+| 22 | Archivos binarios | Punto 1: El problema del modo texto | 4 (preguntas 23–26) |
 
 ## Sesión 19 — puntos pendientes
 
@@ -35,5 +36,5 @@
 - Sesión 18 — Taller 2 (misma metodología que sesión 17; se decidió omitir)
 - Sesión 20 — Taller 3: Calculadora financiera (omitida, es taller aplicado)
 - Sesión 21 — Archivos de texto (en progreso)
-- Sesión 22 — Archivos binarios
+- Sesión 22 — Archivos binarios (en progreso)
 - Sesión 23 — Argumentos de consola
