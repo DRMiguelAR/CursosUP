@@ -16,3 +16,5 @@ MC	Un proyecto tiene la siguiente estructura:
     calculos.h
     calculos.cpp
 ¿Qué directiva debe escribirse en main.cpp para incluir el encabezado propio calculos.h?	#include "calculos.h"	correct	#include <calculos.h>	incorrect	#include <calculos>	incorrect	#include calculos.h	incorrect
+MC	¿Qué es un archivo .o generado por g++?	Código máquina del .cpp correspondiente, con referencias a funciones externas aún sin resolver	correct	El ejecutable final del programa, listo para correr	incorrect	El código fuente en C++ con todas las directivas #include expandidas	incorrect	Una copia comprimida del .cpp original para acelerar compilaciones futuras	incorrect
+MC	Al compilar un proyecto con varios archivos .cpp de forma manual, ¿en qué orden ocurren los pasos?	Primero se compila cada .cpp en un .o; luego se enlazan todos los .o en un ejecutable	correct	Primero se enlaza todo; luego se compila el ejecutable final	incorrect	Los pasos de compilación y enlazado ocurren simultáneamente para cada archivo	incorrect	Primero se precompilan los .h; luego se compilan los .cpp y se genera el ejecutable	incorrect
