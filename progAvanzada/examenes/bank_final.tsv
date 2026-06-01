@@ -48,3 +48,4 @@ MC	Se ejecuta el siguiente comando:
 ¿Cuál es el valor de argc dentro del programa?	4 (el ejecutable más tres argumentos)	correct	3 (solo los argumentos del usuario)	incorrect	1 (solo el nombre del ejecutable)	incorrect	0 (no se definieron parámetros en main)	incorrect
 TF	Si un programa se ejecuta sin argumentos (./programa), el valor de argc es 0.	false
 MAT	Se ejecuta ./mi_programa hola mundo 42. Empareja cada expresión con su valor.	argc	4	argv[0]	./mi_programa	argv[1]	hola	argv[3]	42
+MC	Se ejecuta: ./programa hola mundo. ¿Qué valor tiene argv[1][0]?	'h'	correct	"hola"	incorrect	"hola mundo"	incorrect	'\0'	incorrect

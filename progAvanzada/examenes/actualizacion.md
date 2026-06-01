@@ -2,7 +2,7 @@
 
 **Última actualización:** 2026-06-01
 **Archivo del banco:** `bank_final.tsv`
-**Total de preguntas:** 28
+**Total de preguntas:** 32
 
 ---
 
@@ -22,6 +22,8 @@
 | 22 | Archivos binarios | Punto 1: El problema del modo texto | 4 (preguntas 23–26) |
 | 22 | Archivos binarios | Punto 2: `write` y `read` | 1 (pregunta 27) |
 | 22 | Archivos binarios | Punto 5: Formatos binarios (ELF) | 1 (pregunta 28) |
+| 23 | Argumentos de consola | Punto 1: `argc` y `argv` | 3 (preguntas 29–31) |
+| 23 | Argumentos de consola | Punto 2: Iterar argumentos | 1 (pregunta 32) |
 
 ## Sesión 19 — puntos pendientes
 
@@ -39,4 +41,4 @@
 - Sesión 20 — Taller 3: Calculadora financiera (omitida, es taller aplicado)
 - Sesión 21 — Archivos de texto (en progreso)
 - Sesión 22 — Archivos binarios (en progreso)
-- Sesión 23 — Argumentos de consola
+- Sesión 23 — Argumentos de consola (en progreso)
