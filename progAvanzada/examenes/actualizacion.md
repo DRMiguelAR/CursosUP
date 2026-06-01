@@ -2,7 +2,7 @@
 
 **Última actualización:** 2026-06-01
 **Archivo del banco:** `bank_final.tsv`
-**Total de preguntas:** 16
+**Total de preguntas:** 19
 
 ---
 
@@ -16,6 +16,7 @@
 | 19 | Proyectos de múltiples archivos | Punto 4: `<>` vs `""` en `#include` | 2 (preguntas 12–13) |
 | 19 | Proyectos de múltiples archivos | Punto 5: Compilación por etapas | 2 (preguntas 14–15) |
 | 19 | Proyectos de múltiples archivos | Punto 6: Make / Makefile | 1 (pregunta 16) |
+| 21 | Archivos de texto | Punto 1: Memoria vs. archivos | 3 (preguntas 17–19) |
 
 ## Sesión 19 — puntos pendientes
 
@@ -30,7 +31,7 @@
 ## Sesiones pendientes
 
 - Sesión 18 — Taller 2 (misma metodología que sesión 17; se decidió omitir)
-- Sesión 20 — Taller 3: Calculadora financiera
-- Sesión 21 — Archivos de texto
+- Sesión 20 — Taller 3: Calculadora financiera (omitida, es taller aplicado)
+- Sesión 21 — Archivos de texto (en progreso)
 - Sesión 22 — Archivos binarios
 - Sesión 23 — Argumentos de consola
