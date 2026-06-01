@@ -2,7 +2,7 @@
 
 **Última actualización:** 2026-06-01
 **Archivo del banco:** `bank_final.tsv`
-**Total de preguntas:** 19
+**Total de preguntas:** 21
 
 ---
 
@@ -17,6 +17,7 @@
 | 19 | Proyectos de múltiples archivos | Punto 5: Compilación por etapas | 2 (preguntas 14–15) |
 | 19 | Proyectos de múltiples archivos | Punto 6: Make / Makefile | 1 (pregunta 16) |
 | 21 | Archivos de texto | Punto 1: Memoria vs. archivos | 3 (preguntas 17–19) |
+| 21 | Archivos de texto | Punto 2: ¿Qué es un archivo? / saltos de línea | 2 (preguntas 20–21) |
 
 ## Sesión 19 — puntos pendientes
 

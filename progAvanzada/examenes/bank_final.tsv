@@ -22,3 +22,5 @@ MC	¿Cuál es la ventaja principal de declarar las dependencias de cada .o en un M
 MAT	Empareja cada característica con el almacenamiento que la describe.	Persiste cuando el programa termina	Archivo en disco	Se vacía cuando el programa termina	Memoria RAM	Capacidad típica de terabytes	Archivo en disco	Acceso instantáneo	Memoria RAM
 TF	Un programa puede guardar datos en un archivo y otro programa distinto puede leerlos posteriormente.	true
 MC	¿Por qué los datos almacenados en variables se pierden al terminar un programa?	Las variables viven en RAM, que no persiste cuando el proceso termina	correct	El sistema operativo borra automáticamente toda la RAM al detectar errores	incorrect	Dos procesos diferentes pueden acceder a las mismas variables	incorrect	Un archivo puede ser leído por varios procesos a la vez pero solo escrito por uno a la vez	incorrect
+MAT	Empareja cada sistema operativo con la secuencia que usa para representar un salto de línea.	Linux / Mac	\n (1 byte, 0x0A)	Windows	\r\n (2 bytes, 0x0D 0x0A)
+TF	Un archivo siempre contiene información sobre cómo deben interpretarse sus bytes (si representan texto, una imagen o música).	false
