@@ -9,3 +9,10 @@ TF	Incluir el mismo archivo .h desde tres .cpp distintos es un error porque el p
 MC	Una función queda definida con su cuerpo en dos .cpp distintos que se enlazan en el mismo ejecutable. ¿Qué ocurre?	El compilador reporta el error al procesar el segundo .cpp	incorrect	El enlazador reporta un error de símbolo definido múltiples veces	correct	El programa compila y usa la primera definición encontrada	incorrect	El preprocesador descarta una de las definiciones	incorrect
 FIB_PLUS	En C++, una función puede [a] cuantas veces sea necesario a lo largo del programa, pero solo puede [b] una vez en todo el programa.	a	declararse		b	definirse
 MC	¿En qué etapa del proceso de construcción se detecta que una función fue definida con su cuerpo en dos .cpp distintos?	Durante el preprocesamiento	incorrect	Durante la compilación de cada .cpp	incorrect	Durante el enlazado (linking)	correct	Durante la ejecución del programa	incorrect
+TF	La directiva #include <mifuncion.h> busca el archivo primero en el directorio del proyecto antes de revisar las rutas del sistema.	false
+MC	Un proyecto tiene la siguiente estructura:
+  proyecto/
+    main.cpp
+    calculos.h
+    calculos.cpp
+¿Qué directiva debe escribirse en main.cpp para incluir el encabezado propio calculos.h?	#include "calculos.h"	correct	#include <calculos.h>	incorrect	#include <calculos>	incorrect	#include calculos.h	incorrect
