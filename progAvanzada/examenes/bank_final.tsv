@@ -37,3 +37,8 @@ MC	El siguiente fragmento escribe dos enteros en un archivo y luego lee uno:
 MC	¿En qué formato ocupa más espacio el número 4 almacenado en un archivo?	Binario: siempre ocupa 4 bytes (el tamaño de un int), frente a 1 byte como texto	correct	Texto: el carácter '4' ocupa más bytes que su representación binaria	incorrect	Ambos formatos lo almacenan en el mismo número de bytes	incorrect	Depende del compilador y la plataforma	incorrect
 MC	¿En qué formato ocupa más espacio el número 123456789 almacenado en un archivo?	Texto: se almacena como 9 caracteres ASCII, frente a 4 bytes en binario	correct	Binario: los bytes exactos del int ocupan más que los caracteres	incorrect	Ambos formatos lo almacenan en el mismo número de bytes	incorrect	Depende del sistema operativo	incorrect
 MC	¿Qué significa guardar un entero en modo binario?	Se copian los bytes exactos del entero tal como están en RAM, sin convertirlos a caracteres	correct	El archivo resultante contiene los caracteres '0' y '1' representando cada bit	incorrect	El entero se comprime para ocupar menos espacio del que ocupa en RAM	incorrect	El entero se convierte a hexadecimal antes de escribirse en el archivo	incorrect
+MC	Después de ejecutar el siguiente código, ¿cuántos bytes ocupa datosbin.out?
+  ofstream f1("datosbin.out", fstream::binary);
+  f1.write((char *) &x, sizeof(int));
+  f1.write((char *) &y, sizeof(int));
+  f1.close();	8 bytes (4 por cada int)	correct	5 bytes (los dígitos de "12327" en texto)	incorrect	6 bytes (los dígitos de "123 27" con separador)	incorrect	2 bytes (uno por variable)	incorrect
