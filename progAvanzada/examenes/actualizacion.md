@@ -2,7 +2,7 @@
 
 **Última actualización:** 2026-06-01
 **Archivo del banco:** `bank_final.tsv`
-**Total de preguntas:** 27
+**Total de preguntas:** 28
 
 ---
 
@@ -21,6 +21,7 @@
 | 21 | Archivos de texto | Punto 3: `<fstream>` | 1 (pregunta 22) |
 | 22 | Archivos binarios | Punto 1: El problema del modo texto | 4 (preguntas 23–26) |
 | 22 | Archivos binarios | Punto 2: `write` y `read` | 1 (pregunta 27) |
+| 22 | Archivos binarios | Punto 5: Formatos binarios (ELF) | 1 (pregunta 28) |
 
 ## Sesión 19 — puntos pendientes
 

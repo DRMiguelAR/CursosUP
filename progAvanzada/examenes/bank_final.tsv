@@ -42,3 +42,4 @@ MC	Después de ejecutar el siguiente código, ¿cuántos bytes ocupa datosbin.out?
   f1.write((char *) &x, sizeof(int));
   f1.write((char *) &y, sizeof(int));
   f1.close();	8 bytes (4 por cada int)	correct	5 bytes (los dígitos de "12327" en texto)	incorrect	6 bytes (los dígitos de "123 27" con separador)	incorrect	2 bytes (uno por variable)	incorrect
+MC	¿Qué tipo de archivo tiene como primeros 4 bytes la secuencia 7F 45 4C 46?	Un ejecutable o biblioteca en formato ELF (Linux)	correct	Una imagen en formato BMP	incorrect	Un archivo de audio WAV	incorrect	Un archivo de texto comprimido	incorrect
